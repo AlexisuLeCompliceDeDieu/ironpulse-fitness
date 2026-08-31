@@ -40,7 +40,7 @@ def current_program():
     if not user:
         return jsonify({"error": "Non authentifié"}), 401
 
-    program = TrainingProgram.query.filter_by(user_id=user.id, is_active=True).first()
+    program = TrainingProgram.query.filter_by(user_id=user.id, is_active=True).order_by(TrainingProgram.id.desc()).first()
     if not program:
         return jsonify({"message": "Aucun programme actif"}), 404
     return jsonify({"program": program.to_dict()}), 200

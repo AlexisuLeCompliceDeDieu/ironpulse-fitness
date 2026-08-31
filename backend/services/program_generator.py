@@ -96,6 +96,11 @@ def generate_program(user, available_equipment=None, goal=None):
     split = SPLITS.get(selected_goal, SPLITS["prise_masse"])
     prescription = LEVEL_PRESCRIPTIONS.get(user.level, LEVEL_PRESCRIPTIONS["debutant"])
 
+    # Désactiver les anciens programmes actifs pour n'avoir qu'un seul programme courant
+    from models import TrainingProgram
+    TrainingProgram.query.filter_by(user_id=user.id, is_active=True).update({TrainingProgram.is_active: False})
+    db.session.flush()
+
     program = TrainingProgram(
         user_id=user.id,
         goal=selected_goal,

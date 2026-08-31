@@ -71,3 +71,23 @@ def test_generate_defaults_to_profile_goal(auth_client):
     program = resp.get_json()["program"]
     assert program["goal"] == "perte_poids"
     assert len(program["days"]) == 3
+
+
+def test_regenerate_deactivates_previous_and_returns_newest(auth_client):
+    first = auth_client.post("/api/training/program/generate", json={"goal": "prise_masse"}).get_json()["program"]
+    assert first["goal"] == "prise_masse"
+
+    second = auth_client.post("/api/training/program/generate", json={"goal": "perte_poids"}).get_json()["program"]
+    assert second["goal"] == "perte_poids"
+    assert second["id"] > first["id"]
+
+    # /current renvoie le plus récent (perte_poids)
+    cur = auth_client.get("/api/training/program/current").get_json()["program"]
+    assert cur["goal"] == "perte_poids"
+
+    # Le premier programme n'est plus actif
+    old = auth_client.get(f"/api/training/program/{first['id']}").get_json()["program"]
+    assert old["is_active"] is False
+    # Le second est bien actif
+    new = auth_client.get(f"/api/training/program/{second['id']}").get_json()["program"]
+    assert new["is_active"] is True
