@@ -32,6 +32,12 @@ def update_profile():
         if field in data:
             setattr(user, field, data[field])
 
+    if "available_equipment" in data:
+        eq = data["available_equipment"]
+        if isinstance(eq, list):
+            import json
+            user.available_equipment = json.dumps(list(dict.fromkeys(eq)))
+
     db.session.commit()
     return jsonify({"message": "Profil mis à jour", "user": user.to_dict()}), 200
 

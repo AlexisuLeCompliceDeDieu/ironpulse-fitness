@@ -14,6 +14,16 @@ const LEVELS = [
   { value: "avance", label: "Avancé" },
 ];
 
+const EQUIPMENT = [
+  { value: "barre", label: "Barre et poids" },
+  { value: "haltères", label: "Haltères" },
+  { value: "machine", label: "Machines guidées" },
+  { value: "barre_fixe", label: "Barre de traction" },
+  { value: "barres_parallèles", label: "Barres parallèles (dips)" },
+  { value: "vélo", label: "Vélo" },
+  { value: "corde", label: "Corde à sauter" },
+];
+
 export default function Profile({ user, onUpdate }) {
   const [form, setForm] = useState({
     goal: user.goal,
@@ -23,11 +33,19 @@ export default function Profile({ user, onUpdate }) {
     height: user.height,
     age: user.age,
     daily_calories: user.daily_calories,
+    available_equipment: user.available_equipment || [],
   });
   const [weightEntry, setWeightEntry] = useState("");
   const [message, setMessage] = useState("");
 
   const onChange = (e) => setForm({ ...form, [e.target.name]: e.target.value });
+
+  const toggleEquipment = (value) => {
+    const list = form.available_equipment.includes(value)
+      ? form.available_equipment.filter((v) => v !== value)
+      : [...form.available_equipment, value];
+    setForm({ ...form, available_equipment: list });
+  };
 
   const save = async () => {
     try {
@@ -93,6 +111,25 @@ export default function Profile({ user, onUpdate }) {
           <div className="form-group">
             <label>Calories quotidiennes (kcal)</label>
             <input name="daily_calories" type="number" value={form.daily_calories} onChange={onChange} />
+          </div>
+        </div>
+        <div className="form-group">
+          <label>Matériel disponible à votre salle</label>
+          <p className="muted" style={{ fontSize: "0.85rem", margin: "0 0 0.5rem 0" }}>
+            Le programme n'inclura que les exercices réalisables avec ce matériel.
+          </p>
+          <div className="grid grid-2">
+            {EQUIPMENT.map((eq) => (
+              <label key={eq.value} style={{ display: "flex", alignItems: "center", gap: "0.5rem", fontWeight: 400 }}>
+                <input
+                  type="checkbox"
+                  style={{ width: "auto", margin: 0 }}
+                  checked={form.available_equipment.includes(eq.value)}
+                  onChange={() => toggleEquipment(eq.value)}
+                />
+                {eq.label}
+              </label>
+            ))}
           </div>
         </div>
         <button className="btn" onClick={save}>Enregistrer</button>

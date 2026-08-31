@@ -21,10 +21,18 @@ class User(db.Model):
     height = db.Column(db.Float, default=175.0)
     age = db.Column(db.Integer, default=25)
     daily_calories = db.Column(db.Integer, default=2500)
+    available_equipment = db.Column(db.Text, default="[]")  # JSON list of equipment names
 
     programs = db.relationship("TrainingProgram", backref="user", lazy=True)
     sessions = db.relationship("Session", backref="user", lazy=True)
     weight_entries = db.relationship("WeightEntry", backref="user", lazy=True)
+
+    def equipment_list(self):
+        import json
+        try:
+            return json.loads(self.available_equipment or "[]")
+        except (ValueError, TypeError):
+            return []
 
     def set_password(self, password):
         self.password_hash = generate_password_hash(password)
@@ -44,6 +52,7 @@ class User(db.Model):
             "height": self.height,
             "age": self.age,
             "daily_calories": self.daily_calories,
+            "available_equipment": self.equipment_list(),
             "created_at": self.created_at.isoformat(),
         }
 

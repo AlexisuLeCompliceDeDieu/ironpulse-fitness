@@ -62,8 +62,42 @@ Le site est accessible sur `http://localhost:5173`. Le proxy Vite redirige les a
 | GET | `/api/progress/weights` | Historique du poids |
 | GET | `/api/progress/exercises/:id` | Progression d'un exercice |
 
+## Préparation au déploiement
+
+### Variables d'environnement (backend)
+
+Copier `backend/.env.example` en `.env` et adapter les valeurs :
+- `SECRET_KEY` : clé secrète longue et aléatoire
+- `CORS_ORIGINS` : origines du frontend (ex: `https://monfront.vercel.app,http://localhost:5173`)
+- `DATABASE_URL` : `sqlite:////app/database.db` en SQLite, ou une URL PostgreSQL en production
+- `SESSION_COOKIE_SAMESITE` / `COOKIE_SECURE` : sécuriser les cookies de session
+
+### Docker
+
+```bash
+# Backend
+cd backend
+docker build -t fitness-backend .
+docker run -p 8000:8000 \
+  -e SECRET_KEY=... \
+  -e CORS_ORIGINS=https://monfront.vercel.app \
+  -e DATABASE_URL=postgresql://user:pass@host:5432/fitnessdb \
+  fitness-backend
+
+# Frontend (construire + servir via Nginx)
+cd frontend
+docker build -t fitness-frontend .
+docker run -p 8080:80 fitness-frontend
+```
+
+### Hébergement recommandé
+- **Frontend** : Vercel ou Netlify (build `npm run build`, dossier `dist`)
+- **Backend** : Render ou Railway (commande `gunicorn --bind 0.0.0.0:$PORT app:create_app()`)
+- **Base de données** : PostgreSQL managé (Render, Railway ou Neon)
+- Après hébergement, éditer `frontend/nginx.conf` (ou la config du frontend) pour pointer `/api/` vers l'URL réelle du backend, puis définir `CORS_ORIGINS` côté backend sur l'URL du frontend.
+
 ## Notes
 
 - Base de données SQLite générée automatiquement au premier lancement (`backend/database.db`)
-- 40 exercices prédéfinis chargés automatiquement depuis `backend/data/exercises.json`
-- Migrer vers PostgreSQL : modifier `SQLALCHEMY_DATABASE_URI` dans `backend/config.py`
+- 40 exercices et 14 aliments prédéfinis chargés automatiquement
+- En production, préférer PostgreSQL en définissant `DATABASE_URL`

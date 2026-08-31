@@ -24,7 +24,7 @@ def generate():
     if not user:
         return jsonify({"error": "Non authentifié"}), 401
 
-    program = program_generator.generate_program(user)
+    program = program_generator.generate_program(user, user.equipment_list())
     return jsonify({"message": "Programme généré", "program": program.to_dict()}), 201
 
 

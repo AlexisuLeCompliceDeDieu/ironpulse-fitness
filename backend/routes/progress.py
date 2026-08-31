@@ -72,3 +72,29 @@ def session_stats():
         "total_volume": total_volume,
         "avg_feeling": round(avg_feeling, 1),
     }), 200
+
+
+@progress_bp.route("/advice", methods=["GET"])
+def advice():
+    user = current_user()
+    if not user:
+        return jsonify({"error": "Non authentifié"}), 401
+
+    sessions = Session.query.filter_by(user_id=user.id).all()
+    total_sessions = len(sessions)
+    total_volume = 0
+    avg_feeling = 0
+    for s in sessions:
+        for set_obj in s.sets:
+            total_volume += (set_obj.weight or 0) * (set_obj.reps or 0)
+        avg_feeling += s.feeling
+    avg_feeling = avg_feeling / total_sessions if total_sessions else 0
+
+    stats = {
+        "total_sessions": total_sessions,
+        "total_volume": total_volume,
+        "avg_feeling": round(avg_feeling, 1),
+    }
+
+    from services import advice as advice_service
+    return jsonify({"advice": advice_service.generate_advice(user, stats)}), 200

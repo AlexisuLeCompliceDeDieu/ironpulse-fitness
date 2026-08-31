@@ -118,9 +118,14 @@ def select_exercises(category, count, available_equipment):
     def in_equipment(ex):
         if not available_equipment:
             return True
+        # Les exercices au poids du corps sont toujours possibles
+        if ex.equipment_needed == "aucun":
+            return True
         return ex.equipment_needed in available_equipment
 
     matching = [ex for ex in all_ex if in_equipment(ex)]
+    # Si aucun exercice de la catégorie ne correspond au matériel restreint,
+    # on retombe sur tous ceux de la catégorie (le programme reste générable)
     if not matching:
         matching = all_ex.copy()
 
