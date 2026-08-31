@@ -1,0 +1,51 @@
+[
+  {"name": "Développé couché (barre)", "category": "pectoraux", "muscle_group": "pectoraux", "equipment_needed": "barre", "description": "Exercice polyarticulaire de base pour les pectoraux.", "is_compound": true},
+  {"name": "Développé couché (haltères)", "category": "pectoraux", "muscle_group": "pectoraux", "equipment_needed": "haltères", "description": "Développé couché avec haltères, meilleure amplitude.", "is_compound": true},
+  {"name": "Pompes", "category": "pectoraux", "muscle_group": "pectoraux", "equipment_needed": "aucun", "description": "Push-up au poids du corps.", "is_compound": true},
+  {"name": "Écarté couché (haltères)", "category": "pectoraux", "muscle_group": "pectoraux", "equipment_needed": "haltères", "description": "Isolation des pectoraux en ouverture.", "is_compound": false},
+  {"name": "Développé incliné (haltères)", "category": "pectoraux", "muscle_group": "haut_pectoraux", "equipment_needed": "haltères", "description": "Cible la partie haute des pectoraux.", "is_compound": true},
+
+  {"name": "Développé militaire (barre)", "category": "epaule", "muscle_group": "deltoïdes", "equipment_needed": "barre", "description": "Développement des épaules avec barre.", "is_compound": true},
+  {"name": "Développé militaire (haltères)", "category": "epaule", "muscle_group": "deltoïdes", "equipment_needed": "haltères", "description": "Développement des épaules avec haltères.", "is_compound": true},
+  {"name": "Élévations latérales", "category": "epaule", "muscle_group": "deltoïdes", "equipment_needed": "haltères", "description": "Isolation du deltoïde latéral.", "is_compound": false},
+  {"name": "Oiseau (deltoïde postérieur)", "category": "epaule", "muscle_group": "deltoïdes", "equipment_needed": "haltères", "description": "Isolation du deltoïde postérieur.", "is_compound": false},
+  {"name": "Développé épaules (machine)", "category": "epaule", "muscle_group": "deltoïdes", "equipment_needed": "machine", "description": "Développement des épaules guidé.", "is_compound": true},
+
+  {"name": "Tractions", "category": "dos", "muscle_group": "grand_dorsal", "equipment_needed": "barre_fixe", "description": "Traction à la barre fixe, exercice de base du dos.", "is_compound": true},
+  {"name": "Rowing barre", "category": "dos", "muscle_group": "grand_dorsal", "equipment_needed": "barre", "description": "Rowing haltère ou barre pour le dos.", "is_compound": true},
+  {"name": "Rowing haltère", "category": "dos", "muscle_group": "grand_dorsal", "equipment_needed": "haltères", "description": "Rowing unilatéral avec haltère.", "is_compound": true},
+  {"name": "Tirage vertical (machine)", "category": "dos", "muscle_group": "grand_dorsal", "equipment_needed": "machine", "description": "Tirage poulie haute pour le grand dorsal.", "is_compound": true},
+  {"name": "Soulevé de terre", "category": "dos", "muscle_group": "lombaires", "equipment_needed": "barre", "description": "Mouvement polyarticulaire complet.", "is_compound": true},
+
+  {"name": "Curl biceps (haltères)", "category": "biceps", "muscle_group": "biceps", "equipment_needed": "haltères", "description": "Flexion du coude avec haltères.", "is_compound": false},
+  {"name": "Curl biceps (barre)", "category": "biceps", "muscle_group": "biceps", "equipment_needed": "barre", "description": "Flexion du coude avec barre.", "is_compound": false},
+  {"name": "Marteau (haltères)", "category": "biceps", "muscle_group": "biceps", "equipment_needed": "haltères", "description": "Curl neutre pour les avant-bras et biceps.", "is_compound": false},
+  {"name": "Curl à la poulie", "category": "biceps", "muscle_group": "biceps", "equipment_needed": "machine", "description": "Curl à la poulie basse.", "is_compound": false},
+
+  {"name": "Développé couché prise serrée", "category": "triceps", "muscle_group": "triceps", "equipment_needed": "barre", "description": "Développé avec prise rapprochée pour triceps.", "is_compound": true},
+  {"name": "Extension triceps (poulie)", "category": "triceps", "muscle_group": "triceps", "equipment_needed": "machine", "description": "Extension des triceps à la poulie haute.", "is_compound": false},
+  {"name": "Dips", "category": "triceps", "muscle_group": "triceps", "equipment_needed": "barres_parallèles", "description": "Dips aux barres parallèles, poids du corps.", "is_compound": true},
+  {"name": "Extension triceps nuque (haltère)", "category": "triceps", "muscle_group": "triceps", "equipment_needed": "haltères", "description": "Extension au-dessus de la tête.", "is_compound": false},
+
+  {"name": "Squat (barre)", "category": "quadriceps", "muscle_group": "quadriceps", "equipment_needed": "barre", "description": "Squat avec barre, roi des exercices jambes.", "is_compound": true},
+  {"name": "Squat (haltères)", "category": "quadriceps", "muscle_group": "quadriceps", "equipment_needed": "haltères", "description": "Squat goblet avec haltère.", "is_compound": true},
+  {"name": "Presse à cuisses", "category": "quadriceps", "muscle_group": "quadriceps", "equipment_needed": "machine", "description": "Presse pour les quadriceps.", "is_compound": true},
+  {"name": "Fentes", "category": "quadriceps", "muscle_group": "quadriceps", "equipment_needed": "haltères", "description": "Fentes avant avec haltères.", "is_compound": true},
+  {"name": "Leg extension", "category": "quadriceps", "muscle_group": "quadriceps", "equipment_needed": "machine", "description": "Isolation des quadriceps à la machine.", "is_compound": false},
+
+  {"name": "Soulevé de terre roumain", "category": "ischio", "muscle_group": "ischio_jambiers", "equipment_needed": "barre", "description": "Focus les ischio-jambiers et fessiers.", "is_compound": true},
+  {"name": "Leg curl", "category": "ischio", "muscle_group": "ischio_jambiers", "equipment_needed": "machine", "description": "Flexion de la jambe à la machine.", "is_compound": false},
+
+  {"name": "Hip thrust", "category": "fessiers", "muscle_group": "fessiers", "equipment_needed": "barre", "description": "Extension de hanche pour les fessiers.", "is_compound": true},
+  {"name": "Fentes bulgares", "category": "fessiers", "muscle_group": "fessiers", "equipment_needed": "haltères", "description": "Fentes avec jambe arrière surélevée.", "is_compound": true},
+
+  {"name": "Gainage (planche)", "category": "core", "muscle_group": "abdominaux", "equipment_needed": "aucun", "description": "Planche isométrique pour le gainage.", "is_compound": false},
+  {"name": "Crunchs", "category": "core", "muscle_group": "abdominaux", "equipment_needed": "aucun", "description": "Relevés du buste au sol.", "is_compound": false},
+  {"name": "Relevés de jambes", "category": "core", "muscle_group": "abdominaux", "equipment_needed": "aucun", "description": "Relevés de jambes suspendu ou au sol.", "is_compound": false},
+  {"name": "Russian twist", "category": "core", "muscle_group": "obliques", "equipment_needed": "haltères", "description": "Rotation du buste avec poids.", "is_compound": false},
+  {"name": "Mountain climbers", "category": "cardio", "muscle_group": "core", "equipment_needed": "aucun", "description": "Exercice cardio dynamique.", "is_compound": true},
+
+  {"name": "Course à pied", "category": "cardio", "muscle_group": "cardio", "equipment_needed": "aucun", "description": "Course réalisée au poids du corps.", "is_compound": true},
+  {"name": "Vélo (cardio)", "category": "cardio", "muscle_group": "cardio", "equipment_needed": "vélo", "description": "Cyclisme stationnaire ou en extérieur.", "is_compound": true},
+  {"name": "Corde à sauter", "category": "cardio", "muscle_group": "cardio", "equipment_needed": "corde", "description": "Sauts à la corde.", "is_compound": true}
+]

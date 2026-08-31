@@ -1,0 +1,26 @@
+# Flask / Python
+__pycache__/
+*.py[cod]
+*.so
+venv/
+.venv/
+env/
+.env
+
+# Base de données
+*.db
+*.sqlite3
+
+# Node / React
+node_modules/
+dist/
+build/
+*.local
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
