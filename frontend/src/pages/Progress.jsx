@@ -87,18 +87,21 @@ export default function Progress({ user }) {
 
   return (
     <div className="container">
-      <h1 className="page-title">Analyse de progression</h1>
+      <div className="hero">
+        <h1>📈 Analyse de progression</h1>
+        <p>Suivez l'évolution de vos performances et de votre poids dans le temps.</p>
+      </div>
 
       <div className="card">
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-          <h3>Évolution du poids</h3>
+          <h3>⚖️ Évolution du poids</h3>
           {weights.length === 0 && <p className="muted">Aucune donnée de poids.</p>}
         </div>
         {weights.length > 0 && <Line data={weightChart} />}
       </div>
 
       <div className="card">
-        <h3>Progression par exercice</h3>
+        <h3>🏋️ Progression par exercice</h3>
         <select value={selectedExercise || ""} onChange={(e) => loadExercise(Number(e.target.value))}>
           <option value="">-- Choisir un exercice --</option>
           {exercises.map((ex) => (

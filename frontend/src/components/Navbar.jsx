@@ -1,41 +1,49 @@
-import { Link } from "react-router-dom";
+import { Link, NavLink, useNavigate } from "react-router-dom";
+
+const LINKS = [
+  { to: "/", label: "Accueil", icon: "🏠" },
+  { to: "/training", label: "Entraînement", icon: "🏋️" },
+  { to: "/session", label: "Séances", icon: "📋" },
+  { to: "/nutrition", label: "Nutrition", icon: "🥗" },
+  { to: "/progress", label: "Progression", icon: "📈" },
+  { to: "/profile", label: "Profil", icon: "👤" },
+];
 
 export default function Navbar({ user, onLogout }) {
+  const navigate = useNavigate();
+
+  const logout = () => {
+    onLogout();
+    navigate("/login");
+  };
+
   return (
-    <nav
-      style={{
-        background: "var(--primary)",
-        color: "#fff",
-        padding: "0.8rem 1.5rem",
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "space-between",
-        flexWrap: "wrap",
-        gap: "0.5rem",
-      }}
-    >
-      <div style={{ fontWeight: 700, fontSize: "1.1rem" }}>IA Fitness</div>
-      <div style={{ display: "flex", gap: "0.5rem", flexWrap: "wrap" }}>
-        <Link to="/" style={linkStyle}>Accueil</Link>
-        <Link to="/training" style={linkStyle}>Entraînement</Link>
-        <Link to="/session" style={linkStyle}>Séances</Link>
-        <Link to="/nutrition" style={linkStyle}>Nutrition</Link>
-        <Link to="/progress" style={linkStyle}>Progression</Link>
-        <Link to="/profile" style={linkStyle}>Profil</Link>
+    <nav className="navbar">
+      <Link to="/" className="brand">
+        <span className="brand-mark">💪</span>
+        <span className="brand-name">Fitness IA</span>
+      </Link>
+
+      <div className="nav-links">
+        {LINKS.map((l) => (
+          <NavLink
+            key={l.to}
+            to={l.to}
+            className={({ isActive }) => "nav-link" + (isActive ? " active" : "")}
+          >
+            <span>{l.icon}</span>
+            <span>{l.label}</span>
+          </NavLink>
+        ))}
       </div>
-      <div style={{ display: "flex", alignItems: "center", gap: "0.8rem" }}>
-        <span style={{ fontSize: "0.9rem" }}>{user?.username}</span>
-        <button onClick={onLogout} className="btn btn-outline" style={{ color: "#fff", borderColor: "#fff", background: "transparent" }}>
+
+      <div className="nav-user">
+        <div className="avatar">{user?.username?.charAt(0)?.toUpperCase() || "U"}</div>
+        <span style={{ fontWeight: 600 }}>{user?.username}</span>
+        <button className="btn btn-secondary btn-sm" onClick={logout}>
           Déconnexion
         </button>
       </div>
     </nav>
   );
 }
-
-const linkStyle = {
-  color: "#fff",
-  textDecoration: "none",
-  padding: "0.4rem 0.7rem",
-  borderRadius: "6px",
-};

@@ -118,8 +118,11 @@ export default function Profile({ user, onUpdate }) {
 
   return (
     <div className="container">
-      <h1 className="page-title">Profil</h1>
-      {message && <div className="card">{message}</div>}
+      <div className="hero">
+        <h1>👤 Profil</h1>
+        <p>Gérez vos objectifs, vos données personnelles et vos préférences.</p>
+      </div>
+      {message && <div className="success-msg">{message}</div>}
 
       <div className="card">
         <h3>Objectifs</h3>

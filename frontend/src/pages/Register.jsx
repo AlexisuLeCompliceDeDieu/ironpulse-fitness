@@ -24,7 +24,12 @@ export default function Register({ onAuth }) {
   return (
     <div className="auth-wrapper">
       <form className="auth-card" onSubmit={submit}>
+        <div className="auth-brand">
+          <span className="brand-mark">💪</span>
+          <span className="brand-name" style={{ fontSize: "1.6rem", fontWeight: 800 }}>Fitness IA</span>
+        </div>
         <h1>Inscription</h1>
+        <p className="auth-sub">Créez votre espace pour un suivi personnalisé</p>
         {error && <div className="error">{error}</div>}
         <div className="form-group">
           <label>Nom d'utilisateur</label>

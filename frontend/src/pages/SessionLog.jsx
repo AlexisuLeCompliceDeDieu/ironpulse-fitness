@@ -88,9 +88,12 @@ export default function SessionLog() {
 
   return (
     <div className="container">
-      <h1 className="page-title">Suivi de séance</h1>
+      <div className="hero">
+        <h1>📋 Suivi de séance</h1>
+        <p>Enregistrez vos charges, séries, répétitions et ressenti après chaque entraînement.</p>
+      </div>
 
-      {message && <div className="card" style={{ borderColor: "var(--success)", background: "#f0fdf4" }}>{message}</div>}
+      {message && <div className="success-msg">{message}</div>}
 
       {!selectedDay && (
         <div className="card">

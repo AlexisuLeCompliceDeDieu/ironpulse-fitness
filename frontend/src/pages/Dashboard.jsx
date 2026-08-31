@@ -3,10 +3,16 @@ import { Link } from "react-router-dom";
 import api from "../api.js";
 
 const GOALS = {
-  prise_masse: "Prise de masse",
-  perte_poids: "Perte de poids",
-  force: "Développement de la force",
-  endurance: "Amélioration de l'endurance",
+  prise_masse: { label: "Prise de masse", icon: "💪" },
+  perte_poids: { label: "Perte de poids", icon: "🔥" },
+  force: { label: "Développement de la force", icon: "🏋️" },
+  endurance: { label: "Amélioration de l'endurance", icon: "🏃" },
+};
+
+const LEVELS = {
+  debutant: "Débutant",
+  intermediaire: "Intermédiaire",
+  avance: "Avancé",
 };
 
 export default function Dashboard({ user }) {
@@ -26,51 +32,69 @@ export default function Dashboard({ user }) {
   const todayIndex = today === 0 ? 6 : today - 1;
   const todayDay = program ? program.days.find((d) => d.day_number === (todayIndex % program.days.length) + 1) : null;
 
+  const goal = GOALS[user.goal] || { label: user.goal, icon: "🎯" };
+
   return (
     <div className="container">
-      <h1 className="page-title">Bonjour {user.username} !</h1>
+      <div className="hero">
+        <h1>Bonjour {user.username} 👋</h1>
+        <p>
+          Objectif : {goal.label} · Niveau : {LEVELS[user.level] || user.level}
+        </p>
+      </div>
 
       <div className="grid grid-3">
-        <div className="card">
-          <h3>Objectif</h3>
-          <p className="muted">{GOALS[user.goal] || user.goal}</p>
-          <p className="muted">Niveau : {user.level}</p>
-          <Link className="btn btn-outline" to="/profile">Modifier</Link>
+        <div className="stat-card">
+          <div className="stat-ico" style={{ background: "rgba(255,92,26,.2)" }}>🎯</div>
+          <div className="muted" style={{ fontSize: "0.85rem" }}>Objectif</div>
+          <div className="stat-value" style={{ fontSize: "1.2rem", color: "var(--primary)" }}>
+            {goal.icon} {goal.label}
+          </div>
+          <Link className="btn btn-secondary btn-sm" style={{ marginTop: "0.6rem" }} to="/profile">Modifier</Link>
         </div>
-        <div className="card">
-          <h3>Statistiques</h3>
-          {stats ? (
-            <>
-              <p>Séances : <strong>{stats.total_sessions}</strong></p>
-              <p>Volume total : <strong>{stats.total_volume} kg</strong></p>
-              <p>Ressenti moyen : <strong>{stats.avg_feeling}/5</strong></p>
-            </>
-          ) : (
-            <p className="muted">Pas encore de statistiques.</p>
-          )}
+
+        <div className="stat-card">
+          <div className="stat-ico" style={{ background: "rgba(56,189,248,.2)" }}>📊</div>
+          <div className="muted" style={{ fontSize: "0.85rem" }}>Séances réalisées</div>
+          <div className="stat-value">{stats ? stats.total_sessions : 0}</div>
+          <div className="muted" style={{ fontSize: "0.85rem" }}>
+            {stats ? `${stats.total_volume} kg · ressenti ${stats.avg_feeling}/5` : "Commencez à vous entraîner"}
+          </div>
         </div>
-        <div className="card">
-          <h3>Progression</h3>
-          <p className="muted">Poids actuel : <strong>{user.weight} kg</strong></p>
-          <p className="muted">Poids cible : <strong>{user.target_weight} kg</strong></p>
-          <Link className="btn btn-outline" to="/progress">Voir les graphiques</Link>
+
+        <div className="stat-card">
+          <div className="stat-ico" style={{ background: "rgba(34,197,94,.2)" }}>⚖️</div>
+          <div className="muted" style={{ fontSize: "0.85rem" }}>Poids</div>
+          <div className="stat-value">
+            {user.weight}
+            <span style={{ fontSize: "1rem", color: "var(--muted)" }}> kg</span>
+          </div>
+          <div className="muted" style={{ fontSize: "0.85rem" }}>
+            Objectif : <span className="text-success">{user.target_weight} kg</span>
+          </div>
+          <Link className="btn btn-secondary btn-sm" style={{ marginTop: "0.6rem" }} to="/progress">Voir la progression</Link>
         </div>
       </div>
 
-      <div className="card">
-        <h3>Programme de la semaine</h3>
-        {todayDay ? (
-          <>
-            <p><strong>Jour {todayDay.day_number} : {todayDay.name}</strong></p>
-            <p className="muted">{todayDay.exercises.length} exercices à réaliser</p>
-            <Link className="btn" to="/training">Voir le programme</Link>
-          </>
-        ) : (
-          <>
-            <p className="muted">Aucun programme actif pour aujourd'hui.</p>
-            <Link className="btn" to="/training">Générer un programme</Link>
-          </>
-        )}
+      <div className="gradient-card">
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "0.8rem" }}>
+          <div>
+            <h3 style={{ margin: "0 0 0.3rem 0" }}>
+              {todayDay ? `📅 Aujourd'hui : ${todayDay.name}` : "📅 Programme de la semaine"}
+            </h3>
+            {todayDay ? (
+              <p style={{ margin: 0 }}>
+                Jour {todayDay.day_number} · {todayDay.exercises.length} exercices
+                {todayDay.estimated_minutes ? ` · ⏱ ~${todayDay.estimated_minutes} min` : ""}
+              </p>
+            ) : (
+              <p style={{ margin: 0 }}>Générez votre programme personnalisé dès maintenant.</p>
+            )}
+          </div>
+          <Link to={todayDay ? "/training" : "/training"} className="btn btn-secondary">
+            {todayDay ? "Voir le programme" : "Générer un programme"}
+          </Link>
+        </div>
       </div>
 
       {advice.length > 0 && (
@@ -80,15 +104,15 @@ export default function Dashboard({ user }) {
             <div
               key={i}
               style={{
-                padding: "0.6rem 0.8rem",
+                padding: "0.7rem 0.9rem",
                 marginBottom: "0.5rem",
-                borderRadius: "8px",
+                borderRadius: "10px",
                 borderLeft: "4px solid",
                 borderColor:
-                  a.type === "warning" ? "var(--danger)"
+                  a.type === "warning" ? "var(--warning)"
                   : a.type === "success" ? "var(--success)"
-                  : "var(--primary)",
-                background: "var(--bg)",
+                  : "var(--accent-2)",
+                background: "var(--card-2)",
                 fontSize: "0.95rem",
               }}
             >
@@ -105,15 +129,15 @@ export default function Dashboard({ user }) {
             <div
               key={i}
               style={{
-                padding: "0.6rem 0.8rem",
+                padding: "0.7rem 0.9rem",
                 marginBottom: "0.5rem",
-                borderRadius: "8px",
+                borderRadius: "10px",
                 borderLeft: "4px solid",
                 borderColor:
-                  a.type === "warning" ? "var(--danger)"
+                  a.type === "warning" ? "var(--warning)"
                   : a.type === "success" ? "var(--success)"
-                  : "var(--primary)",
-                background: "var(--bg)",
+                  : "var(--accent-2)",
+                background: "var(--card-2)",
                 fontSize: "0.95rem",
               }}
             >

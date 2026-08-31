@@ -23,7 +23,12 @@ export default function Login({ onAuth }) {
   return (
     <div className="auth-wrapper">
       <form className="auth-card" onSubmit={submit}>
-        <h1>IA Fitness</h1>
+        <div className="auth-brand">
+          <span className="brand-mark">💪</span>
+          <span className="brand-name" style={{ fontSize: "1.6rem", fontWeight: 800 }}>Fitness IA</span>
+        </div>
+        <h1>Connexion</h1>
+        <p className="auth-sub">Retrouvez votre suivi sportif et nutritionnel</p>
         {error && <div className="error">{error}</div>}
         <div className="form-group">
           <label>Email</label>

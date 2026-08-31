@@ -129,7 +129,25 @@ class ProgramDay(db.Model):
             "day_number": self.day_number,
             "name": self.name,
             "exercises": [e.to_dict() for e in self.exercises],
+            "estimated_minutes": self.estimated_minutes(),
         }
+
+    def estimated_minutes(self):
+        """Estimation approximative de la durée de la séance (minutes).
+
+        Effort ~3s par répétition + repos entre séries + échauffement + transitions.
+        """
+        effort_per_rep = 3
+        warmup = 5
+        transition = 0.75
+        total = 0.0
+        ex_list = list(self.exercises)
+        for pe in ex_list:
+            effort = (pe.reps * effort_per_rep * pe.sets) / 60
+            rest = (pe.sets - 1) * (pe.rest_seconds / 60)
+            total += effort + rest
+        total += max(0, len(ex_list) - 1) * transition + warmup
+        return max(1, round(total))
 
 
 class ProgramExercise(db.Model):
