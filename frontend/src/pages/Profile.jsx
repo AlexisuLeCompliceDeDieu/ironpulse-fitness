@@ -72,6 +72,34 @@ export default function Profile({ user, onUpdate }) {
     }
   };
 
+  const exportData = async () => {
+    try {
+      const res = await api.get("/profile/export");
+      const blob = new Blob([JSON.stringify(res.data, null, 2)], { type: "application/json" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "mes-donnees-fitness.json";
+      a.click();
+      URL.revokeObjectURL(url);
+    } catch (err) {
+      setMessage(err.response?.data?.error || "Erreur lors de l'export");
+    }
+  };
+
+  const deleteAccount = async () => {
+    const ok = window.confirm(
+      "Supprimer définitivement votre compte et toutes vos données ? Cette action est irréversible."
+    );
+    if (!ok) return;
+    try {
+      await api.delete("/profile/account");
+      window.location.href = "/";
+    } catch (err) {
+      setMessage(err.response?.data?.error || "Erreur lors de la suppression");
+    }
+  };
+
   return (
     <div className="container">
       <h1 className="page-title">Profil</h1>
@@ -140,6 +168,18 @@ export default function Profile({ user, onUpdate }) {
         <div style={{ display: "flex", gap: "0.5rem" }}>
           <input type="number" placeholder="Poids (kg)" value={weightEntry} onChange={(e) => setWeightEntry(e.target.value)} />
           <button className="btn btn-secondary" onClick={addWeight}>Ajouter</button>
+        </div>
+      </div>
+
+      <div className="card">
+        <h3>Vos données (RGPD)</h3>
+        <p className="muted" style={{ fontSize: "0.9rem" }}>
+          Conformément au RGPD, vous pouvez exporter l'ensemble de vos données personnelles ou supprimer
+          définitivement votre compte.
+        </p>
+        <div style={{ display: "flex", gap: "0.5rem", flexWrap: "wrap" }}>
+          <button className="btn btn-secondary" onClick={exportData}>Exporter mes données</button>
+          <button className="btn btn-danger" onClick={deleteAccount}>Supprimer mon compte</button>
         </div>
       </div>
     </div>

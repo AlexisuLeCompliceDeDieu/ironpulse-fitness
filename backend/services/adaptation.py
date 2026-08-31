@@ -1,11 +1,11 @@
 """Logique d'adaptation intelligente des séances."""
 
-from models import Exercise
+from models import db, Exercise
 
 
 def find_alternative(exercise_id):
     """Trouve un exercice alternatif du même groupe musculaire."""
-    exercise = Exercise.query.get(exercise_id)
+    exercise = db.session.get(Exercise, exercise_id)
     if not exercise:
         return None
     return exercise

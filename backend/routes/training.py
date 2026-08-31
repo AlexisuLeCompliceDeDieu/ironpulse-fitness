@@ -1,21 +1,24 @@
-from flask import Blueprint, jsonify, session
+from flask import Blueprint, jsonify, session, request
 from datetime import date, timedelta
 from models import (
-    TrainingProgram, Session, SessionSet, db,
+    TrainingProgram, Session, SessionSet, Exercise, db,
 )
 from services import program_generator, adaptation
 
 training_bp = Blueprint("training", __name__)
 
 
-from flask import request
-
 def current_user():
     user_id = session.get("user_id")
     if not user_id:
         return None
     from models import User
-    return User.query.get(user_id)
+    return db.session.get(User, user_id)
+
+
+@training_bp.route("/presets", methods=["GET"])
+def presets():
+    return jsonify({"presets": program_generator.get_presets()}), 200
 
 
 @training_bp.route("/program/generate", methods=["POST"])
@@ -24,7 +27,10 @@ def generate():
     if not user:
         return jsonify({"error": "Non authentifié"}), 401
 
-    program = program_generator.generate_program(user, user.equipment_list())
+    data = request.get_json(silent=True) or {}
+    goal = data.get("goal") or user.goal
+
+    program = program_generator.generate_program(user, user.equipment_list(), goal=goal)
     return jsonify({"message": "Programme généré", "program": program.to_dict()}), 201
 
 
@@ -62,7 +68,7 @@ def replace_exercise(exercise_id):
     available_equipment = data.get("available_equipment", [])
 
     from models import Exercise
-    exercise = Exercise.query.get(exercise_id)
+    exercise = db.session.get(Exercise, exercise_id)
     if not exercise:
         return jsonify({"error": "Exercice introuvable"}), 404
 

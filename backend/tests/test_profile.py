@@ -30,3 +30,43 @@ def test_add_and_get_weight(auth_client):
     entries = auth_client.get("/api/profile/weight").get_json()["entries"]
     assert len(entries) == 1
     assert entries[0]["weight"] == 80.5
+
+
+def test_export_requires_auth(client):
+    resp = client.get("/api/profile/export")
+    assert resp.status_code == 401
+
+
+def test_export_data(auth_client):
+    auth_client.post("/api/profile/weight", json={"weight": 81})
+    resp = auth_client.get("/api/profile/export")
+    assert resp.status_code == 200
+    data = resp.get_json()
+    assert data["user"]["email"] == "user1@test.fr"
+    assert "password_hash" not in data["user"]
+    assert len(data["weight_entries"]) == 1
+    assert "training_programs" in data
+    assert "sessions" in data
+
+
+def test_delete_account_requires_auth(client):
+    resp = client.delete("/api/profile/account")
+    assert resp.status_code == 401
+
+
+def test_delete_account(auth_client):
+    resp = auth_client.delete("/api/profile/account")
+    assert resp.status_code == 200
+    # La session est nettoyée : plus authentifié ensuite
+    me = auth_client.get("/api/auth/me")
+    assert me.status_code == 401
+
+
+def test_delete_account_removes_linked_data(auth_client):
+    auth_client.post("/api/training/program/generate")
+    resp = auth_client.delete("/api/profile/account")
+    assert resp.status_code == 200
+    # Re-créer un user pour vérifier que la base est vide des données précédentes
+    auth_client.post("/api/auth/register", json={"username": "fresh", "email": "fresh@t.fr", "password": "x"})
+    prog = auth_client.get("/api/training/program/current")
+    assert prog.status_code == 404

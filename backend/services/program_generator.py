@@ -18,7 +18,7 @@ SPLITS = {
              "exercises_per_category": 2},
             {"name": "Jambes", "categories": ["quadriceps", "ischio", "fessiers"],
              "exercises_per_category": 2},
-            {"name": "Push + Pull", "categories": ["pectoraux", "dos", "epaule", "bras"],
+            {"name": "Push + Pull", "categories": ["pectoraux", "dos", "epaule", "biceps"],
              "exercises_per_category": 1},
         ]
     },
@@ -59,20 +59,46 @@ LEVEL_PRESCRIPTIONS = {
 }
 
 
-def generate_program(user, available_equipment=None):
-    """Génère un programme mensuel pour un utilisateur."""
+GOAL_LABELS = {
+    "prise_masse": "Prise de masse",
+    "perte_poids": "Perte de poids",
+    "force": "Développement de la force",
+    "endurance": "Amélioration de l'endurance",
+}
+
+
+def get_presets():
+    """Retourne les séances prédéfinies disponibles (splits par objectif)."""
+    presets = []
+    for goal, spec in SPLITS.items():
+        presets.append({
+            "goal": goal,
+            "label": GOAL_LABELS.get(goal, goal),
+            "days_per_week": len(spec["days"]),
+            "days": [d["name"] for d in spec["days"]],
+        })
+    return presets
+
+
+def generate_program(user, available_equipment=None, goal=None):
+    """Génère un programme mensuel pour un utilisateur.
+
+    `goal` permet de choisir l'objectif au moment de la génération
+    (sinon on reprend l'objectif enregistré dans le profil).
+    """
     from models import (
         TrainingProgram, ProgramDay, ProgramExercise, Exercise, db,
     )
 
     available_equipment = available_equipment or []
+    selected_goal = goal or user.goal
 
-    split = SPLITS.get(user.goal, SPLITS["prise_masse"])
+    split = SPLITS.get(selected_goal, SPLITS["prise_masse"])
     prescription = LEVEL_PRESCRIPTIONS.get(user.level, LEVEL_PRESCRIPTIONS["debutant"])
 
     program = TrainingProgram(
         user_id=user.id,
-        goal=user.goal,
+        goal=selected_goal,
         start_date=date.today(),
         end_date=date.today() + timedelta(days=28),
         is_active=True,

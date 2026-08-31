@@ -43,3 +43,31 @@ def test_replace_exercise(auth_client):
     )
     assert resp.status_code == 200
     assert resp.get_json()["alternative"]["name"]
+
+
+def test_presets(auth_client):
+    resp = auth_client.get("/api/training/presets")
+    assert resp.status_code == 200
+    presets = resp.get_json()["presets"]
+    goals = {p["goal"] for p in presets}
+    assert goals == {"prise_masse", "perte_poids", "force", "endurance"}
+    perte = next(p for p in presets if p["goal"] == "perte_poids")
+    assert perte["days_per_week"] == 3
+    assert perte["days"]
+
+
+def test_generate_with_goal_override(auth_client):
+    resp = auth_client.post("/api/training/program/generate", json={"goal": "force"})
+    assert resp.status_code == 201
+    program = resp.get_json()["program"]
+    assert program["goal"] == "force"
+    assert len(program["days"]) == 2
+
+
+def test_generate_defaults_to_profile_goal(auth_client):
+    auth_client.put("/api/profile/", json={"goal": "perte_poids"})
+    resp = auth_client.post("/api/training/program/generate")
+    assert resp.status_code == 201
+    program = resp.get_json()["program"]
+    assert program["goal"] == "perte_poids"
+    assert len(program["days"]) == 3

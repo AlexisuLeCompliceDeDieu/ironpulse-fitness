@@ -1,5 +1,5 @@
 from flask import Blueprint, jsonify, session
-from models import Session, SessionSet, WeightEntry
+from models import Session, SessionSet, WeightEntry, db
 
 progress_bp = Blueprint("progress", __name__)
 
@@ -9,7 +9,7 @@ def current_user():
     if not user_id:
         return None
     from models import User
-    return User.query.get(user_id)
+    return db.session.get(User, user_id)
 
 
 @progress_bp.route("/weights", methods=["GET"])
@@ -42,7 +42,7 @@ def exercise_progress(exercise_id):
 
     data = {}
     for record in records:
-        session = Session.query.get(record.session_id)
+        session = db.session.get(Session, record.session_id)
         key = session.date.isoformat()
         if key not in data:
             data[key] = {"date": key, "max_weight": 0, "total_volume": 0, "sets": 0}
@@ -98,3 +98,14 @@ def advice():
 
     from services import advice as advice_service
     return jsonify({"advice": advice_service.generate_advice(user, stats)}), 200
+
+
+@progress_bp.route("/adaptation", methods=["GET"])
+def adaptation():
+    user = current_user()
+    if not user:
+        return jsonify({"error": "Non authentifié"}), 401
+
+    sessions = Session.query.filter_by(user_id=user.id).all()
+    from services import advice as advice_service
+    return jsonify({"adaptation": advice_service.generate_adaptation(sessions)}), 200

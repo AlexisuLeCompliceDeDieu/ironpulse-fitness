@@ -1,5 +1,8 @@
 from flask import Blueprint, request, jsonify, session
-from models import db, User, WeightEntry
+from models import (
+    db, User, WeightEntry, TrainingProgram, ProgramDay, Session, SessionSet,
+    MealPlan, ShoppingList,
+)
 from datetime import date
 
 profile_bp = Blueprint("profile", __name__)
@@ -9,7 +12,7 @@ def current_user():
     user_id = session.get("user_id")
     if not user_id:
         return None
-    return User.query.get(user_id)
+    return db.session.get(User, user_id)
 
 
 @profile_bp.route("/", methods=["GET"])
@@ -67,3 +70,60 @@ def get_weights():
         return jsonify({"error": "Non authentifié"}), 401
     entries = WeightEntry.query.filter_by(user_id=user.id).order_by(WeightEntry.date).all()
     return jsonify({"entries": [e.to_dict() for e in entries]}), 200
+
+
+@profile_bp.route("/export", methods=["GET"])
+def export_data():
+    user = current_user()
+    if not user:
+        return jsonify({"error": "Non authentifié"}), 401
+
+    programs = TrainingProgram.query.filter_by(user_id=user.id).all()
+    sessions = Session.query.filter_by(user_id=user.id).order_by(Session.date).all()
+    meal_plans = MealPlan.query.filter_by(user_id=user.id).all()
+    shopping_lists = ShoppingList.query.filter_by(user_id=user.id).all()
+
+    def session_with_exercises(s):
+        d = s.to_dict()
+        d["sets"] = [
+            {**set_obj.to_dict(),
+             "exercise_name": set_obj.exercise.name if set_obj.exercise else None}
+            for set_obj in s.sets
+        ]
+        return d
+
+    payload = {
+        "exporter": "Agent IA Fitness",
+        "exported_at": date.today().isoformat(),
+        "user": user.to_dict(),
+        "weight_entries": [e.to_dict() for e in
+                           WeightEntry.query.filter_by(user_id=user.id).order_by(WeightEntry.date).all()],
+        "training_programs": [p.to_dict() for p in programs],
+        "sessions": [session_with_exercises(s) for s in sessions],
+        "meal_plans": [mp.to_dict() for mp in meal_plans],
+        "shopping_lists": [sl.to_dict() for sl in shopping_lists],
+    }
+    return jsonify(payload), 200
+
+
+@profile_bp.route("/account", methods=["DELETE"])
+def delete_account():
+    user = current_user()
+    if not user:
+        return jsonify({"error": "Non authentifié"}), 401
+
+    for mp in MealPlan.query.filter_by(user_id=user.id).all():
+        db.session.delete(mp)
+    for sl in ShoppingList.query.filter_by(user_id=user.id).all():
+        db.session.delete(sl)
+    for s in Session.query.filter_by(user_id=user.id).all():
+        db.session.delete(s)
+    for p in TrainingProgram.query.filter_by(user_id=user.id).all():
+        db.session.delete(p)
+    for e in WeightEntry.query.filter_by(user_id=user.id).all():
+        db.session.delete(e)
+    db.session.delete(user)
+    db.session.commit()
+
+    session.clear()
+    return jsonify({"message": "Compte et données supprimés"}), 200

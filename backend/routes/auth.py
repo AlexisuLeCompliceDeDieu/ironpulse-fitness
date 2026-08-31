@@ -54,5 +54,5 @@ def me():
     user_id = session.get("user_id")
     if not user_id:
         return jsonify({"error": "Non authentifié"}), 401
-    user = User.query.get(user_id)
+    user = db.session.get(User, user_id)
     return jsonify({"user": user.to_dict()}), 200

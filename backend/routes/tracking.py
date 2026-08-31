@@ -10,7 +10,7 @@ def current_user():
     if not user_id:
         return None
     from models import User
-    return User.query.get(user_id)
+    return db.session.get(User, user_id)
 
 
 @tracking_bp.route("/sessions", methods=["POST"])

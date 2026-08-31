@@ -51,3 +51,27 @@ def test_exercise_progress_after_session(auth_client):
     data = auth_client.get(f"/api/progress/exercises/{ex_id}").get_json()["data"]
     assert len(data) == 1
     assert data[0]["max_weight"] == 60
+
+
+def test_adaptation_requires_auth(client):
+    resp = client.get("/api/progress/adaptation")
+    assert resp.status_code == 401
+
+
+def test_adaptation_no_sessions(auth_client):
+    resp = auth_client.get("/api/progress/adaptation")
+    assert resp.status_code == 200
+    assert resp.get_json()["adaptation"] == []
+
+
+def test_adaptation_low_feeling_warns_deload(auth_client):
+    auth_client.post("/api/training/program/generate")
+    program = auth_client.get("/api/training/program/current").get_json()["program"]
+    day_id = program["days"][0]["id"]
+    ex_id = program["days"][0]["exercises"][0]["exercise"]["id"]
+    auth_client.post(
+        "/api/tracking/sessions",
+        json={"program_day_id": day_id, "feeling": 1, "sets": [{"exercise_id": ex_id, "set_number": 1, "weight": 20, "reps": 8}]},
+    )
+    adaptation = auth_client.get("/api/progress/adaptation").get_json()["adaptation"]
+    assert any(a["type"] == "warning" for a in adaptation)

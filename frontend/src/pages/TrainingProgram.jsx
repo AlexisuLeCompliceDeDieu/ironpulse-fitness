@@ -1,10 +1,18 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import api from "../api.js";
 
 export default function TrainingProgram({ user }) {
   const [program, setProgram] = useState(null);
+  const [presets, setPresets] = useState([]);
+  const [selectedGoal, setSelectedGoal] = useState(null);
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
+
+  useEffect(() => {
+    api.get("/training/presets")
+      .then((res) => setPresets(res.data.presets || []))
+      .catch(() => setPresets([]));
+  }, []);
 
   const loadProgram = async () => {
     setLoading(true);
@@ -19,26 +27,60 @@ export default function TrainingProgram({ user }) {
     }
   };
 
+  const generate = async (goal) => {
+    setLoading(true);
+    setMessage("");
+    try {
+      const res = await api.post("/training/program/generate", { goal });
+      setMessage(res.data.message);
+      setProgram(res.data.program);
+    } catch (e) {
+      setMessage(e.response?.data?.error || "Erreur");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   if (!program && !loading) {
     return (
       <div className="container">
         <h1 className="page-title">Programme d'entraînement</h1>
+
         <div className="card">
+          <h3>Choisissez votre objectif</h3>
           <p className="muted">
-            Générer un programme personnalisé sur un mois selon votre objectif ({user.goal}) et votre niveau ({user.level}).
+            L'agent génère un programme mensuel personnalisé selon votre objectif (niveau : {user.level}).
           </p>
-          <button className="btn" onClick={async () => {
-            setLoading(true);
-            try {
-              const res = await api.post("/training/program/generate");
-              setMessage(res.data.message);
-              setProgram(res.data.program);
-            } catch (e) {
-              setMessage(e.response?.data?.error || "Erreur");
-            } finally {
-              setLoading(false);
-            }
-          }}>
+          <div className="grid grid-2">
+            {presets.map((p) => (
+              <div
+                key={p.goal}
+                className="card"
+                style={{
+                  margin: 0,
+                  cursor: "pointer",
+                  borderColor: selectedGoal === p.goal ? "var(--primary)" : "var(--border)",
+                }}
+                onClick={() => setSelectedGoal(p.goal)}
+              >
+                <h4 style={{ marginTop: 0 }}>{p.label}</h4>
+                <p className="muted" style={{ margin: "0.25rem 0" }}>
+                  {p.days_per_week} séances/semaine
+                </p>
+                <div style={{ fontSize: "0.85rem" }}>
+                  {p.days.map((d) => (
+                    <span key={d} className="badge">{d}</span>
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
+          <button
+            className="btn"
+            style={{ marginTop: "1rem" }}
+            disabled={!selectedGoal}
+            onClick={() => generate(selectedGoal)}
+          >
             {loading ? "Génération..." : "Générer mon programme"}
           </button>
           {message && <p style={{ marginTop: "0.75rem" }}>{message}</p>}
@@ -54,7 +96,7 @@ export default function TrainingProgram({ user }) {
   return (
     <div className="container">
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-        <h1 className="page-title">Programme : {program.goal}</h1>
+        <h1 className="page-title">Programme : {goalLabel(program.goal)}</h1>
         <button className="btn btn-secondary" onClick={loadProgram}>Rafraîchir</button>
       </div>
       <p className="muted">
@@ -81,4 +123,15 @@ export default function TrainingProgram({ user }) {
       ))}
     </div>
   );
+}
+
+const GOAL_LABELS = {
+  prise_masse: "Prise de masse",
+  perte_poids: "Perte de poids",
+  force: "Développement de la force",
+  endurance: "Amélioration de l'endurance",
+};
+
+function goalLabel(goal) {
+  return GOAL_LABELS[goal] || goal;
 }

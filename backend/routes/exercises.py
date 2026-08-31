@@ -24,7 +24,7 @@ def list_exercises():
 
 @exercises_bp.route("/<int:exercise_id>", methods=["GET"])
 def get_exercise(exercise_id):
-    exercise = Exercise.query.get(exercise_id)
+    exercise = db.session.get(Exercise, exercise_id)
     if not exercise:
         return jsonify({"error": "Exercice introuvable"}), 404
     return jsonify({"exercise": exercise.to_dict()}), 200
@@ -32,7 +32,7 @@ def get_exercise(exercise_id):
 
 @exercises_bp.route("/<int:exercise_id>/alternatives", methods=["GET"])
 def get_alternatives(exercise_id):
-    exercise = Exercise.query.get(exercise_id)
+    exercise = db.session.get(Exercise, exercise_id)
     if not exercise:
         return jsonify({"error": "Exercice introuvable"}), 404
 

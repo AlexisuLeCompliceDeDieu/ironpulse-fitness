@@ -13,11 +13,13 @@ export default function Dashboard({ user }) {
   const [program, setProgram] = useState(null);
   const [stats, setStats] = useState(null);
   const [advice, setAdvice] = useState([]);
+  const [adaptation, setAdaptation] = useState([]);
 
   useEffect(() => {
     api.get("/training/program/current").then((res) => setProgram(res.data.program)).catch(() => setProgram(null));
     api.get("/progress/stats").then((res) => setStats(res.data)).catch(() => setStats(null));
     api.get("/progress/advice").then((res) => setAdvice(res.data.advice || [])).catch(() => setAdvice([]));
+    api.get("/progress/adaptation").then((res) => setAdaptation(res.data.adaptation || [])).catch(() => setAdaptation([]));
   }, []);
 
   const today = new Date().getDay();
@@ -75,6 +77,31 @@ export default function Dashboard({ user }) {
         <div className="card">
           <h3>💡 Recommandations personnalisées</h3>
           {advice.map((a, i) => (
+            <div
+              key={i}
+              style={{
+                padding: "0.6rem 0.8rem",
+                marginBottom: "0.5rem",
+                borderRadius: "8px",
+                borderLeft: "4px solid",
+                borderColor:
+                  a.type === "warning" ? "var(--danger)"
+                  : a.type === "success" ? "var(--success)"
+                  : "var(--primary)",
+                background: "var(--bg)",
+                fontSize: "0.95rem",
+              }}
+            >
+              {a.text}
+            </div>
+          ))}
+        </div>
+      )}
+
+      {adaptation.length > 0 && (
+        <div className="card">
+          <h3>📈 Ajustement de la prochaine séance</h3>
+          {adaptation.map((a, i) => (
             <div
               key={i}
               style={{

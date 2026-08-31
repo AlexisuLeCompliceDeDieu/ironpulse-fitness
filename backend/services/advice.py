@@ -111,3 +111,77 @@ def generate_advice(user, stats=None, weight_entries=None):
         })
 
     return advice
+
+
+def generate_adaptation(sessions):
+    """Adaptation dynamique : analyse l'évolution des charges par exercice
+    et le ressenti moyen pour recommander l'intensité de la prochaine séance.
+
+    Retourne une liste de recommandations (dict {type, text}).
+    """
+    recommendations = []
+    if not sessions:
+        return recommendations
+
+    from collections import defaultdict
+    by_exercise = defaultdict(list)
+    for s in sorted(sessions, key=lambda x: x.date):
+        per_exercise = {}
+        for set_obj in s.sets:
+            name = set_obj.exercise.name if set_obj.exercise else "Exercice"
+            w = set_obj.weight or 0
+            if name not in per_exercise or w > per_exercise[name]:
+                per_exercise[name] = w
+        for name, w in per_exercise.items():
+            by_exercise[name].append((s.date, w))
+
+    progressing = []
+    stalled = []
+    for name, series in by_exercise.items():
+        if len(series) >= 2:
+            first_w = series[0][1]
+            last_w = series[-1][1]
+            if last_w > first_w:
+                progressing.append(name)
+            elif last_w == first_w and last_w > 0:
+                stalled.append(name)
+
+    avg_feeling = sum(s.feeling for s in sessions) / len(sessions)
+
+    if avg_feeling <= 2:
+        recommendations.append({
+            "type": "warning",
+            "text": (
+                f"Ressenti moyen {avg_feeling:.1f}/5 : vos derniers efforts sont très "
+                f"éprouvants. Prévoyez une séance de récupération active ou réduisez le "
+                f"volume d'environ 20% lors de la prochaine séance pour éviter le surentraînement."
+            ),
+        })
+    elif avg_feeling >= 4.5 and progressing:
+        names = ", ".join(progressing[:3])
+        recommendations.append({
+            "type": "success",
+            "text": (
+                f"Bonne dynamique, vos charges progressent sur : {names}. Vous pouvez "
+                f"augmenter la charge de 2,5 à 5 % sur ces exercices pour continuer la surcharge progressive."
+            ),
+        })
+    elif stalled:
+        names = ", ".join(stalled[:3])
+        recommendations.append({
+            "type": "info",
+            "text": (
+                f"Charges stables sur : {names}. Variez les répétitions, l'ordre des exercices "
+                f"ou ajoutez une série pour relancer la progression musculaire."
+            ),
+        })
+    else:
+        recommendations.append({
+            "type": "info",
+            "text": (
+                "L'intensité globale semble équilibrée. Visez une progression légère et "
+                "régulière (poids, répétitions ou volume) à chaque séance."
+            ),
+        })
+
+    return recommendations
