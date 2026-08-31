@@ -24,6 +24,14 @@ const EQUIPMENT = [
   { value: "corde", label: "Corde à sauter" },
 ];
 
+const DIETARY = [
+  { value: "vegetarien", label: "Végétarien" },
+  { value: "vegan", label: "Végan" },
+  { value: "sans_lactose", label: "Sans lactose" },
+  { value: "sans_gluten", label: "Sans gluten" },
+  { value: "sans_noix", label: "Sans noix" },
+];
+
 export default function Profile({ user, onUpdate }) {
   const [form, setForm] = useState({
     goal: user.goal,
@@ -34,6 +42,7 @@ export default function Profile({ user, onUpdate }) {
     age: user.age,
     daily_calories: user.daily_calories,
     available_equipment: user.available_equipment || [],
+    dietary_preferences: user.dietary_preferences || [],
   });
   const [weightEntry, setWeightEntry] = useState("");
   const [message, setMessage] = useState("");
@@ -45,6 +54,13 @@ export default function Profile({ user, onUpdate }) {
       ? form.available_equipment.filter((v) => v !== value)
       : [...form.available_equipment, value];
     setForm({ ...form, available_equipment: list });
+  };
+
+  const toggleDietary = (value) => {
+    const list = form.dietary_preferences.includes(value)
+      ? form.dietary_preferences.filter((v) => v !== value)
+      : [...form.dietary_preferences, value];
+    setForm({ ...form, dietary_preferences: list });
   };
 
   const save = async () => {
@@ -156,6 +172,25 @@ export default function Profile({ user, onUpdate }) {
                   onChange={() => toggleEquipment(eq.value)}
                 />
                 {eq.label}
+              </label>
+            ))}
+          </div>
+        </div>
+        <div className="form-group">
+          <label>Préférences alimentaires</label>
+          <p className="muted" style={{ fontSize: "0.85rem", margin: "0 0 0.5rem 0" }}>
+            Les repas générés excluront les aliments incompatibles.
+          </p>
+          <div className="grid grid-2">
+            {DIETARY.map((d) => (
+              <label key={d.value} style={{ display: "flex", alignItems: "center", gap: "0.5rem", fontWeight: 400 }}>
+                <input
+                  type="checkbox"
+                  style={{ width: "auto", margin: 0 }}
+                  checked={form.dietary_preferences.includes(d.value)}
+                  onChange={() => toggleDietary(d.value)}
+                />
+                {d.label}
               </label>
             ))}
           </div>

@@ -45,9 +45,10 @@ def exercise_progress(exercise_id):
         session = db.session.get(Session, record.session_id)
         key = session.date.isoformat()
         if key not in data:
-            data[key] = {"date": key, "max_weight": 0, "total_volume": 0, "sets": 0}
+            data[key] = {"date": key, "max_weight": 0, "total_volume": 0, "total_reps": 0, "sets": 0}
         data[key]["max_weight"] = max(data[key]["max_weight"], record.weight or 0)
         data[key]["total_volume"] += (record.weight or 0) * (record.reps or 0)
+        data[key]["total_reps"] += record.reps or 0
         data[key]["sets"] += 1
 
     return jsonify({"data": list(data.values())}), 200

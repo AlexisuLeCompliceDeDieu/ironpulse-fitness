@@ -36,10 +36,30 @@ def create_app():
         app.register_blueprint(nutrition_bp, url_prefix="/api/nutrition")
 
         db.create_all()
+        _migrate_columns()
         seed_exercises()
         seed_foods()
+        _run_backup()
 
     return app
+
+
+def _run_backup():
+    from services import backup
+    backup.run_backup()
+
+
+def _migrate_columns():
+    from sqlalchemy import inspect, text
+    inspector = inspect(db.engine)
+    columns_u = [c["name"] for c in inspector.get_columns("users")]
+    if "dietary_preferences" not in columns_u:
+        db.session.execute(text('ALTER TABLE users ADD COLUMN dietary_preferences TEXT DEFAULT "[]"'))
+        db.session.commit()
+    columns_f = [c["name"] for c in inspector.get_columns("foods")]
+    if "tags" not in columns_f:
+        db.session.execute(text('ALTER TABLE foods ADD COLUMN tags TEXT DEFAULT "[]"'))
+        db.session.commit()
 
 
 def seed_exercises():
@@ -66,6 +86,16 @@ def seed_foods():
     import os
 
     if Food.query.count() > 0:
+        data_path = os.path.join(os.path.dirname(__file__), "data", "foods.json")
+        with open(data_path, "r", encoding="utf-8") as f:
+            foods = json.load(f)
+        existing = {f.name: f for f in Food.query.all()}
+        for fd in foods:
+            if fd["name"] in existing:
+                obj = existing[fd["name"]]
+                if not getattr(obj, "tags", None):
+                    obj.tags = fd.get("tags", "[]")
+        db.session.commit()
         return
 
     data_path = os.path.join(os.path.dirname(__file__), "data", "foods.json")

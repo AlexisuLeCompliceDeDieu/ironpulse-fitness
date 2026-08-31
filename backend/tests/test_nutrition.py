@@ -48,3 +48,34 @@ def test_generate_shopping_list(auth_client):
 def test_shopping_list_requires_plan(auth_client):
     resp = auth_client.post("/api/nutrition/shopping-list/generate", json={})
     assert resp.status_code == 404
+
+
+def test_foods_expose_tags(client):
+    resp = client.get("/api/nutrition/foods")
+    foods = resp.get_json()["foods"]
+    assert "tags" in foods[0]
+    assert any("lactier" in f["tags"] for f in foods)
+    assert any("viande" in f["tags"] for f in foods)
+
+
+def test_plan_menu_excludes_vegan_forbidden(auth_client):
+    # Utilisateur végan : aucun repas ne doit contenir viande, poisson, oeuf ou lactier
+    auth_client.put("/api/profile/", json={"dietary_preferences": ["vegan"]})
+    resp = auth_client.post("/api/nutrition/plan/generate", json={"num_days": 7})
+    assert resp.status_code == 201
+    plan = resp.get_json()["plan"]
+    forbidden = {"Blanc de poulet", "Saumon", "Œufs", "Protéine en poudre (whey)", "Yaourt grec"}
+    for meal in plan["meals"]:
+        names = {it["food_name"] for it in meal["items"] if it.get("food_name")}
+        assert not (names & forbidden), f"Repas incompatible végan: {names}"
+
+
+def test_plan_menu_excludes_sans_lactose(auth_client):
+    auth_client.put("/api/profile/", json={"dietary_preferences": ["sans_lactose"]})
+    resp = auth_client.post("/api/nutrition/plan/generate", json={"num_days": 7})
+    assert resp.status_code == 201
+    plan = resp.get_json()["plan"]
+    lactier = {"Protéine en poudre (whey)", "Yaourt grec"}
+    for meal in plan["meals"]:
+        names = {it["food_name"] for it in meal["items"] if it.get("food_name")}
+        assert not (names & lactier), f"Repas incompatible sans lactose: {names}"

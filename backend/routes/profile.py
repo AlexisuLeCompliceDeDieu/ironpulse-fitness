@@ -41,6 +41,12 @@ def update_profile():
             import json
             user.available_equipment = json.dumps(list(dict.fromkeys(eq)))
 
+    if "dietary_preferences" in data:
+        prefs = data["dietary_preferences"]
+        if isinstance(prefs, list):
+            import json
+            user.dietary_preferences = json.dumps(list(dict.fromkeys(prefs)))
+
     db.session.commit()
     return jsonify({"message": "Profil mis à jour", "user": user.to_dict()}), 200
 

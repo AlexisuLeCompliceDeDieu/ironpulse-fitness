@@ -22,6 +22,7 @@ class User(db.Model):
     age = db.Column(db.Integer, default=25)
     daily_calories = db.Column(db.Integer, default=2500)
     available_equipment = db.Column(db.Text, default="[]")  # JSON list of equipment names
+    dietary_preferences = db.Column(db.Text, default="[]")  # JSON list: vegetarien, vegan, sans_lactose, sans_gluten, sans_noix
 
     programs = db.relationship("TrainingProgram", backref="user", lazy=True)
     sessions = db.relationship("Session", backref="user", lazy=True)
@@ -31,6 +32,13 @@ class User(db.Model):
         import json
         try:
             return json.loads(self.available_equipment or "[]")
+        except (ValueError, TypeError):
+            return []
+
+    def preferences_list(self):
+        import json
+        try:
+            return json.loads(self.dietary_preferences or "[]")
         except (ValueError, TypeError):
             return []
 
@@ -53,6 +61,7 @@ class User(db.Model):
             "age": self.age,
             "daily_calories": self.daily_calories,
             "available_equipment": self.equipment_list(),
+            "dietary_preferences": self.preferences_list(),
             "created_at": self.created_at.isoformat(),
         }
 
@@ -226,6 +235,7 @@ class Food(db.Model):
     protein = db.Column(db.Float, default=0)
     carbs = db.Column(db.Float, default=0)
     fat = db.Column(db.Float, default=0)
+    tags = db.Column(db.Text, default="[]")  # JSON list: viande, poisson, lactier, gluten, noix, oeuf
 
     def to_dict(self):
         return {
@@ -236,7 +246,15 @@ class Food(db.Model):
             "protein": self.protein,
             "carbs": self.carbs,
             "fat": self.fat,
+            "tags": self.tags_list(),
         }
+
+    def tags_list(self):
+        import json
+        try:
+            return json.loads(self.tags or "[]")
+        except (ValueError, TypeError):
+            return []
 
 
 class MealPlan(db.Model):

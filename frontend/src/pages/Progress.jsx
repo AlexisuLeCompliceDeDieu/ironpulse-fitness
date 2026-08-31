@@ -58,6 +58,13 @@ export default function Progress({ user }) {
         fill: true,
       },
       {
+        label: "Répétitions totales",
+        data: exerciseData.map((d) => d.total_reps),
+        borderColor: "#d97706",
+        backgroundColor: "rgba(217, 119, 6, 0.1)",
+        fill: false,
+      },
+      {
         label: "Volume total (kg)",
         data: exerciseData.map((d) => d.total_volume),
         borderColor: "#dc2626",
@@ -67,6 +74,16 @@ export default function Progress({ user }) {
       },
     ],
   };
+
+  const comparison = exerciseData && exerciseData.length >= 2
+    ? {
+        first: exerciseData[0],
+        last: exerciseData[exerciseData.length - 1],
+        deltaWeight: exerciseData[exerciseData.length - 1].max_weight - exerciseData[0].max_weight,
+        deltaReps: exerciseData[exerciseData.length - 1].total_reps - exerciseData[0].total_reps,
+        deltaVolume: exerciseData[exerciseData.length - 1].total_volume - exerciseData[0].total_volume,
+      }
+    : null;
 
   return (
     <div className="container">
@@ -95,6 +112,50 @@ export default function Progress({ user }) {
           <p className="muted">Aucune donnée pour cet exercice.</p>
         )}
       </div>
+
+      {comparison && (
+        <div className="card">
+          <h3>Comparaison de vos performances</h3>
+          <div className="grid grid-3" style={{ marginTop: "0.5rem" }}>
+            <div>
+              <p className="muted">Poids max</p>
+              <p>
+                {comparison.first.max_weight} kg → <strong>{comparison.last.max_weight} kg</strong>
+                {comparison.deltaWeight !== 0 && (
+                  <span className={comparison.deltaWeight > 0 ? "text-success" : "text-danger"}>
+                    {" "}({comparison.deltaWeight > 0 ? "+" : ""}{comparison.deltaWeight} kg)
+                  </span>
+                )}
+              </p>
+            </div>
+            <div>
+              <p className="muted">Répétitions</p>
+              <p>
+                {comparison.first.total_reps} → <strong>{comparison.last.total_reps}</strong>
+                {comparison.deltaReps !== 0 && (
+                  <span className={comparison.deltaReps > 0 ? "text-success" : "text-danger"}>
+                    {" "}({comparison.deltaReps > 0 ? "+" : ""}{comparison.deltaReps})
+                  </span>
+                )}
+              </p>
+            </div>
+            <div>
+              <p className="muted">Volume total</p>
+              <p>
+                {comparison.first.total_volume} → <strong>{comparison.last.total_volume} kg</strong>
+                {comparison.deltaVolume !== 0 && (
+                  <span className={comparison.deltaVolume > 0 ? "text-success" : "text-danger"}>
+                    {" "}({comparison.deltaVolume > 0 ? "+" : ""}{comparison.deltaVolume} kg)
+                  </span>
+                )}
+              </p>
+            </div>
+          </div>
+          <p className="muted" style={{ fontSize: "0.85rem", marginTop: "0.5rem" }}>
+            {comparison.first.date} → {comparison.last.date}
+          </p>
+        </div>
+      )}
 
       <div className="card">
         <h3>Informations</h3>

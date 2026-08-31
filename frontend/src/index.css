@@ -84,6 +84,16 @@ body {
   background: var(--danger);
 }
 
+.text-success {
+  color: var(--success);
+  font-weight: 600;
+}
+
+.text-danger {
+  color: var(--danger);
+  font-weight: 600;
+}
+
 input,
 select,
 textarea {

@@ -25,12 +25,37 @@ RECIPES = [
 
 MEAL_TYPES_PER_DAY = ["Petit-déjeuner", "Déjeuner", "Collation", "Dîner"]
 
+EXCLUDED_TAGS = {
+    "vegetarien": {"viande", "poisson"},
+    "vegan": {"viande", "poisson", "oeuf", "lactier"},
+    "sans_lactose": {"lactier"},
+    "sans_gluten": {"gluten"},
+    "sans_noix": {"noix"},
+}
+
+
+def _recipe_is_compatible(recipe, user_preferences, foods_by_name):
+    excluded = set()
+    for pref in user_preferences:
+        excluded |= EXCLUDED_TAGS.get(pref, set())
+    if not excluded:
+        return True
+    for food_name, _ in recipe["items"]:
+        food = foods_by_name.get(food_name)
+        if food is None:
+            continue
+        food_tags = food.tags_list()
+        if excluded & set(food_tags):
+            return False
+    return True
+
 
 def generate_meal_plan(user, num_days, foods_by_name):
     """Génère un plan alimentaire pour `num_days` jours avec un objectif calorique."""
     from models import MealPlan, Meal, MealItem, db
 
     target_calories = user.daily_calories or 2500
+    preferences = user.preferences_list() if hasattr(user, "preferences_list") else []
 
     plan = MealPlan(
         user_id=user.id,
@@ -47,7 +72,11 @@ def generate_meal_plan(user, num_days, foods_by_name):
         pool = [r for r in RECIPES if r["meal_type"] == type_]
         if not pool:
             pool = RECIPES
-        # Préfère les recettes les moins utilisées de ce type
+        pool = [r for r in pool if _recipe_is_compatible(r, preferences, foods_by_name)]
+        if not pool:
+            pool = [r for r in RECIPES if _recipe_is_compatible(r, preferences, foods_by_name)]
+        if not pool:
+            pool = RECIPES
         pool_sorted = sorted(pool, key=lambda r: used.get(r["name"], 0))
         chosen = pool_sorted[0]
         used[chosen["name"]] = used.get(chosen["name"], 0) + 1

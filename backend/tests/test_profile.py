@@ -24,6 +24,15 @@ def test_update_equipment(auth_client):
     assert resp.get_json()["user"]["available_equipment"] == ["haltères", "barre"]
 
 
+def test_update_dietary_preferences(auth_client):
+    resp = auth_client.put("/api/profile/", json={"dietary_preferences": ["vegan", "sans_noix"]})
+    assert resp.status_code == 200
+    assert resp.get_json()["user"]["dietary_preferences"] == ["vegan", "sans_noix"]
+    # Persisté dans le profil
+    user = auth_client.get("/api/profile/").get_json()["user"]
+    assert user["dietary_preferences"] == ["vegan", "sans_noix"]
+
+
 def test_add_and_get_weight(auth_client):
     resp = auth_client.post("/api/profile/weight", json={"weight": 80.5})
     assert resp.status_code == 201
