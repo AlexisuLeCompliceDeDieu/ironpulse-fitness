@@ -1,11 +1,19 @@
 import { useState, useEffect } from "react";
 import api from "../api.js";
+import PageHero, { FIT_IMAGES } from "../components/PageHero.jsx";
 
 const MEAL_ICON = {
   "Petit-déjeuner": "🌅",
   "Déjeuner": "🍽️",
   "Collation": "🍎",
   "Dîner": "🌙",
+};
+
+const MEAL_COLORS = {
+  "Petit-déjeuner": "rgba(245,158,11,.14)",
+  "Déjeuner": "rgba(14,165,233,.14)",
+  "Collation": "rgba(34,211,238,.18)",
+  "Dîner": "rgba(236,72,153,.14)",
 };
 
 export default function Nutrition({ user }) {
@@ -71,19 +79,24 @@ export default function Nutrition({ user }) {
 
   return (
     <div className="container">
-      <div className="hero">
-        <h1>🥗 Nutrition</h1>
-        <p>Générez vos menus et listes de courses selon votre objectif calorique.</p>
-      </div>
+      <PageHero
+        title="🥗 Nutrition"
+        subtitle="Générez vos menus et listes de courses selon votre objectif calorique personnalisé."
+        image={FIT_IMAGES.nutrition}
+        tags={[`🎯 ${user.daily_calories} kcal / jour`, `🥑 Repas équilibrés`, `🛒 Liste de courses`]}
+      />
 
       {message && <div className={messageType === "error" ? "error" : "success-msg"}>{message}</div>}
 
       <div className="card">
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "1rem" }}>
           <div>
-            <h3 style={{ margin: 0 }}>🎯 Objectif calorique</h3>
-            <p className="muted" style={{ margin: "0.3rem 0 0 0" }}>
-              <strong style={{ fontSize: "1.4rem", color: "var(--primary)" }}>{user.daily_calories}</strong> kcal / jour
+            <h3 style={{ margin: 0, display: "flex", alignItems: "center", gap: "0.5rem" }}>
+              🎯 Objectif calorique
+            </h3>
+            <p style={{ margin: "0.3rem 0 0 0" }}>
+              <strong style={{ fontSize: "1.6rem", color: "var(--primary)" }}>{user.daily_calories}</strong>{" "}
+              kcal / jour
             </p>
           </div>
           <div style={{ display: "flex", gap: "0.5rem", alignItems: "end" }}>
@@ -92,7 +105,7 @@ export default function Nutrition({ user }) {
               <input type="number" min="1" max="14" value={days} onChange={(e) => setDays(Number(e.target.value))} style={{ width: "90px" }} />
             </div>
             <button className="btn" onClick={generate} disabled={loading}>
-              {loading ? "Génération..." : "⚡ Générer les menus"}
+              {loading ? "⏳ Génération..." : "⚡ Générer les menus"}
             </button>
           </div>
         </div>
@@ -100,10 +113,10 @@ export default function Nutrition({ user }) {
 
       {plan && (
         <div>
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1rem" }}>
-            <h2 className="page-title" style={{ margin: 0 }}>Plan alimentaire · {plan.num_days} jours</h2>
-            <button className="btn btn-secondary" onClick={generateList} disabled={loading}>
-              {loading ? "..." : "🛒 Liste de courses"}
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "0.5rem", margin: "0.5rem 0 1rem" }}>
+            <h2 className="page-title" style={{ margin: 0 }}>Plan alimentaire · 🗓️ {plan.num_days} jours</h2>
+            <button className="btn btn-ghost" onClick={generateList} disabled={loading}>
+              {loading ? "..." : "🛒 Générer ma liste de courses"}
             </button>
           </div>
 
@@ -111,18 +124,20 @@ export default function Nutrition({ user }) {
             {Object.keys(dailyTotals).map((dayNum) => (
               <div className="card" key={dayNum} style={{ margin: 0 }}>
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "0.6rem" }}>
-                  <h4 style={{ margin: 0 }}>Jour {dayNum}</h4>
-                  <span className="badge badge-accent">
+                  <h4 style={{ margin: 0 }}>📅 Jour {dayNum}</h4>
+                  <span className="badge badge-pink">
                     {Math.round(dailyTotals[dayNum].kcal)} kcal
                   </span>
                 </div>
-                <div className="muted" style={{ fontSize: "0.8rem", marginBottom: "0.7rem" }}>
-                  P {Math.round(dailyTotals[dayNum].protein)}g · G {Math.round(dailyTotals[dayNum].carbs)}g · L {Math.round(dailyTotals[dayNum].fat)}g
+                <div className="muted" style={{ fontSize: "0.82rem", marginBottom: "0.7rem" }}>
+                  💪 P {Math.round(dailyTotals[dayNum].protein)}g · 🍞 G {Math.round(dailyTotals[dayNum].carbs)}g · 🥑 L {Math.round(dailyTotals[dayNum].fat)}g
                 </div>
                 {plan.meals.filter((m) => m.day === Number(dayNum)).map((meal) => (
-                  <div key={meal.id} className="exercise-row" style={{ padding: "0.55rem 0" }}>
+                  <div key={meal.id} className="exercise-row" style={{ padding: "0.6rem 0.4rem" }}>
                     <div style={{ display: "flex", alignItems: "flex-start", gap: "0.6rem" }}>
-                      <span style={{ fontSize: "1.2rem" }}>{MEAL_ICON[meal.meal_type] || "🍽️"}</span>
+                      <span className="exercise-ico" style={{ background: MEAL_COLORS[meal.meal_type] || "var(--card-2)" }}>
+                        {MEAL_ICON[meal.meal_type] || "🍽️"}
+                      </span>
                       <div>
                         <div className="meal-type">{meal.meal_type}</div>
                         <strong>{meal.name}</strong>
@@ -142,16 +157,15 @@ export default function Nutrition({ user }) {
         </div>
       )}
 
-      {shoppingList && (
-        <div className="card" style={{ marginTop: "1.2rem" }}>
+      {shoppingList && shoppingList.items.length > 0 && (
+        <div className="card" style={{ marginTop: "1.3rem" }}>
           <h3 style={{ marginTop: 0 }}>🛒 Liste de courses</h3>
           <div className="grid grid-2">
             {shoppingList.items.map((item, idx) => (
-              <label key={idx} style={{ display: "flex", alignItems: "center", gap: "0.6rem", fontWeight: 500 }}>
+              <label key={idx} style={{ display: "flex", alignItems: "center", gap: "0.6rem", fontWeight: 600, background: "var(--card-2)", padding: "0.6rem 0.8rem", borderRadius: "10px" }}>
                 <input
                   type="checkbox"
-                  defaultChecked={false}
-                  style={{ width: "18px", height: "18px", margin: 0, accentColor: "var(--primary)" }}
+                  style={{ width: "20px", height: "20px", margin: 0, accentColor: "var(--primary)" }}
                 />
                 <span style={{ flex: 1 }}>{item.name}</span>
                 <span className="badge badge-warn">

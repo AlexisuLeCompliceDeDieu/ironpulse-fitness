@@ -1,7 +1,8 @@
 import { useState, useEffect } from "react";
-import { Routes, Route, Navigate, useNavigate } from "react-router-dom";
+import { Routes, Route, Navigate, useNavigate, useLocation } from "react-router-dom";
 import api from "./api.js";
 import Navbar from "./components/Navbar.jsx";
+import Footer from "./components/Footer.jsx";
 import Login from "./pages/Login.jsx";
 import Register from "./pages/Register.jsx";
 import Dashboard from "./pages/Dashboard.jsx";
@@ -11,10 +12,19 @@ import Nutrition from "./pages/Nutrition.jsx";
 import Progress from "./pages/Progress.jsx";
 import Profile from "./pages/Profile.jsx";
 
+function Fade({ location, children }) {
+  return (
+    <div key={location.key} className="page-enter">
+      {children}
+    </div>
+  );
+}
+
 export default function App() {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
+  const location = useLocation();
 
   useEffect(() => {
     api
@@ -34,26 +44,33 @@ export default function App() {
     return <div className="center-page">Chargement...</div>;
   }
 
-  return (
-    <div className="app">
-      {user && <Navbar user={user} onLogout={logout} />}
-      <Routes>
-        <Route
-          path="/login"
-          element={user ? <Navigate to="/" /> : <Login onAuth={setUser} />}
-        />
-        <Route
-          path="/register"
-          element={user ? <Navigate to="/" /> : <Register onAuth={setUser} />}
-        />
-        <Route path="/" element={user ? <Dashboard user={user} /> : <Navigate to="/login" />} />
-        <Route path="/training" element={user ? <TrainingProgram user={user} /> : <Navigate to="/login" />} />
-        <Route path="/session" element={user ? <SessionLog user={user} /> : <Navigate to="/login" />} />
-        <Route path="/nutrition" element={user ? <Nutrition user={user} /> : <Navigate to="/login" />} />
-        <Route path="/progress" element={user ? <Progress user={user} /> : <Navigate to="/login" />} />
-        <Route path="/profile" element={user ? <Profile user={user} onUpdate={setUser} /> : <Navigate to="/login" />} />
-        <Route path="*" element={<Navigate to={user ? "/" : "/login"} />} />
-      </Routes>
-    </div>
+  const authed = user ? (
+    <>
+      <Navbar user={user} onLogout={logout} />
+      <Fade location={location}>
+        <Routes location={location}>
+          <Route path="/" element={<Dashboard user={user} />} />
+          <Route path="/training" element={<TrainingProgram user={user} />} />
+          <Route path="/session" element={<SessionLog user={user} />} />
+          <Route path="/nutrition" element={<Nutrition user={user} />} />
+          <Route path="/progress" element={<Progress user={user} />} />
+          <Route path="/profile" element={<Profile user={user} onUpdate={setUser} />} />
+          <Route path="*" element={<Navigate to="/" />} />
+        </Routes>
+      </Fade>
+      <Footer />
+    </>
+  ) : (
+    <>
+      <Fade location={location}>
+        <Routes location={location}>
+          <Route path="/login" element={<Login onAuth={setUser} />} />
+          <Route path="/register" element={<Register onAuth={setUser} />} />
+          <Route path="*" element={<Navigate to="/login" />} />
+        </Routes>
+      </Fade>
+    </>
   );
+
+  return <div className="app">{authed}</div>;
 }

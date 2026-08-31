@@ -1,11 +1,12 @@
 import { useState } from "react";
 import api from "../api.js";
+import PageHero, { FIT_IMAGES } from "../components/PageHero.jsx";
 
 const GOALS = [
-  { value: "prise_masse", label: "Prise de masse" },
-  { value: "perte_poids", label: "Perte de poids" },
-  { value: "force", label: "Développement de la force" },
-  { value: "endurance", label: "Amélioration de l'endurance" },
+  { value: "prise_masse", label: "💪 Prise de masse" },
+  { value: "perte_poids", label: "🔥 Perte de poids" },
+  { value: "force", label: "🏋️ Développement de la force" },
+  { value: "endurance", label: "🏃 Amélioration de l'endurance" },
 ];
 
 const LEVELS = [
@@ -71,7 +72,7 @@ export default function Profile({ user, onUpdate }) {
       }
       const res = await api.put("/profile/", { ...form, ...numeric });
       onUpdate(res.data.user);
-      setMessage("Profil mis à jour !");
+      setMessage("✅ Profil mis à jour !");
     } catch (err) {
       setMessage(err.response?.data?.error || "Erreur");
     }
@@ -82,7 +83,7 @@ export default function Profile({ user, onUpdate }) {
     try {
       await api.post("/profile/weight", { weight: Number(weightEntry) });
       setWeightEntry("");
-      setMessage("Poids enregistré !");
+      setMessage("✅ Poids enregistré !");
     } catch (err) {
       setMessage(err.response?.data?.error || "Erreur");
     }
@@ -118,14 +119,17 @@ export default function Profile({ user, onUpdate }) {
 
   return (
     <div className="container">
-      <div className="hero">
-        <h1>👤 Profil</h1>
-        <p>Gérez vos objectifs, vos données personnelles et vos préférences.</p>
-      </div>
+      <PageHero
+        title="👤 Votre profil"
+        subtitle="Gérez vos objectifs, vos données personnelles et vos préférences."
+        image={FIT_IMAGES.profile}
+        tags={[`👋 ${user.username}`, `🎚️ ${form.level}`, `🎯 ${(GOALS.find(g => g.value === form.goal) || {}).label || form.goal}`]}
+      />
+
       {message && <div className="success-msg">{message}</div>}
 
       <div className="card">
-        <h3>Objectifs</h3>
+        <h3 style={{ marginTop: 0 }}>🎯 Objectifs personnels</h3>
         <div className="grid grid-2">
           <div className="form-group">
             <label>Objectif</label>
@@ -160,49 +164,53 @@ export default function Profile({ user, onUpdate }) {
             <input name="daily_calories" type="number" value={form.daily_calories} onChange={onChange} />
           </div>
         </div>
-        <div className="form-group">
-          <label>Matériel disponible à votre salle</label>
-          <p className="muted" style={{ fontSize: "0.85rem", margin: "0 0 0.5rem 0" }}>
-            Le programme n'inclura que les exercices réalisables avec ce matériel.
-          </p>
-          <div className="grid grid-2">
-            {EQUIPMENT.map((eq) => (
-              <label key={eq.value} style={{ display: "flex", alignItems: "center", gap: "0.5rem", fontWeight: 400 }}>
-                <input
-                  type="checkbox"
-                  style={{ width: "auto", margin: 0 }}
-                  checked={form.available_equipment.includes(eq.value)}
-                  onChange={() => toggleEquipment(eq.value)}
-                />
-                {eq.label}
-              </label>
-            ))}
-          </div>
-        </div>
-        <div className="form-group">
-          <label>Préférences alimentaires</label>
-          <p className="muted" style={{ fontSize: "0.85rem", margin: "0 0 0.5rem 0" }}>
-            Les repas générés excluront les aliments incompatibles.
-          </p>
-          <div className="grid grid-2">
-            {DIETARY.map((d) => (
-              <label key={d.value} style={{ display: "flex", alignItems: "center", gap: "0.5rem", fontWeight: 400 }}>
-                <input
-                  type="checkbox"
-                  style={{ width: "auto", margin: 0 }}
-                  checked={form.dietary_preferences.includes(d.value)}
-                  onChange={() => toggleDietary(d.value)}
-                />
-                {d.label}
-              </label>
-            ))}
-          </div>
-        </div>
-        <button className="btn" onClick={save}>Enregistrer</button>
+        <button className="btn" onClick={save}>💾 Enregistrer</button>
       </div>
 
       <div className="card">
-        <h3>Enregistrer mon poids du jour</h3>
+        <h3 style={{ marginTop: 0 }}>🧰 Matériel disponible à votre salle</h3>
+        <p className="muted" style={{ fontSize: "0.85rem", margin: "0 0 0.8rem 0" }}>
+          Le programme n'inclura que les exercices réalisables avec ce matériel.
+        </p>
+        <div className="grid grid-2">
+          {EQUIPMENT.map((eq) => (
+            <label key={eq.value} className="soft-card" style={{ display: "flex", alignItems: "center", gap: "0.5rem", fontWeight: 600, padding: "0.7rem 0.9rem", borderRadius: "10px", cursor: "pointer" }}>
+              <input
+                type="checkbox"
+                style={{ width: "20px", height: "20px", margin: 0, accentColor: "var(--primary)" }}
+                checked={form.available_equipment.includes(eq.value)}
+                onChange={() => toggleEquipment(eq.value)}
+              />
+              {eq.label}
+            </label>
+          ))}
+        </div>
+        <button className="btn btn-secondary" style={{ marginTop: "0.8rem" }} onClick={save}>💾 Enregistrer</button>
+      </div>
+
+      <div className="card">
+        <h3 style={{ marginTop: 0 }}>🥗 Préférences alimentaires</h3>
+        <p className="muted" style={{ fontSize: "0.85rem", margin: "0 0 0.8rem 0" }}>
+          Les repas générés excluront les aliments incompatibles.
+        </p>
+        <div className="grid grid-2">
+          {DIETARY.map((d) => (
+            <label key={d.value} className="soft-card" style={{ display: "flex", alignItems: "center", gap: "0.5rem", fontWeight: 600, padding: "0.7rem 0.9rem", borderRadius: "10px", cursor: "pointer" }}>
+              <input
+                type="checkbox"
+                style={{ width: "20px", height: "20px", margin: 0, accentColor: "var(--accent)" }}
+                checked={form.dietary_preferences.includes(d.value)}
+                onChange={() => toggleDietary(d.value)}
+              />
+              {d.label}
+            </label>
+          ))}
+        </div>
+        <button className="btn btn-secondary" style={{ marginTop: "0.8rem" }} onClick={save}>💾 Enregistrer</button>
+      </div>
+
+      <div className="card soft-card">
+        <h3 style={{ marginTop: 0 }}>⚖️ Enregistrer mon poids du jour</h3>
         <div style={{ display: "flex", gap: "0.5rem" }}>
           <input type="number" placeholder="Poids (kg)" value={weightEntry} onChange={(e) => setWeightEntry(e.target.value)} />
           <button className="btn btn-secondary" onClick={addWeight}>Ajouter</button>
@@ -210,14 +218,14 @@ export default function Profile({ user, onUpdate }) {
       </div>
 
       <div className="card">
-        <h3>Vos données (RGPD)</h3>
+        <h3 style={{ marginTop: 0 }}>🛡️ Vos données (RGPD)</h3>
         <p className="muted" style={{ fontSize: "0.9rem" }}>
           Conformément au RGPD, vous pouvez exporter l'ensemble de vos données personnelles ou supprimer
           définitivement votre compte.
         </p>
         <div style={{ display: "flex", gap: "0.5rem", flexWrap: "wrap" }}>
-          <button className="btn btn-secondary" onClick={exportData}>Exporter mes données</button>
-          <button className="btn btn-danger" onClick={deleteAccount}>Supprimer mon compte</button>
+          <button className="btn btn-secondary" onClick={exportData}>📤 Exporter mes données</button>
+          <button className="btn btn-danger" onClick={deleteAccount}>🗑️ Supprimer mon compte</button>
         </div>
       </div>
     </div>

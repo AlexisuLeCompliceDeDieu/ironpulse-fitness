@@ -22,6 +22,16 @@ def register():
 
     user = User(username=username, email=email)
     user.set_password(password)
+    user.goal = data.get("goal", user.goal)
+    user.level = data.get("level", user.level)
+    if data.get("weight") is not None:
+        user.weight = data["weight"]
+    if data.get("target_weight") is not None:
+        user.target_weight = data["target_weight"]
+    if data.get("height") is not None:
+        user.height = data["height"]
+    if data.get("age") is not None:
+        user.age = data["age"]
     db.session.add(user)
     db.session.commit()
 
