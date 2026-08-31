@@ -104,14 +104,18 @@ export default function TrainingProgram({ user }) {
       </p>
       {program.days.map((day) => (
         <div className="card day-card" key={day.id}>
-          <h3 style={{ marginTop: 0 }}>Jour {day.day_number} : {day.name}</h3>
+          <h3 style={{ marginTop: 0 }}>
+            Jour {day.day_number} : {day.name}
+            <span className="badge" style={{ marginLeft: "0.5rem" }}>⏱ {formatDuration(dayMinutes(day))}</span>
+          </h3>
           {day.exercises.map((pe) => (
             <div className="exercise-row" key={pe.id}>
               <div>
                 <strong>{pe.exercise.name}</strong>
                 <div className="muted" style={{ fontSize: "0.85rem" }}>
                   {pe.sets} séries × {pe.reps} reps · repos {pe.rest_seconds}s ·{" "}
-                  matériel : {pe.exercise.equipment_needed}
+                  matériel : {pe.exercise.equipment_needed} ·{" "}
+                  <span>⏱ {formatDuration(exerciseMinutes(pe))}</span>
                 </div>
               </div>
               <div>
@@ -123,6 +127,31 @@ export default function TrainingProgram({ user }) {
       ))}
     </div>
   );
+}
+
+const EFFORT_SEC_PER_REP = 3;
+const WARMUP_MIN = 5;
+const TRANSITION_MIN = 0.75;
+
+function exerciseMinutes(pe) {
+  const effortMin = (pe.reps * EFFORT_SEC_PER_REP * pe.sets) / 60;
+  const restMin = (pe.sets - 1) * (pe.rest_seconds / 60);
+  return Math.max(1, effortMin + restMin);
+}
+
+function dayMinutes(day) {
+  const ex = day.exercises.map((pe) => pe.sets * (pe.reps * EFFORT_SEC_PER_REP / 60) + (pe.sets - 1) * (pe.rest_seconds / 60));
+  const total = ex.reduce((a, b) => a + b, 0);
+  const transitions = Math.max(0, day.exercises.length - 1) * TRANSITION_MIN;
+  return Math.max(1, Math.round(total + transitions + WARMUP_MIN));
+}
+
+function formatDuration(min) {
+  const m = Math.round(min);
+  if (m < 60) return `${m} min`;
+  const h = Math.floor(m / 60);
+  const rest = m % 60;
+  return rest > 0 ? `${h}h${rest}` : `${h}h`;
 }
 
 const GOAL_LABELS = {

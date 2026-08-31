@@ -99,7 +99,7 @@ export default function SessionLog() {
             <div className="grid grid-2">
               {program.days.map((day) => (
                 <button key={day.id} className="btn" onClick={() => startDay(day)}>
-                  Jour {day.day_number} : {day.name} ({day.exercises.length} ex.)
+                  Jour {day.day_number} : {day.name} ({day.exercises.length} ex. · ⏱ {formatDuration(dayMinutes(day))})
                 </button>
               ))}
             </div>
@@ -111,7 +111,7 @@ export default function SessionLog() {
 
       {selectedDay && completedSets && (
         <div className="card">
-          <h3>Séance : {selectedDay.name}
+          <h3>Séance : {selectedDay.name} <span className="badge">⏱ {formatDuration(dayMinutes(selectedDay))}</span>
             <button className="btn btn-secondary" style={{ float: "right" }} onClick={() => setSelectedDay(null)}>Annuler</button>
           </h3>
           {completedSets.map((grp, exIdx) => (
@@ -119,6 +119,7 @@ export default function SessionLog() {
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                 <h4 style={{ margin: "0.5rem 0" }}>{grp.pe.exercise.name}
                   <span className="badge" style={{ marginLeft: "0.5rem" }}>{grp.pe.exercise.equipment_needed}</span>
+                  <span className="badge" style={{ marginLeft: "0.5rem" }}>⏱ {formatDuration(exerciseMinutes(grp.pe))}</span>
                 </h4>
                 <button className="btn btn-outline" style={{ padding: "0.3rem 0.7rem", fontSize: "0.85rem" }}
                   onClick={() => replaceExercise(exIdx)}>
@@ -183,3 +184,27 @@ export default function SessionLog() {
 
 const thStyle = { textAlign: "left", borderBottom: "1px solid var(--border)", padding: "0.4rem" };
 const tdStyle = { textAlign: "left", padding: "0.3rem" };
+
+const EFFORT_SEC_PER_REP = 3;
+const WARMUP_MIN = 5;
+const TRANSITION_MIN = 0.75;
+
+function exerciseMinutes(pe) {
+  const effortMin = (pe.reps * EFFORT_SEC_PER_REP * pe.sets) / 60;
+  const restMin = (pe.sets - 1) * (pe.rest_seconds / 60);
+  return Math.max(1, effortMin + restMin);
+}
+
+function dayMinutes(day) {
+  const total = day.exercises.reduce((acc, pe) => acc + exerciseMinutes(pe), 0);
+  const transitions = Math.max(0, day.exercises.length - 1) * TRANSITION_MIN;
+  return Math.max(1, Math.round(total + transitions + WARMUP_MIN));
+}
+
+function formatDuration(min) {
+  const m = Math.round(min);
+  if (m < 60) return `${m} min`;
+  const h = Math.floor(m / 60);
+  const rest = m % 60;
+  return rest > 0 ? `${h}h${rest}` : `${h}h`;
+}
