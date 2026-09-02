@@ -1,7 +1,7 @@
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 
-const STORAGE_KEY = "ironpulse_tour_done_v1";
+const STORAGE_KEY = "ironpulse_tour_done_v2";
 
 /* ------------------------------------------------------------------
    Définition du parcours guidé.
@@ -51,6 +51,8 @@ export default function TourGuide({ onClose }) {
   const [fallback, setFallback] = useState(false);
   const [viewW, setViewW] = useState(window.innerWidth);
   const measureTimer = useRef(null);
+  const tooltipRef = useRef(null);
+  const [tipSize, setTipSize] = useState(null);
   const step = STEPS[index];
 
   const isMobile = viewW < 768;
@@ -74,6 +76,15 @@ export default function TourGuide({ onClose }) {
     window.addEventListener("resize", onResize);
     return () => window.removeEventListener("resize", onResize);
   }, []);
+
+  // Mesurer la taille réelle du phylactère pour le garder toujours dans l'écran
+  useLayoutEffect(() => {
+    if (!tooltipRef.current) return;
+    setTipSize({
+      w: tooltipRef.current.offsetWidth,
+      h: tooltipRef.current.offsetHeight,
+    });
+  }, [index, step]);
 
   // Naviguer vers la page de l'étape (sauf pour les étapes "center")
   useEffect(() => {
@@ -134,28 +145,38 @@ export default function TourGuide({ onClose }) {
       ]
     : null;
 
-  // Position du phylactère. Toujours calculable (fallback centre si pas de rect).
-  let tipX, tipY, tipTransform;
+  // Taille du phylactère (ou estimation avant mesure), + marge de sécurité dans l'écran
+  const tw = tipSize ? tipSize.w : Math.min(360, vw - 20);
+  const th = tipSize ? tipSize.h : 260;
+  const M = 14; // marge min. avec les bords de l'écran
+
+  // Position du phylactère : on place d'abord selon le placement, puis on CLAMPE
+  // le coin haut-gauche pour que TOUT le phylactère reste dans le viewport (sans transform).
+  let tipX, tipY;
   if (centerMode || !rect) {
-    tipX = vw / 2;
-    tipY = vh / 2 - 40;
-    tipTransform = "translate(-50%, -50%)";
+    // Centré
+    tipX = (vw - tw) / 2;
+    tipY = (vh - th) / 2;
   } else if (effPlacement === "bottom") {
-    tipX = Math.min(Math.max(rect.left + rect.width / 2, 150), vw - 150);
-    tipY = Math.max(rect.top + rect.height + 16, 70);
-    tipTransform = "translateX(-50%)";
+    tipX = rect.left + rect.width / 2 - tw / 2;
+    tipY = rect.top + rect.height + M;
   } else if (effPlacement === "top") {
-    tipX = Math.min(Math.max(rect.left + rect.width / 2, 150), vw - 150);
-    tipY = rect.top - 16;
-    tipTransform = "translateX(-50%) translateY(-100%)";
+    tipX = rect.left + rect.width / 2 - tw / 2;
+    tipY = rect.top - M - th;
   } else if (effPlacement === "left") {
-    tipX = rect.left - 16;
-    tipY = rect.top + rect.height / 2;
-    tipTransform = "translateX(-100%) translateY(-50%)";
+    tipX = rect.left - M - tw;
+    tipY = rect.top + rect.height / 2 - th / 2;
   } else { // right
-    tipX = rect.left + rect.width + 16;
-    tipY = rect.top + rect.height / 2;
-    tipTransform = "translateY(-50%)";
+    tipX = rect.left + rect.width + M;
+    tipY = rect.top + rect.height / 2 - th / 2;
+  }
+  // Clamp final : le phylactère reste entièrement visible et cliquable
+  tipX = Math.max(M, Math.min(tipX, vw - tw - M));
+  tipY = Math.max(M, Math.min(tipY, vh - th - M));
+  // Si la cible est en haut et le phylactère sous elle dépasse à l'écran, rebasculer proprement
+  if (effPlacement === "bottom" && rect && tipY + th > vh - M && rect.top - M - th > M) {
+    tipY = rect.top - M - th;
+    tipY = Math.max(M, Math.min(tipY, vh - th - M));
   }
 
   return (
@@ -178,8 +199,9 @@ export default function TourGuide({ onClose }) {
       )}
 
       <div
+        ref={tooltipRef}
         className="tour-tooltip"
-        style={{ left: tipX, top: tipY, transform: tipTransform }}
+        style={{ left: tipX, top: tipY }}
         data-placement={centerMode ? "center" : effPlacement}
       >
         <span className="tour-step-count">{index + 1} / {STEPS.length}</span>
