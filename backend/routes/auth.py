@@ -32,6 +32,13 @@ def register():
         user.height = data["height"]
     if data.get("age") is not None:
         user.age = data["age"]
+    if data.get("daily_calories") is not None:
+        user.daily_calories = int(data["daily_calories"])
+    if data.get("split_type") is not None:
+        user.split_type = data["split_type"] or None
+    if data.get("sessions_per_week") is not None:
+        val = data.get("sessions_per_week")
+        user.sessions_per_week = int(val) if val else None
 
     db.session.add(user)
     db.session.commit()

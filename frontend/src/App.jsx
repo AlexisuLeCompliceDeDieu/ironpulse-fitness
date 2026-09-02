@@ -15,6 +15,7 @@ import Profile from "./pages/Profile.jsx";
 import Machines from "./pages/Machines.jsx";
 import Social from "./pages/Social.jsx";
 import Friends from "./pages/Friends.jsx";
+import TourGuide, { isTourDone } from "./components/TourGuide.jsx";
 
 function Fade({ location, children }) {
   return (
@@ -27,6 +28,7 @@ function Fade({ location, children }) {
 export default function App() {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [showTour, setShowTour] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -37,6 +39,12 @@ export default function App() {
       .catch(() => setUser(null))
       .finally(() => setLoading(false));
   }, []);
+
+  useEffect(() => {
+    if (user && !showTour && !isTourDone()) {
+      setShowTour(true);
+    }
+  }, [user]);
 
   const logout = async () => {
     await api.post("/auth/logout");
@@ -67,6 +75,15 @@ export default function App() {
       </Fade>
       <Footer />
       <InstallPrompt />
+      <button
+        className="tour-replay"
+        onClick={() => setShowTour(true)}
+        title="Revoir le guide d'utilisation"
+        aria-label="Revoir le guide d'utilisation"
+      >
+        ❓
+      </button>
+      {showTour && <TourGuide key="tour" onClose={() => setShowTour(false)} />}
     </>
   ) : (
     <>

@@ -1388,6 +1388,87 @@ td {
   }
 }
 
+/* ============================================================
+   MESSAGES DE CONFIRMATION SOUS LES BOUTONS
+   ============================================================ */
+.save-msg {
+  margin-top: 0.7rem;
+  padding: 0.65rem 0.9rem;
+  border-radius: 12px;
+  font-weight: 600;
+  font-size: 0.9rem;
+  animation: fadeUp 0.3s var(--ease);
+}
+
+.save-msg-ok {
+  background: rgba(22, 163, 74, 0.1);
+  color: var(--success);
+  border: 1px solid rgba(22, 163, 74, 0.35);
+}
+
+.save-msg-err {
+  background: rgba(239, 68, 68, 0.1);
+  color: var(--danger);
+  border: 1px solid rgba(239, 68, 68, 0.35);
+}
+
+.confirm-modal {
+  max-width: 420px;
+  text-align: center;
+}
+
+/* ============================================================
+   FORMULAIRE D'INSCRIPTION ÉTENDU
+   ============================================================ */
+.auth-card-wide {
+  max-width: 520px;
+}
+
+.form-section {
+  margin-bottom: 1.4rem;
+}
+
+.form-section-title {
+  font-weight: 800;
+  font-size: 0.92rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--primary);
+  margin-bottom: 0.9rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 2px solid var(--border);
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.form-section-title::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background: var(--grad-primary);
+  opacity: 0.4;
+  border-radius: 1px;
+}
+
+/* Le panneau d'inscription défile si trop long sur petit écran */
+@media (max-width: 899px) {
+  .auth-page {
+    display: block;
+  }
+  .auth-main {
+    padding: 1.25rem;
+    align-items: flex-start;
+  }
+  .auth-main,
+  .auth-page {
+    overflow-y: auto;
+  }
+  .auth-main {
+    min-height: 100vh;
+  }
+}
+
 /* ====== Dasktop / tablette (>= 768px) : menu horizontal classique ====== */
 @media (min-width: 768px) {
   .mobile-tabbar {
@@ -1395,3 +1476,168 @@ td {
   }
 }
 
+
+/* ============================================================
+   GUIDE D'ONBOARDING (tour guid�)
+   ============================================================ */
+.tour-root {
+  position: fixed;
+  inset: 0;
+  z-index: 2000;
+  pointer-events: none;
+}
+
+.tour-root > * {
+  pointer-events: auto;
+}
+
+.tour-dim {
+  position: fixed;
+  background: rgba(0, 0, 0, 0.62);
+  backdrop-filter: blur(3px);
+  -webkit-backdrop-filter: blur(3px);
+  transition: all 0.3s var(--ease);
+  z-index: 2001;
+}
+
+.tour-target-frame {
+  position: fixed;
+  border: 3px solid var(--primary);
+  border-radius: 14px;
+  box-shadow:
+    0 0 0 4px rgba(249, 115, 22, 0.35),
+    0 0 28px rgba(249, 115, 22, 0.55);
+  z-index: 2002;
+  animation: tourPulse 1.6s ease-in-out infinite;
+  pointer-events: none;
+}
+
+@keyframes tourPulse {
+  0%, 100% { border-color: var(--primary); }
+  50% { border-color: #ffd0a8; }
+}
+
+.tour-arrow {
+  position: fixed;
+  width: 0;
+  height: 0;
+  border-left: 9px solid transparent;
+  border-right: 9px solid transparent;
+  border-top: 11px solid var(--primary);
+  transform: translateX(-50%);
+  z-index: 2003;
+  filter: drop-shadow(0 2px 3px rgba(0,0,0,0.4));
+}
+
+.tour-arrow[data-dir="top"] {
+  border-top: none;
+  border-bottom: 11px solid var(--primary);
+}
+
+.tour-tooltip {
+  position: fixed;
+  z-index: 2004;
+  width: min(360px, calc(100vw - 2.2rem));
+  max-height: 70vh;
+  overflow-y: auto;
+  background: var(--card);
+  border: 1px solid var(--primary);
+  border-radius: 18px;
+  padding: 1.3rem 1.4rem 1.1rem;
+  box-shadow: var(--shadow-lg), 0 0 0 4px rgba(249, 115, 22, 0.12);
+  animation: modalPop 0.35s var(--ease);
+}
+
+.tour-tooltip[data-placement="center"] {
+  text-align: center;
+}
+
+.tour-step-count {
+  display: inline-block;
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.03em;
+  color: var(--primary);
+  background: rgba(249, 115, 22, 0.12);
+  padding: 0.15rem 0.6rem;
+  border-radius: 999px;
+  margin-bottom: 0.5rem;
+}
+
+.tour-title {
+  margin: 0 0 0.5rem 0;
+  font-size: 1.2rem;
+}
+
+.tour-text {
+  margin: 0 0 1rem 0;
+  color: var(--muted);
+  font-size: 0.95rem;
+  line-height: 1.55;
+}
+
+.tour-actions {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.tour-actions .tour-next {
+  flex: 1;
+}
+
+.tour-skip {
+  display: block;
+  margin: 0.6rem auto 0;
+  background: transparent;
+  border: none;
+  color: var(--muted);
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: inherit;
+  text-decoration: underline;
+}
+
+.tour-skip:hover {
+  color: var(--text);
+}
+
+/* Bouton flottant pour relancer le guide (au-dessus de la barre du bas) */
+.tour-replay {
+  position: fixed;
+  right: 1rem;
+  bottom: calc(1rem + var(--safe-bottom));
+  z-index: 480;
+  width: 46px;
+  height: 46px;
+  border-radius: 50%;
+  background: var(--grad);
+  border: none;
+  color: #fff;
+  font-size: 1.2rem;
+  box-shadow: 0 8px 20px rgba(249, 115, 22, 0.45);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.2s var(--ease), box-shadow 0.2s;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.tour-replay:hover {
+  transform: scale(1.08);
+  box-shadow: 0 12px 26px rgba(249, 115, 22, 0.55);
+}
+
+.tour-replay:active {
+  transform: scale(0.92);
+}
+
+/* Sur mobile, le bouton passe au-dessus de la barre d'onglets */
+@media (max-width: 767px) {
+  .tour-replay {
+    bottom: calc(var(--tabbar-h) + 0.6rem);
+  }
+}

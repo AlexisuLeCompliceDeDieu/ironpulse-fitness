@@ -51,6 +51,37 @@ const DIETARY = [
   { value: "sans_noix", label: "Sans noix" },
 ];
 
+/* Petit message de confirmation affiché juste sous un bouton Enregistrer */
+function SaveMessage({ text, ok }) {
+  if (!text) return null;
+  const isError = ok === false;
+  return (
+    <div
+      className={isError ? "save-msg save-msg-err" : "save-msg save-msg-ok"}
+      role="status"
+    >
+      {isError ? "⚠️ " + text : "✅ " + text}
+    </div>
+  );
+}
+
+/* Modale de confirmation (remplacement du poids du jour) */
+function ConfirmModal({ open, onConfirm, onCancel, message }) {
+  if (!open) return null;
+  return (
+    <div className="modal-overlay" onClick={onCancel}>
+      <div className="modal-card confirm-modal" onClick={(e) => e.stopPropagation()}>
+        <h3 style={{ marginTop: 0 }}>⚖️ Changer le poids du jour ?</h3>
+        <p className="muted" style={{ marginTop: 0 }}>{message}</p>
+        <div style={{ display: "flex", gap: "0.6rem", justifyContent: "flex-end", flexWrap: "wrap" }}>
+          <button className="btn btn-secondary" onClick={onCancel}>Annuler</button>
+          <button className="btn" onClick={onConfirm}>Oui, remplacer</button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function Profile({ user, onUpdate }) {
   const [form, setForm] = useState({
     goal: user.goal,
@@ -66,7 +97,15 @@ export default function Profile({ user, onUpdate }) {
     dietary_preferences: user.dietary_preferences || [],
   });
   const [weightEntry, setWeightEntry] = useState("");
-  const [message, setMessage] = useState("");
+  const [objMsg, setObjMsg] = useState("");
+  const [objOk, setObjOk] = useState(true);
+  const [eqMsg, setEqMsg] = useState("");
+  const [eqOk, setEqOk] = useState(true);
+  const [dietMsg, setDietMsg] = useState("");
+  const [dietOk, setDietOk] = useState(true);
+  const [weightMsg, setWeightMsg] = useState("");
+  const [weightMsgOk, setWeightMsgOk] = useState(true);
+  const [confirm, setConfirm] = useState(null);
 
   const onChange = (e) => setForm({ ...form, [e.target.name]: e.target.value });
 
@@ -84,7 +123,12 @@ export default function Profile({ user, onUpdate }) {
     setForm({ ...form, dietary_preferences: list });
   };
 
-  const save = async () => {
+  const save = async (section = "obj") => {
+    const setMsg = (t, ok) => {
+      if (section === "obj") { setObjMsg(t); setObjOk(ok); }
+      else if (section === "eq") { setEqMsg(t); setEqOk(ok); }
+      else { setDietMsg(t); setDietOk(ok); }
+    };
     try {
       const numeric = {};
       for (const k of ["weight", "target_weight", "height", "age", "daily_calories"]) {
@@ -95,20 +139,50 @@ export default function Profile({ user, onUpdate }) {
       payload.sessions_per_week = form.sessions_per_week ? Number(form.sessions_per_week) : null;
       const res = await api.put("/profile/", payload);
       onUpdate(res.data.user);
-      setMessage("✅ Profil mis à jour !");
+      setMsg("Profil mis à jour !", true);
+      window.setTimeout(() => setMsg("", true), 3200);
     } catch (err) {
-      setMessage(err.response?.data?.error || "Erreur");
+      setMsg(err.response?.data?.error || "Erreur", false);
     }
   };
 
-  const addWeight = async () => {
-    if (!weightEntry) return;
+  const doAddWeight = async (replacing) => {
+    setConfirm(null);
     try {
-      await api.post("/profile/weight", { weight: Number(weightEntry) });
+      const res = await api.post("/profile/weight", { weight: Number(weightEntry) });
       setWeightEntry("");
-      setMessage("✅ Poids enregistré !");
+      const action = res.data?.action;
+      if (action === "replaced") {
+        setWeightMsg("Poids du jour mis à jour (valeur précédente remplacée)", true);
+      } else {
+        setWeightMsg("Poids du jour enregistré !", true);
+      }
+      setWeightMsgOk(true);
+      window.setTimeout(() => setWeightMsg(""), 3200);
     } catch (err) {
-      setMessage(err.response?.data?.error || "Erreur");
+      setWeightMsgOk(false);
+      setWeightMsg(err.response?.data?.error || "Erreur", false);
+    }
+  };
+
+  const handleAddWeight = async () => {
+    if (!weightEntry) return;
+    setWeightMsg("");
+    try {
+      // Vérifier s'il existe déjà un poids aujourd'hui
+      const res = await api.get("/profile/weight");
+      const today = new Date().toISOString().slice(0, 10);
+      const existing = (res.data.entries || []).find(
+        (e) => e.date && e.date.slice(0, 10) === today
+      );
+      if (existing) {
+        setConfirm(`Vous avez déjà enregistré ${existing.weight} kg aujourd'hui. Souhaitez-vous le remplacer par ${weightEntry} kg ?`);
+        return;
+      }
+      await doAddWeight(false);
+    } catch (err) {
+      setWeightMsgOk(false);
+      setWeightMsg("Impossible de vérifier le poids du jour", false);
     }
   };
 
@@ -123,7 +197,8 @@ export default function Profile({ user, onUpdate }) {
       a.click();
       URL.revokeObjectURL(url);
     } catch (err) {
-      setMessage(err.response?.data?.error || "Erreur lors de l'export");
+      setWeightMsgOk(false);
+      setWeightMsg("Erreur lors de l'export", false);
     }
   };
 
@@ -136,7 +211,8 @@ export default function Profile({ user, onUpdate }) {
       await api.delete("/profile/account");
       window.location.href = "/";
     } catch (err) {
-      setMessage(err.response?.data?.error || "Erreur lors de la suppression");
+      setWeightMsgOk(false);
+      setWeightMsg("Erreur lors de la suppression", false);
     }
   };
 
@@ -148,8 +224,6 @@ export default function Profile({ user, onUpdate }) {
         image={FIT_IMAGES.profile}
         tags={[`👋 ${user.username}`, `🎚️ ${form.level}`, `🎯 ${(GOALS.find(g => g.value === form.goal) || {}).label || form.goal}`]}
       />
-
-      {message && <div className="success-msg">{message}</div>}
 
       <div className="card">
         <h3 style={{ marginTop: 0 }}>🎯 Objectifs personnels</h3>
@@ -199,7 +273,8 @@ export default function Profile({ user, onUpdate }) {
             </select>
           </div>
         </div>
-        <button className="btn" onClick={save}>💾 Enregistrer</button>
+        <button className="btn" onClick={() => save("obj")}>💾 Enregistrer</button>
+        <SaveMessage text={objMsg} ok={objOk} />
       </div>
 
       <div className="card">
@@ -220,7 +295,8 @@ export default function Profile({ user, onUpdate }) {
             </label>
           ))}
         </div>
-        <button className="btn btn-secondary" style={{ marginTop: "0.8rem" }} onClick={save}>💾 Enregistrer</button>
+        <button className="btn btn-secondary" style={{ marginTop: "0.8rem" }} onClick={() => save("eq")}>💾 Enregistrer</button>
+        <SaveMessage text={eqMsg} ok={eqOk} />
       </div>
 
       <div className="card">
@@ -241,15 +317,20 @@ export default function Profile({ user, onUpdate }) {
             </label>
           ))}
         </div>
-        <button className="btn btn-secondary" style={{ marginTop: "0.8rem" }} onClick={save}>💾 Enregistrer</button>
+        <button className="btn btn-secondary" style={{ marginTop: "0.8rem" }} onClick={() => save("diet")}>💾 Enregistrer</button>
+        <SaveMessage text={dietMsg} ok={dietOk} />
       </div>
 
-      <div className="card soft-card">
+      <div className="card soft-card" data-tour="weight">
         <h3 style={{ marginTop: 0 }}>⚖️ Enregistrer mon poids du jour</h3>
+        <p className="muted" style={{ fontSize: "0.85rem", margin: "0 0 0.8rem 0" }}>
+          Un seul poids par jour : si vous vous êtes trompé, entrez la nouvelle valeur et elle remplacera la précédente.
+        </p>
         <div style={{ display: "flex", gap: "0.5rem" }}>
           <input type="number" placeholder="Poids (kg)" value={weightEntry} onChange={(e) => setWeightEntry(e.target.value)} />
-          <button className="btn btn-secondary" onClick={addWeight}>Ajouter</button>
+          <button className="btn btn-secondary" onClick={handleAddWeight}>Ajouter</button>
         </div>
+        <SaveMessage text={weightMsg} ok={weightMsgOk} />
       </div>
 
       <div className="card">
@@ -263,6 +344,13 @@ export default function Profile({ user, onUpdate }) {
           <button className="btn btn-danger" onClick={deleteAccount}>🗑️ Supprimer mon compte</button>
         </div>
       </div>
+
+      <ConfirmModal
+        open={!!confirm}
+        message={confirm || ""}
+        onConfirm={() => doAddWeight(true)}
+        onCancel={() => setConfirm(null)}
+      />
     </div>
   );
 }

@@ -41,6 +41,22 @@ def test_add_and_get_weight(auth_client):
     assert entries[0]["weight"] == 80.5
 
 
+def test_weight_upsert_same_day(auth_client):
+    # Un seul poids par jour : un 2e POST du même jour remplace, n'ajoute pas
+    r1 = auth_client.post("/api/profile/weight", json={"weight": 80.5})
+    assert r1.status_code == 201
+    assert r1.get_json()["action"] == "created"
+
+    r2 = auth_client.post("/api/profile/weight", json={"weight": 82.0})
+    assert r2.status_code == 201
+    assert r2.get_json()["action"] == "replaced"
+    assert r2.get_json()["previous"] == 80.5
+
+    entries = auth_client.get("/api/profile/weight").get_json()["entries"]
+    assert len(entries) == 1
+    assert entries[0]["weight"] == 82.0
+
+
 def test_export_requires_auth(client):
     resp = client.get("/api/profile/export")
     assert resp.status_code == 401

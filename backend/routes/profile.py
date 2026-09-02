@@ -67,12 +67,24 @@ def add_weight():
     weight = data.get("weight")
     weight_date = date.fromisoformat(data.get("date")) if data.get("date") else date.today()
 
-    entry = WeightEntry(user_id=user.id, weight=weight, date=weight_date)
-    db.session.add(entry)
+    # Un seul poids par jour : on remplace l'éventuelle valeur du même jour
+    entry = WeightEntry.query.filter_by(user_id=user.id, date=weight_date).first()
+    if entry:
+        previous = entry.weight
+        entry.weight = weight
+        action = "replaced"
+    else:
+        entry = WeightEntry(user_id=user.id, weight=weight, date=weight_date)
+        db.session.add(entry)
+        previous = None
+        action = "created"
+
     if user.weight is None:
         user.weight = weight
     db.session.commit()
-    return jsonify({"message": "Poids enregistré", "entry": entry.to_dict()}), 201
+    return jsonify(
+        {"message": "Poids enregistré", "action": action, "previous": previous, "entry": entry.to_dict()}
+    ), 201
 
 
 @profile_bp.route("/weight", methods=["GET"])

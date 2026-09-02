@@ -75,7 +75,7 @@ export default function Dashboard({ user }) {
         </div>
       </div>
 
-      <div className="gradient-card card">
+      <div className="gradient-card card" data-tour="today">
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "0.8rem" }}>
           <div>
             <h3 style={{ margin: "0 0 0.3rem 0" }}>
