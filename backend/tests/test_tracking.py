@@ -54,3 +54,23 @@ def test_update_session(auth_client):
     resp = auth_client.put(f"/api/tracking/sessions/{created['id']}", json={"feeling": 2})
     assert resp.status_code == 200
     assert resp.get_json()["session"]["feeling"] == 2
+
+
+def test_create_free_session_without_program(auth_client):
+    # Séance libre : pas besoin de programme associé (program_day_id absents)
+    ex = auth_client.get("/api/exercises/").get_json()["exercises"][0]
+    resp = auth_client.post(
+        "/api/tracking/sessions",
+        json={
+            "feeling": 5,
+            "notes": "séance libre",
+            "sets": [
+                {"exercise_id": ex["id"], "set_number": 1, "weight": 30, "reps": 12},
+                {"exercise_id": ex["id"], "set_number": 2, "weight": 35, "reps": 10},
+            ],
+        },
+    )
+    assert resp.status_code == 201
+    s = resp.get_json()["session"]
+    assert s["program_day_id"] is None
+    assert len(s["sets"]) == 2

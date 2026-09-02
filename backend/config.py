@@ -23,6 +23,15 @@ class Config:
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     SESSION_TYPE = "filesystem"
 
+    # Pour Supabase (PostgreSQL), on force le schéma de connexion via psycopg2
+    # et on impose SSL si demandé (DB_SSL=true en production).
+    if SQLALCHEMY_DATABASE_URI.startswith("postgres://"):
+        SQLALCHEMY_DATABASE_URI = SQLALCHEMY_DATABASE_URI.replace(
+            "postgres://", "postgresql://", 1
+        )
+    if os.environ.get("DB_SSL", "true").lower() == "true" and SQLALCHEMY_DATABASE_URI.startswith("postgresql:"):
+        SQLALCHEMY_ENGINE_OPTIONS = {"connect_args": {"sslmode": "require"}}
+
     # Cookies de session pour le multi-origine en production
     SESSION_COOKIE_SAMESITE = SESSION_COOKIE_SAMESITE
     SESSION_COOKIE_SECURE = COOKIE_SECURE

@@ -23,6 +23,8 @@ class User(db.Model):
     daily_calories = db.Column(db.Integer, default=2500)
     available_equipment = db.Column(db.Text, default="[]")  # JSON list of equipment names
     dietary_preferences = db.Column(db.Text, default="[]")  # JSON list: vegetarien, vegan, sans_lactose, sans_gluten, sans_noix
+    split_type = db.Column(db.String(30), default=None)     # full_body, upper_lower, push_pull_legs, etc. (None = auto selon l'objectif)
+    sessions_per_week = db.Column(db.Integer, default=None) # 2..6 séances par semaine (None = auto selon le split)
 
     programs = db.relationship("TrainingProgram", backref="user", lazy=True)
     sessions = db.relationship("Session", backref="user", lazy=True)
@@ -62,6 +64,8 @@ class User(db.Model):
             "daily_calories": self.daily_calories,
             "available_equipment": self.equipment_list(),
             "dietary_preferences": self.preferences_list(),
+            "split_type": self.split_type,
+            "sessions_per_week": self.sessions_per_week,
             "created_at": self.created_at.isoformat(),
         }
 
@@ -133,20 +137,23 @@ class ProgramDay(db.Model):
         }
 
     def estimated_minutes(self):
-        """Estimation approximative de la durée de la séance (minutes).
+        """Estimation réaliste de la durée de la séance (minutes).
 
-        Effort ~3s par répétition + repos entre séries + échauffement + transitions.
+        Effort ~5s par répétition (tempo concentrique + excentrique),
+        repos entre séries + mise en place du matériel par exercice,
+        échauffement par exercice et transitions entre les postes.
         """
-        effort_per_rep = 3
-        warmup = 5
-        transition = 0.75
+        effort_per_rep = 5
+        setup_per_ex = 0.75      # ~45s pour charger/régler le matériel
+        warmup_per_ex = 1.0      # 1 série d'échauffement par exercice
+        transition = 2.0         # minutes pour passer d'un exercice à l'autre
         total = 0.0
         ex_list = list(self.exercises)
         for pe in ex_list:
             effort = (pe.reps * effort_per_rep * pe.sets) / 60
             rest = (pe.sets - 1) * (pe.rest_seconds / 60)
-            total += effort + rest
-        total += max(0, len(ex_list) - 1) * transition + warmup
+            total += effort + rest + setup_per_ex + warmup_per_ex
+        total += max(0, len(ex_list) - 1) * transition
         return max(1, round(total))
 
 
@@ -186,6 +193,7 @@ class Session(db.Model):
     completed = db.Column(db.Boolean, default=False)
     feeling = db.Column(db.Integer, default=3)  # 1-5
     notes = db.Column(db.Text, default="")
+    flagged = db.Column(db.Boolean, default=False)  # anti-triche : volume/rythme anormal
 
     sets = db.relationship("SessionSet", backref="session", lazy=True, cascade="all, delete-orphan")
 
@@ -198,6 +206,7 @@ class Session(db.Model):
             "completed": self.completed,
             "feeling": self.feeling,
             "notes": self.notes,
+            "flagged": bool(self.flagged),
             "sets": [s.to_dict() for s in self.sets],
         }
 
@@ -212,6 +221,7 @@ class SessionSet(db.Model):
     weight = db.Column(db.Float, default=0.0)
     reps = db.Column(db.Integer, default=0)
     completed = db.Column(db.Boolean, default=True)
+    difficulty = db.Column(db.String(20), default="")  # facile, moyen, difficile, impossible, ""
 
     exercise = db.relationship("Exercise", lazy=True)
 
@@ -224,6 +234,7 @@ class SessionSet(db.Model):
             "weight": self.weight,
             "reps": self.reps,
             "completed": self.completed,
+            "difficulty": self.difficulty or "",
         }
 
 
@@ -364,4 +375,43 @@ class ShoppingList(db.Model):
             "meal_plan_id": self.meal_plan_id,
             "created_at": self.created_at.isoformat(),
             "items": json.loads(self.items),
+        }
+
+
+class Friendship(db.Model):
+    __tablename__ = "friendships"
+
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=False)
+    friend_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=False)
+    status = db.Column(db.String(20), nullable=False, default="pending")  # pending | accepted
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+    __table_args__ = (db.UniqueConstraint("user_id", "friend_id", name="uq_friendship"),)
+
+
+class Machine(db.Model):
+    __tablename__ = "machines"
+
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(120), nullable=False)
+    brand = db.Column(db.String(60), default="")          # Technogym, Matrix, Hammer...
+    model = db.Column(db.String(80), default="")
+    category = db.Column(db.String(50), default="autre")  # pectoraux, dos, jambes, epaule, bras, core, cardio
+    code = db.Column(db.String(20), unique=True, nullable=False)  # code QR (ex: TCG-ART-01)
+    location = db.Column(db.String(80), default="")
+    image_url = db.Column(db.String(200), default="")
+    setup_tips = db.Column(db.Text, default="")  # réglage selon la morphologie
+
+    def to_dict(self):
+        return {
+            "id": self.id,
+            "name": self.name,
+            "brand": self.brand,
+            "model": self.model,
+            "category": self.category,
+            "code": self.code,
+            "location": self.location,
+            "image_url": self.image_url,
+            "setup_tips": self.setup_tips,
         }

@@ -10,10 +10,10 @@ const MEAL_ICON = {
 };
 
 const MEAL_COLORS = {
-  "Petit-déjeuner": "rgba(245,158,11,.14)",
-  "Déjeuner": "rgba(14,165,233,.14)",
-  "Collation": "rgba(34,211,238,.18)",
-  "Dîner": "rgba(236,72,153,.14)",
+  "Petit-déjeuner": "rgba(249,115,22,.16)",
+  "Déjeuner": "rgba(253,186,116,.14)",
+  "Collation": "rgba(251,146,60,.18)",
+  "Dîner": "rgba(234,88,12,.16)",
 };
 
 export default function Nutrition({ user }) {
@@ -169,7 +169,9 @@ export default function Nutrition({ user }) {
                 />
                 <span style={{ flex: 1 }}>{item.name}</span>
                 <span className="badge badge-warn">
-                  {item.qty_grams / 1000 > 0 ? `${(item.qty_grams / 1000).toFixed(2)} kg` : `${item.qty_grams} g`}
+                  {item.qty_grams >= 1000
+                    ? `${(item.qty_grams / 1000).toFixed(2).replace(/\.?0+$/, "")} kg`
+                    : `${Math.round(item.qty_grams)} g`}
                 </span>
               </label>
             ))}

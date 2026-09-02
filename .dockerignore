@@ -1,0 +1,13 @@
+# Ne pas envoyer au contexte de build Docker
+**/node_modules
+**/dist
+**/__pycache__
+**/*.pyc
+logs/
+cloudflared/
+scripts/
+backend/backups/
+backend/*.db
+**/*.env
+.git
+.github

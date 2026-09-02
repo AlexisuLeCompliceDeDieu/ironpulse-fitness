@@ -15,6 +15,24 @@ const LEVELS = [
   { value: "avance", label: "Avancé" },
 ];
 
+const SPLITS = [
+  { value: "", label: "Automatique (selon l'objectif)" },
+  { value: "full_body", label: "🧘 Full Body" },
+  { value: "upper_lower", label: "🍗 Upper / Lower" },
+  { value: "push_pull_legs", label: "🏋️ Push / Pull / Legs" },
+  { value: "upper_lower_push_pull", label: "⚡ U/L + Push/Pull (4 j)" },
+  { value: "bro_split", label: "💪 Split par muscle (5 j)" },
+];
+
+const WEEK_OPTIONS = [
+  { value: "", label: "Automatique (selon le split)" },
+  { value: "2", label: "2 séances / semaine" },
+  { value: "3", label: "3 séances / semaine" },
+  { value: "4", label: "4 séances / semaine" },
+  { value: "5", label: "5 séances / semaine" },
+  { value: "6", label: "6 séances / semaine" },
+];
+
 const EQUIPMENT = [
   { value: "barre", label: "Barre et poids" },
   { value: "haltères", label: "Haltères" },
@@ -42,6 +60,8 @@ export default function Profile({ user, onUpdate }) {
     height: user.height,
     age: user.age,
     daily_calories: user.daily_calories,
+    split_type: user.split_type || "",
+    sessions_per_week: (user.sessions_per_week || "").toString(),
     available_equipment: user.available_equipment || [],
     dietary_preferences: user.dietary_preferences || [],
   });
@@ -70,7 +90,10 @@ export default function Profile({ user, onUpdate }) {
       for (const k of ["weight", "target_weight", "height", "age", "daily_calories"]) {
         numeric[k] = Number(form[k]);
       }
-      const res = await api.put("/profile/", { ...form, ...numeric });
+      const payload = { ...form, ...numeric };
+      payload.split_type = form.split_type || null;
+      payload.sessions_per_week = form.sessions_per_week ? Number(form.sessions_per_week) : null;
+      const res = await api.put("/profile/", payload);
       onUpdate(res.data.user);
       setMessage("✅ Profil mis à jour !");
     } catch (err) {
@@ -162,6 +185,18 @@ export default function Profile({ user, onUpdate }) {
           <div className="form-group">
             <label>Calories quotidiennes (kcal)</label>
             <input name="daily_calories" type="number" value={form.daily_calories} onChange={onChange} />
+          </div>
+          <div className="form-group">
+            <label>Séances par semaine</label>
+            <select name="sessions_per_week" value={form.sessions_per_week} onChange={onChange}>
+              {WEEK_OPTIONS.map((w) => <option key={w.value || "auto"} value={w.value}>{w.label}</option>)}
+            </select>
+          </div>
+          <div className="form-group">
+            <label>Type de séance (split)</label>
+            <select name="split_type" value={form.split_type} onChange={onChange}>
+              {SPLITS.map((s) => <option key={s.value || "auto"} value={s.value}>{s.label}</option>)}
+            </select>
           </div>
         </div>
         <button className="btn" onClick={save}>💾 Enregistrer</button>

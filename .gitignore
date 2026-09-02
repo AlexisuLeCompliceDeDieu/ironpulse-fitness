@@ -24,3 +24,11 @@ build/
 # OS
 .DS_Store
 Thumbs.db
+
+# réseau local / tunnels (non déployés)
+cloudflared/
+scripts/
+logs/
+backend/backups/
+backend/.venv/
+*.env

@@ -38,7 +38,7 @@ export default function Login({ onAuth }) {
           <div className="auth-brand">
             <span className="brand-mark">💪</span>
             <span className="brand-name" style={{ fontSize: "1.6rem", fontWeight: 800 }}>
-              FITNESS ALGO
+              IRONPULSE
             </span>
           </div>
           <h1>Connexion</h1>

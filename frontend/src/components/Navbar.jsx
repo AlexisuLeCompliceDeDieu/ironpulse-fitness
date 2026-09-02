@@ -25,7 +25,7 @@ export default function Navbar({ user, onLogout }) {
     <nav className="navbar" ref={navRef}>
       <Link to="/" className="brand">
         <span className="brand-mark">💪</span>
-        <span className="brand-name">FITNESS ALGO</span>
+        <span className="brand-name">IRONPULSE</span>
       </Link>
 
       <div className="nav">
@@ -67,6 +67,33 @@ export default function Navbar({ user, onLogout }) {
             className={({ isActive }) => "nav-link" + (isActive ? " active" : "")}
           >
             <span>🥗</span> Nutrition
+          </NavLink>
+        </div>
+
+        <div className="nav-item">
+          <NavLink
+            to="/machines"
+            className={({ isActive }) => "nav-link" + (isActive ? " active" : "")}
+          >
+            <span>🏋️</span> Machines
+          </NavLink>
+        </div>
+
+        <div className="nav-item">
+          <NavLink
+            to="/friends"
+            className={({ isActive }) => "nav-link" + (isActive ? " active" : "")}
+          >
+            <span>👥</span> Amis
+          </NavLink>
+        </div>
+
+        <div className="nav-item">
+          <NavLink
+            to="/social"
+            className={({ isActive }) => "nav-link" + (isActive ? " active" : "")}
+          >
+            <span>🏆</span> Classement
           </NavLink>
         </div>
 

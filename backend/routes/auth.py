@@ -32,9 +32,11 @@ def register():
         user.height = data["height"]
     if data.get("age") is not None:
         user.age = data["age"]
+
     db.session.add(user)
     db.session.commit()
 
+    # Connexion directe après l'inscription (pas de 2FA)
     session["user_id"] = user.id
     return jsonify({"message": "Inscription réussie", "user": user.to_dict()}), 201
 

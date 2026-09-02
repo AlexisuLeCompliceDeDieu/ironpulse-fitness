@@ -11,3 +11,22 @@ ReactDOM.createRoot(document.getElementById("root")).render(
     </BrowserRouter>
   </React.StrictMode>
 );
+
+if ("serviceWorker" in navigator) {
+  window.addEventListener("load", () => {
+    navigator.serviceWorker.register("/sw.js").catch(() => {});
+  });
+}
+
+// Empêche le pavé tactile / la molette de modifier les champs numériques (on tape uniquement)
+document.addEventListener(
+  "wheel",
+  (e) => {
+    const el = e.target;
+    if (el && el.matches && el.matches('input[type="number"]')) {
+      e.preventDefault();
+      el.blur();
+    }
+  },
+  { passive: false }
+);

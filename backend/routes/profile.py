@@ -35,6 +35,12 @@ def update_profile():
         if field in data:
             setattr(user, field, data[field])
 
+    if "split_type" in data:
+        user.split_type = data["split_type"] or None
+    if "sessions_per_week" in data:
+        val = data.get("sessions_per_week")
+        user.sessions_per_week = int(val) if val else None
+
     if "available_equipment" in data:
         eq = data["available_equipment"]
         if isinstance(eq, list):

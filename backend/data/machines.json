@@ -1,0 +1,702 @@
+[
+  {
+    "name": "Développé couché machine",
+    "brand": "Technogym",
+    "model": "Bench Press Multi",
+    "category": "pectoraux",
+    "code": "TCG-PESC-01",
+    "location": "Zone musculation (étage 1)",
+    "image_url": "https://commons.wikimedia.org/wiki/Special:FilePath/Bench_press.png?width=480",
+    "setup_tips": "Réglez l'assise pour que les poignées arrivent au milieu des pectoraux. Serrez les omoplates contre le dossier."
+  },
+  {
+    "name": "Butterfly / Peck deck",
+    "brand": "Technogym",
+    "model": "Pure Strength",
+    "category": "pectoraux",
+    "code": "TCG-PECS-02",
+    "location": "Zone musculation (étage 1)",
+    "image_url": "https://commons.wikimedia.org/wiki/Special:FilePath/Pec_deck_Fly.jpg?width=480",
+    "setup_tips": "Les mains suivent un arc de cercle. Serrez les pecs en fin de mouvement sans à-coup."
+  },
+  {
+    "name": "Chest press assis",
+    "brand": "Matrix",
+    "model": "Chest Press S7",
+    "category": "pectoraux",
+    "code": "MTX-PECS-03",
+    "location": "Zone musculation (étage 1)",
+    "image_url": "https://commons.wikimedia.org/wiki/Special:FilePath/Chest_Incline.jpg?width=480",
+    "setup_tips": "Poignées à hauteur des pectoraux, poussez devant sans verrouiller les coudes."
+  },
+  {
+    "name": "Développé décliné",
+    "brand": "Matrix",
+    "model": "Decline Press S7",
+    "category": "pectoraux",
+    "code": "MTX-PECS-06",
+    "location": "Zone musculation (étage 1)",
+    "image_url": "https://commons.wikimedia.org/wiki/Special:FilePath/Decline-bench-press-1.png?width=480",
+    "setup_tips": "Buste incliné vers le bas, redescendez la barre entre le sternum et les seins."
+  },
+  {
+    "name": "Développé couché haltères",
+    "brand": "Life Fitness",
+    "model": "Signature Series",
+    "category": "pectoraux",
+    "code": "LIF-PECS-04",
+    "location": "Zone musculation (étage 1)",
+    "image_url": "https://commons.wikimedia.org/wiki/Special:FilePath/Dumbbell-incline-bench-press-1.png?width=480",
+    "setup_tips": "Coudes à 45° du buste, mouvement lent et contrôlé pour protéger les épaules."
+  },
+  {
+    "name": "Presse à pectoraux verticale",
+    "brand": "Panatta",
+    "model": "Vertical Chest Press",
+    "category": "pectoraux",
+    "code": "PNT-PECS-07",
+    "location": "Zone musculation (étage 1)",
+    "image_url": "https://commons.wikimedia.org/wiki/Special:FilePath/Chest_Incline.jpg?width=480",
+    "setup_tips": "Poussez les deux bras devant vous en expirant, dos plaqué au dossier."
+  },
+  {
+    "name": "Développé couché plaques",
+    "brand": "Hammer Strength",
+    "model": "Iso-Lateral Bench",
+    "category": "pectoraux",
+    "code": "HSM-PECS-08",
+    "location": "Zone musculation (étage 1)",
+    "image_url": "https://commons.wikimedia.org/wiki/Special:FilePath/Bench_press.png?width=480",
+    "setup_tips": "Chaque bras travaille indépendamment : montez le poids sans élan."
+  },
+  {
+    "name": "Banc de développé couché",
+    "brand": "Body-Solid",
+    "model": "Olympic Bench",
+    "category": "pectoraux",
+    "code": "BDS-PECS-09",
+    "location": "Zone barres libres (étage 1)",
+    "image_url": "https://commons.wikimedia.org/wiki/Special:FilePath/Bench_press.png?width=480",
+    "setup_tips": "Pieds au sol, glissez la barre au milieu de la poitrine puis poussez."
+  },
+  {
+    "name": "Banc inclinable",
+    "brand": "Body-Solid",
+    "model": "Folding Bench",
+    "category": "pectoraux",
+    "code": "BDS-PECS-10",
+    "location": "Zone barres libres (étage 1)",
+    "image_url": "https://commons.wikimedia.org/wiki/Special:FilePath/Dumbbell-incline-bench-press-1.png?width=480",
+    "setup_tips": "Réglable de 0 à 90° : sert pour toutes les positions de développé."
+  },
+  {
+    "name": "Tirage vertical (tractions)",
+    "brand": "Matrix",
+    "model": "Lat Pulldown S7",
+    "category": "dos",
+    "code": "MTX-DOS-01",
+    "location": "Zone musculation (étage 2)",
+    "image_url": "https://commons.wikimedia.org/wiki/Special:FilePath/Diverging_Lat_Pulldown_Machine.jpg?width=480",
+    "setup_tips": "Cuisses calées sous les coussins, tirez la barre vers le haut de la poitrine, buste droit."
+  },
+  {
+    "name": "Rameur assis",
+    "brand": "Technogym",
+    "model": "Pure Strength",
+    "category": "dos",
+    "code": "TCG-DOS-02",
+    "location": "Zone musculation (étage 2)",
+    "image_url": "https://commons.wikimedia.org/wiki/Special:FilePath/Woman_using_a_seated_cable_row_machine_at_the_gym.jpg?width=480",
+    "setup_tips": "Pieds sur le plateau, dos droit. Tirez vers le nombril en serrant les omoplates."
+  },
+  {
+    "name": "Tirage vertical plaqué",
+    "brand": "Hammer Strength",
+    "model": "Iso-Lateral Pulldown",
+    "category": "dos",
+    "code": "HSM-DOS-03",
+    "location": "Zone musculation (étage 2)",
+    "image_url": "https://commons.wikimedia.org/wiki/Special:FilePath/Amer-Lat-Pulldown.jpg?width=480",
+    "setup_tips": "Chaque poignée travaille seule. Tirez de façon symétrique, buste immobile."
+  },
+  {
+    "name": "Tirage horizontal (low row)",
+    "brand": "Life Fitness",
+    "model": "Low Row",
+    "category": "dos",
+    "code": "LIF-DOS-05",
+    "location": "Zone musculation (étage 2)",
+    "image_url": "https://commons.wikimedia.org/wiki/Special:FilePath/Woman_using_a_seated_cable_row_machine_at_the_gym.jpg?width=480",
+    "setup_tips": "Pieds calés, pouce vers le haut, tirez la poignée vers le nombril."
+  },
+  {
+    "name": "Rowing assis",
+    "brand": "Precor",
+    "model": "Discovery Low Row",
+    "category": "dos",
+    "code": "PRE-DOS-06",
+    "location": "Zone musculation (étage 2)",
+    "image_url": "",
+    "setup_tips": "Buste droit, ne balancez pas le dos pour soulever plus lourd."
+  },
+  {
+    "name": "Tirage T-bar",
+    "brand": "Hoist",
+    "model": "T-Bar Row",
+    "category": "dos",
+    "code": "HOI-DOS-07",
+    "location": "Zone musculation (étage 2)",
+    "image_url": "https://commons.wikimedia.org/wiki/Special:FilePath/T-bar-row-1.png?width=480",
+    "setup_tips": "Tirez la barre vers vous en gardant le buste fixe, coudes le long du corps."
+  },
+  {
+    "name": "Machine à tractions assistée",
+    "brand": "Life Fitness",
+    "model": "Assisted Pull-Up",
+    "category": "dos",
+    "code": "LIF-DOS-08",
+    "location": "Zone musculation (étage 2)",
+    "image_url": "",
+    "setup_tips": "Placez les genoux sur la plateforme : elle compense une partie de votre poids."
+  },
+  {
+    "name": "Machine face pull (arrière d'épaule)",
+    "brand": "Nautilus",
+    "model": "Rear Delt",
+    "category": "dos",
+    "code": "NLT-DOS-09",
+    "location": "Zone musculation (étage 2)",
+    "image_url": "https://commons.wikimedia.org/wiki/Special:FilePath/Barbell-rear-delt-row-1.png?width=480",
+    "setup_tips": "Tirez vers les oreilles en écartant les bras pour travailler l'arrière d'épaule."
+  },
+  {
+    "name": "Poulie haute (high row)",
+    "brand": "Technogym",
+    "model": "Cable Station",
+    "category": "dos",
+    "code": "TCG-DOS-10",
+    "location": "Zone musculation (étage 2)",
+    "image_url": "https://commons.wikimedia.org/wiki/Special:FilePath/Amer-Lat-Pulldown.jpg?width=480",
+    "setup_tips": "Station à câbles : poignées interchangeables pour multiples tirages."
+  },
+  {
+    "name": "Développé militaire machine",
+    "brand": "Technogym",
+    "model": "Shoulder Press",
+    "category": "epaule",
+    "code": "TCG-EPAU-01",
+    "location": "Zone musculation (étage 1)",
+    "image_url": "https://commons.wikimedia.org/wiki/Special:FilePath/Shoulder-press-machine-1.png?width=480",
+    "setup_tips": "Dossier à ~85°, poignées au niveau des épaules, poussez vers le haut."
+  },
+  {
+    "name": "Latérales (épaules)",
+    "brand": "Matrix",
+    "model": "Lateral Raise S7",
+    "category": "epaule",
+    "code": "MTX-EPAU-02",
+    "location": "Zone musculation (étage 2)",
+    "image_url": "https://commons.wikimedia.org/wiki/Special:FilePath/Cable-seated-rear-lateral-raise-2.png?width=480",
+    "setup_tips": "Montez les bras à hauteur d'épaule, coudes légèrement fléchis, descendez lentement."
+  },
+  {
+    "name": "Développé militaire plaques",
+    "brand": "Cybex",
+    "model": "VR2 Shoulder Press",
+    "category": "epaule",
+    "code": "CYB-EPAU-04",
+    "location": "Zone musculation (étage 1)",
+    "image_url": "https://commons.wikimedia.org/wiki/Special:FilePath/Shoulder-press-machine-1.png?width=480",
+    "setup_tips": "Poussez sans verrouiller les coudes en haut du mouvement."
+  },
+  {
+    "name": "Machine deltoïdes latéraux",
+    "brand": "Panatta",
+    "model": "Lateral Deltoid",
+    "category": "epaule",
+    "code": "PNT-EPAU-03",
+    "location": "Zone musculation (étage 2)",
+    "image_url": "https://commons.wikimedia.org/wiki/Special:FilePath/Cable-seated-rear-lateral-raise-2.png?width=480",
+    "setup_tips": "Seulement les épaules travaillent : ne haussez pas les épaules."
+  },
+  {
+    "name": "Machine épaules postérieures",
+    "brand": "Nautilus",
+    "model": "Rear Delt Fly",
+    "category": "epaule",
+    "code": "NLT-EPAU-05",
+    "location": "Zone musculation (étage 1)",
+    "image_url": "https://commons.wikimedia.org/wiki/Special:FilePath/Barbell-rear-delt-row-1.png?width=480",
+    "setup_tips": "Écartez les bras vers l'arrière pour renforcer l'arrière des épaules."
+  },
+  {
+    "name": "Presse à cuisses inclinée",
+    "brand": "Technogym",
+    "model": "Leg Press",
+    "category": "jambes",
+    "code": "TCG-JAMB-01",
+    "location": "Zone jambes (étage 1)",
+    "image_url": "https://commons.wikimedia.org/wiki/Special:FilePath/Leg-press-1-1024x670.png?width=480",
+    "setup_tips": "Pieds à largeur d'épaules, descendez sans décoller le bassin ni bloquer les genoux."
+  },
+  {
+    "name": "Leg extension",
+    "brand": "Matrix",
+    "model": "Leg Extension S7",
+    "category": "jambes",
+    "code": "MTX-JAMB-02",
+    "location": "Zone jambes (étage 1)",
+    "image_url": "https://commons.wikimedia.org/wiki/Special:FilePath/Leg_Extension.jpg?width=480",
+    "setup_tips": "Pli du genou dans l'axe de la machine, montez sans à-coup."
+  },
+  {
+    "name": "Leg curl",
+    "brand": "Matrix",
+    "model": "Leg Curl S7",
+    "category": "jambes",
+    "code": "MTX-JAMB-03",
+    "location": "Zone jambes (étage 1)",
+    "image_url": "https://commons.wikimedia.org/wiki/Special:FilePath/Seated-leg-curl-1.png?width=480",
+    "setup_tips": "Rouleau au-dessus des talons, pliez sans soulever les hanches."
+  },
+  {
+    "name": "Presse à cuisses horizontale",
+    "brand": "Precor",
+    "model": "Discovery Leg Press",
+    "category": "jambes",
+    "code": "PRE-JAMB-04",
+    "location": "Zone jambes (étage 1)",
+    "image_url": "https://commons.wikimedia.org/wiki/Special:FilePath/Leg-press-1-1024x670.png?width=480",
+    "setup_tips": "Même principe que la presse inclinée, course horizontale."
+  },
+  {
+    "name": "Leg curl assis",
+    "brand": "Cybex",
+    "model": "VR2 Seated Leg Curl",
+    "category": "jambes",
+    "code": "CYB-JAMB-05",
+    "location": "Zone jambes (étage 1)",
+    "image_url": "https://commons.wikimedia.org/wiki/Special:FilePath/Seated-leg-curl-1.png?width=480",
+    "setup_tips": "Rouleau derrière la cheville, recourbez la jambe sans bouger les cuisses."
+  },
+  {
+    "name": "Machine adducteurs",
+    "brand": "Keiser",
+    "model": "Pneumatic Adductor",
+    "category": "jambes",
+    "code": "KSR-JAMB-06",
+    "location": "Zone jambes (étage 1)",
+    "image_url": "https://commons.wikimedia.org/wiki/Special:FilePath/Hip-adduction-1-634x1024.png?width=480",
+    "setup_tips": "Serrez les cuisses l'une vers l'autre en expirant."
+  },
+  {
+    "name": "Machine abducteurs",
+    "brand": "Technogym",
+    "model": "Pure Strength",
+    "category": "jambes",
+    "code": "TCG-JAMB-07",
+    "location": "Zone jambes (étage 1)",
+    "image_url": "https://commons.wikimedia.org/wiki/Special:FilePath/Hip_abduction-CDC_strength_training_for_older_adults.gif?width=480",
+    "setup_tips": "Écartez les cuisses contre la résistance, mouvement lent."
+  },
+  {
+    "name": "Hack squat",
+    "brand": "Life Fitness",
+    "model": "Insignia Hack Squat",
+    "category": "jambes",
+    "code": "LIF-JAMB-08",
+    "location": "Zone jambes (étage 1)",
+    "image_url": "https://commons.wikimedia.org/wiki/Special:FilePath/Hack-squat-1-856x1024.png?width=480",
+    "setup_tips": "Dos plaqué au dossier incliné, pieds à mi-plateau, descendez jusqu'à 90°."
+  },
+  {
+    "name": "Squat machine guidé",
+    "brand": "Matrix",
+    "model": "Squat Press",
+    "category": "jambes",
+    "code": "MTX-JAMB-09",
+    "location": "Zone jambes (étage 1)",
+    "image_url": "https://commons.wikimedia.org/wiki/Special:FilePath/Carlon_Colker_Squat_Machine.jpg?width=480",
+    "setup_tips": "Épaules sous les coussins, fléchissez sans décoller le buste."
+  },
+  {
+    "name": "Mollets assis",
+    "brand": "Body-Solid",
+    "model": "Seated Calf",
+    "category": "jambes",
+    "code": "BDS-JAMB-10",
+    "location": "Zone jambes (étage 1)",
+    "image_url": "https://commons.wikimedia.org/wiki/Special:FilePath/Seated_calf_machine.jpg?width=480",
+    "setup_tips": "Pointe de pieds sur le plateau, montez sur la pointe puis descendez lentement."
+  },
+  {
+    "name": "Mollets debout",
+    "brand": "Hoist",
+    "model": "Standing Calf",
+    "category": "jambes",
+    "code": "HOI-JAMB-11",
+    "location": "Zone jambes (étage 1)",
+    "image_url": "https://commons.wikimedia.org/wiki/Special:FilePath/Rocking-standing-calf-raise-1.gif?width=480",
+    "setup_tips": "Bascule le corps sur l'avant du pied pour monter sur la pointe."
+  },
+  {
+    "name": "Hip thrust machine (fessiers)",
+    "brand": "Panatta",
+    "model": "Hip Thruster",
+    "category": "jambes",
+    "code": "PNT-JAMB-12",
+    "location": "Zone jambes (étage 1)",
+    "image_url": "",
+    "setup_tips": "Poussez les hanches vers le haut, dos sur l'appui, en serrant les fessiers."
+  },
+  {
+    "name": "Belt squat",
+    "brand": "Rogue",
+    "model": "Belt Squat Stand",
+    "category": "jambes",
+    "code": "RGE-JAMB-13",
+    "location": "Zone jambes (étage 1)",
+    "image_url": "",
+    "setup_tips": "La charge pend à la ceinture : squat sans pression sur le dos."
+  },
+  {
+    "name": "Glute kickback machine",
+    "brand": "Nautilus",
+    "model": "Glute Kickback",
+    "category": "jambes",
+    "code": "NLT-JAMB-14",
+    "location": "Zone jambes (étage 1)",
+    "image_url": "",
+    "setup_tips": "Poussez la plateforme vers l'arrière avec le talon en contractant les fessiers."
+  },
+  {
+    "name": "V-squat (presse verticale)",
+    "brand": "Technogym",
+    "model": "Pure Strength",
+    "category": "jambes",
+    "code": "TCG-JAMB-15",
+    "location": "Zone jambes (étage 1)",
+    "image_url": "https://commons.wikimedia.org/wiki/Special:FilePath/Hack-squat-1-856x1024.png?width=480",
+    "setup_tips": "Presse verticale : poussez le plateau vers le haut avec les jambes."
+  },
+  {
+    "name": "Barres d'élongation",
+    "brand": "Hoist",
+    "model": "Multi Hip",
+    "category": "jambes",
+    "code": "HOI-JAMB-16",
+    "location": "Zone jambes (étage 1)",
+    "image_url": "",
+    "setup_tips": "Machine multi-articulations pour adducteurs, abducteurs et fessiers."
+  },
+  {
+    "name": "Curl biceps machine",
+    "brand": "Technogym",
+    "model": "Biceps",
+    "category": "bras",
+    "code": "TCG-BRAS-01",
+    "location": "Zone musculation (étage 2)",
+    "image_url": "https://commons.wikimedia.org/wiki/Special:FilePath/One-arm-preacher-curl-2.gif?width=480",
+    "setup_tips": "Coude aligné avec l'axe de la machine, sans utiliser le dos."
+  },
+  {
+    "name": "Extension triceps machine",
+    "brand": "Technogym",
+    "model": "Triceps",
+    "category": "bras",
+    "code": "TCG-BRAS-02",
+    "location": "Zone musculation (étage 2)",
+    "image_url": "https://commons.wikimedia.org/wiki/Special:FilePath/Reverse-grip-triceps-pushdown-2.gif?width=480",
+    "setup_tips": "Coudes fixes le long du corps, poussez les avant-bras vers le bas."
+  },
+  {
+    "name": "Curl pupitre",
+    "brand": "Precor",
+    "model": "Discovery Biceps Curl",
+    "category": "bras",
+    "code": "PRE-BRAS-04",
+    "location": "Zone musculation (étage 2)",
+    "image_url": "https://commons.wikimedia.org/wiki/Special:FilePath/One-arm-preacher-curl-2.gif?width=480",
+    "setup_tips": "Les creux des coudes contre le coussin, montez la barre sans décoller les bras."
+  },
+  {
+    "name": "Curl biceps",
+    "brand": "Hoist",
+    "model": "Biceps Curl",
+    "category": "bras",
+    "code": "HOI-BRAS-03",
+    "location": "Zone musculation (étage 2)",
+    "image_url": "https://commons.wikimedia.org/wiki/Special:FilePath/One-arm-preacher-curl-2.gif?width=480",
+    "setup_tips": "Avant-bras en appui, pliez sans bouger les épaules ni le buste."
+  },
+  {
+    "name": "Dip machine assistée",
+    "brand": "Matrix",
+    "model": "Assisted Dip/Chin",
+    "category": "bras",
+    "code": "MTX-BRAS-05",
+    "location": "Zone musculation (étage 2)",
+    "image_url": "",
+    "setup_tips": "Plateforme qui compense le poids : poussez les barres vers le bas."
+  },
+  {
+    "name": "Barres parallèles",
+    "brand": "Hammer Strength",
+    "model": "Parallel Bars",
+    "category": "bras",
+    "code": "HSM-BRAS-06",
+    "location": "Zone musculation (étage 2)",
+    "image_url": "",
+    "setup_tips": "Descendez les épaules entre les barres puis poussez pour remonter."
+  },
+  {
+    "name": "Machine à abdominaux",
+    "brand": "Technogym",
+    "model": "Abdominal",
+    "category": "core",
+    "code": "TCG-CORE-01",
+    "location": "Zone musculation (étage 2)",
+    "image_url": "https://commons.wikimedia.org/wiki/Special:FilePath/Seated-ab-crunch-1.gif?width=480",
+    "setup_tips": "Hanches fixes, rapprochez le buste des cuisses en expirant."
+  },
+  {
+    "name": "Extension lombaire",
+    "brand": "Matrix",
+    "model": "Back Extension",
+    "category": "core",
+    "code": "MTX-CORE-02",
+    "location": "Zone musculation (étage 2)",
+    "image_url": "https://commons.wikimedia.org/wiki/Special:FilePath/Back-extension-on-stability-ball-1.png?width=480",
+    "setup_tips": "Chevilles calées, descendez en gardant le dos bien droit."
+  },
+  {
+    "name": "Crunch machine",
+    "brand": "Hoist",
+    "model": "Rotary Abdominal",
+    "category": "core",
+    "code": "HOI-CORE-03",
+    "location": "Zone musculation (étage 2)",
+    "image_url": "https://commons.wikimedia.org/wiki/Special:FilePath/Seated-ab-crunch-1.gif?width=480",
+    "setup_tips": "Hanches fixées, fléchissez uniquement le buste vers le bassin."
+  },
+  {
+    "name": "GHD (glute-ham developer)",
+    "brand": "Rogue",
+    "model": "GHD 2.0",
+    "category": "core",
+    "code": "RGE-CORE-03",
+    "location": "Zone musculation (étage 2)",
+    "image_url": "https://commons.wikimedia.org/wiki/Special:FilePath/Glute_ham_raise.jpg?width=480",
+    "setup_tips": "Cuisse contre l'appui : remontez le buste en gardant le dos gainé."
+  },
+  {
+    "name": "Machine rotation du tronc",
+    "brand": "Panatta",
+    "model": "Torso Rotation",
+    "category": "core",
+    "code": "PNT-CORE-04",
+    "location": "Zone musculation (étage 2)",
+    "image_url": "",
+    "setup_tips": "Tournez le buste de droite à gauche, le bassin bloqué."
+  },
+  {
+    "name": "Barre de traction",
+    "brand": "X-Fitness",
+    "model": "Pull-Up Tower",
+    "category": "core",
+    "code": "XFT-CORE-05",
+    "location": "Zone étirements (étage 2)",
+    "image_url": "",
+    "setup_tips": "Barre fixe : tractions classiques, menton au-dessus de la barre."
+  },
+  {
+    "name": "Tapis de course",
+    "brand": "Technogym",
+    "model": "Excite Run",
+    "category": "cardio",
+    "code": "TCG-CARD-01",
+    "location": "Zone cardio (étage 3)",
+    "image_url": "https://commons.wikimedia.org/wiki/Special:FilePath/Cross_Runner_-_Curved_Treadmill_08.jpg?width=480",
+    "setup_tips": "Buste droit, reglez vitesse puis pente, jamais les deux d'un coup."
+  },
+  {
+    "name": "Vélo stationnaire",
+    "brand": "Technogym",
+    "model": "Excite Bike",
+    "category": "cardio",
+    "code": "TCG-CARD-02",
+    "location": "Zone cardio (étage 3)",
+    "image_url": "https://commons.wikimedia.org/wiki/Special:FilePath/Charity_stationary_bike_in_Kings_Cross_-_geograph.org.uk_-_4060926.jpg?width=480",
+    "setup_tips": "Selle à hauteur de hanche, genou quasi tendu en bas de pédalage."
+  },
+  {
+    "name": "Rameur",
+    "brand": "Matrix",
+    "model": "Rower",
+    "category": "cardio",
+    "code": "MTX-CARD-03",
+    "location": "Zone cardio (étage 3)",
+    "image_url": "https://commons.wikimedia.org/wiki/Special:FilePath/Gjessing_rowing_ergometer.jpg?width=480",
+    "setup_tips": "Poussez les jambes, penchez le buste, tirez les bras. Ordre inverse au retour."
+  },
+  {
+    "name": "Rameur",
+    "brand": "Concept2",
+    "model": "RowErg D",
+    "category": "cardio",
+    "code": "C2C-CARD-04",
+    "location": "Zone cardio (étage 3)",
+    "image_url": "https://commons.wikimedia.org/wiki/Special:FilePath/Gjessing_rowing_ergometer.jpg?width=480",
+    "setup_tips": "Réglage entre 3 et 5, gardez un rythme régulier."
+  },
+  {
+    "name": "Escalier (Stepper)",
+    "brand": "StairMaster",
+    "model": "Gauntlet Stepmill",
+    "category": "cardio",
+    "code": "STM-CARD-05",
+    "location": "Zone cardio (étage 3)",
+    "image_url": "https://commons.wikimedia.org/wiki/Special:FilePath/STAIR_STEPPER_green-removebg-preview.png?width=480",
+    "setup_tips": "Montez à une vitesse où vous pouvez parler, sans vous appuyer."
+  },
+  {
+    "name": "Vélo air (Airbike)",
+    "brand": "Rogue",
+    "model": "Echo Bike",
+    "category": "cardio",
+    "code": "RGE-CARD-06",
+    "location": "Zone cardio (étage 3)",
+    "image_url": "https://commons.wikimedia.org/wiki/Special:FilePath/Air-Bike_-_Flickr_-_Beige_Alert.jpg?width=480",
+    "setup_tips": "Plus vous pédalez vite, plus c'est dur (ventilateur). Idéal en HIIT."
+  },
+  {
+    "name": "Tapis de course",
+    "brand": "Life Fitness",
+    "model": "Integrity Treadmill",
+    "category": "cardio",
+    "code": "LIF-CARD-07",
+    "location": "Zone cardio (étage 3)",
+    "image_url": "https://commons.wikimedia.org/wiki/Special:FilePath/Cross_Runner_-_Curved_Treadmill_08.jpg?width=480",
+    "setup_tips": "Marchez puis courez progressivement, gardez le buste droit."
+  },
+  {
+    "name": "Vélo elliptique",
+    "brand": "Matrix",
+    "model": "Elliptical S7",
+    "category": "cardio",
+    "code": "MTX-CARD-08",
+    "location": "Zone cardio (étage 3)",
+    "image_url": "https://commons.wikimedia.org/wiki/Special:FilePath/EFTA00001128_-_Precor_elliptical_trainer_in_a_home_gym_with_mirrors_reflecting_other_exercise_equipment_and_weights_nearby.jpg?width=480",
+    "setup_tips": "Jambe et bras opposés avancent en même temps, restez debout."
+  },
+  {
+    "name": "Elliptique",
+    "brand": "Precor",
+    "model": "EFX",
+    "category": "cardio",
+    "code": "PRE-CARD-09",
+    "location": "Zone cardio (étage 3)",
+    "image_url": "https://commons.wikimedia.org/wiki/Special:FilePath/EFTA00001128_-_Precor_elliptical_trainer_in_a_home_gym_with_mirrors_reflecting_other_exercise_equipment_and_weights_nearby.jpg?width=480",
+    "setup_tips": "Mouvement fluide sans impact : bras et jambes en opposition."
+  },
+  {
+    "name": "SkiErg",
+    "brand": "Concept2",
+    "model": "SkiErg",
+    "category": "cardio",
+    "code": "C2C-CARD-10",
+    "location": "Zone cardio (étage 3)",
+    "image_url": "https://commons.wikimedia.org/wiki/Special:FilePath/CrossFit_workout_on_SkiErg_DSC1807.jpg?width=480",
+    "setup_tips": "Tirez les poignées vers les cuisses en fléchissant un peu les genoux."
+  },
+  {
+    "name": "Vélo de spinning",
+    "brand": "Cybex",
+    "model": "Spinner",
+    "category": "cardio",
+    "code": "CYB-CARD-11",
+    "location": "Zone cours collectifs (étage 3)",
+    "image_url": "https://commons.wikimedia.org/wiki/Special:FilePath/Spinning-bike.jpg?width=480",
+    "setup_tips": "Vélo de cours : pédalez assis ou debout selon le rythme."
+  },
+  {
+    "name": "Vélo semi-allongé",
+    "brand": "Life Fitness",
+    "model": "R1 Recumbent",
+    "category": "cardio",
+    "code": "LIF-CARD-12",
+    "location": "Zone cardio (étage 3)",
+    "image_url": "",
+    "setup_tips": "Position inclinée, plus facile pour le dos. Parfait pour débuter."
+  },
+  {
+    "name": "Rameur Skillrow",
+    "brand": "Technogym",
+    "model": "Skillrow",
+    "category": "cardio",
+    "code": "TCG-CARD-13",
+    "location": "Zone cardio (étage 3)",
+    "image_url": "",
+    "setup_tips": "Rameur air/magnétique : mouvement complet jambes-buste-bras."
+  },
+  {
+    "name": "Échelle de Jacob",
+    "brand": "Body-Solid",
+    "model": "Jacob's Ladder",
+    "category": "cardio",
+    "code": "BDS-CARD-14",
+    "location": "Zone cardio (étage 3)",
+    "image_url": "",
+    "setup_tips": "Grimpez un escalier roulant incliné, en tenant les barres."
+  },
+  {
+    "name": "Power rack (cage à squats)",
+    "brand": "Rogue",
+    "model": "R-3 Power Rack",
+    "category": "jambes",
+    "code": "RGE-JAMB-16",
+    "location": "Zone barres libres (étage 1)",
+    "image_url": "https://commons.wikimedia.org/wiki/Special:FilePath/Power_Rack.JPG?width=480",
+    "setup_tips": "Cage avec barres de sécurité : squats et développés en toute sûreté."
+  },
+  {
+    "name": "Squat rack",
+    "brand": "Rogue",
+    "model": "SML-2 Squat Stand",
+    "category": "jambes",
+    "code": "RGE-JAMB-17",
+    "location": "Zone barres libres (étage 1)",
+    "image_url": "https://commons.wikimedia.org/wiki/Special:FilePath/Carlon_Colker_on_Squat_rack.jpg?width=480",
+    "setup_tips": "Support pour poser la barre d'épaules et faire des squats."
+  },
+  {
+    "name": "Barre olympique et poids",
+    "brand": "Eleiko",
+    "model": "Olympic Bar",
+    "category": "bras",
+    "code": "ELE-BRAS-07",
+    "location": "Zone barres libres (étage 1)",
+    "image_url": "https://commons.wikimedia.org/wiki/Special:FilePath/Olympic_barbell.jpg?width=480",
+    "setup_tips": "Barre de 20 kg pour haltérophilie, avec plaques colorées."
+  },
+  {
+    "name": "Rack d'haltères",
+    "brand": "Eleiko",
+    "model": "Dumbbell Rack",
+    "category": "bras",
+    "code": "ELE-BRAS-08",
+    "location": "Zone barres libres (étage 1)",
+    "image_url": "https://commons.wikimedia.org/wiki/Special:FilePath/Woman_standing_in_front_of_a_dumbbell_rack_doing_bicep_curls.jpg?width=480",
+    "setup_tips": "Tous les poids d'haltères en accès libre : choisissez le vôtre."
+  },
+  {
+    "name": "Kettlebells",
+    "brand": "Rogue",
+    "model": "Kettlebell E-coat",
+    "category": "core",
+    "code": "RGE-CORE-05",
+    "location": "Zone barres libres (étage 1)",
+    "image_url": "https://commons.wikimedia.org/wiki/Special:FilePath/Kettlebell_Bent_Press.jpg?width=480",
+    "setup_tips": "Boule de fonte : swings, squats, épaulés-guidés."
+  }
+]

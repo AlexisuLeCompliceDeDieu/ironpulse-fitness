@@ -1,6 +1,7 @@
 from flask import Blueprint, request, jsonify, session
 from datetime import date
 from models import db, Session, SessionSet
+from services import anti_cheat
 
 tracking_bp = Blueprint("tracking", __name__)
 
@@ -36,7 +37,7 @@ def create_session():
     db.session.add(session_obj)
     db.session.flush()
 
-    # data["sets"] est une liste de {exercise_id, set_number, weight, reps}
+    # data["sets"] est une liste de {exercise_id, set_number, weight, reps, [difficulty]}
     for set_data in data.get("sets", []):
         db.session.add(SessionSet(
             session_id=session_obj.id,
@@ -45,7 +46,11 @@ def create_session():
             weight=set_data.get("weight", 0.0),
             reps=set_data.get("reps", 0),
             completed=set_data.get("completed", True),
+            difficulty=set_data.get("difficulty", ""),
         ))
+
+    # Anti-triche : signale les séances suspectes (volume/rythme anormaux)
+    session_obj.flagged = anti_cheat.flag_suspicious(user, session_obj, data)
 
     db.session.commit()
     return jsonify({"message": "Séance enregistrée", "session": session_obj.to_dict()}), 201
@@ -95,6 +100,7 @@ def update_session(session_id):
                 weight=set_data.get("weight", 0.0),
                 reps=set_data.get("reps", 0),
                 completed=set_data.get("completed", True),
+                difficulty=set_data.get("difficulty", ""),
             ))
 
     db.session.commit()

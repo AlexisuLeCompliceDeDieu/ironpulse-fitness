@@ -3,6 +3,7 @@ import { Routes, Route, Navigate, useNavigate, useLocation } from "react-router-
 import api from "./api.js";
 import Navbar from "./components/Navbar.jsx";
 import Footer from "./components/Footer.jsx";
+import InstallPrompt from "./components/InstallPrompt.jsx";
 import Login from "./pages/Login.jsx";
 import Register from "./pages/Register.jsx";
 import Dashboard from "./pages/Dashboard.jsx";
@@ -11,6 +12,9 @@ import SessionLog from "./pages/SessionLog.jsx";
 import Nutrition from "./pages/Nutrition.jsx";
 import Progress from "./pages/Progress.jsx";
 import Profile from "./pages/Profile.jsx";
+import Machines from "./pages/Machines.jsx";
+import Social from "./pages/Social.jsx";
+import Friends from "./pages/Friends.jsx";
 
 function Fade({ location, children }) {
   return (
@@ -53,12 +57,16 @@ export default function App() {
           <Route path="/training" element={<TrainingProgram user={user} />} />
           <Route path="/session" element={<SessionLog user={user} />} />
           <Route path="/nutrition" element={<Nutrition user={user} />} />
+          <Route path="/machines" element={<Machines />} />
+          <Route path="/friends" element={<Friends />} />
+          <Route path="/social" element={<Social user={user} />} />
           <Route path="/progress" element={<Progress user={user} />} />
           <Route path="/profile" element={<Profile user={user} onUpdate={setUser} />} />
           <Route path="*" element={<Navigate to="/" />} />
         </Routes>
       </Fade>
       <Footer />
+      <InstallPrompt />
     </>
   ) : (
     <>
@@ -69,6 +77,7 @@ export default function App() {
           <Route path="*" element={<Navigate to="/login" />} />
         </Routes>
       </Fade>
+      <InstallPrompt />
     </>
   );
 

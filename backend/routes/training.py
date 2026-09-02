@@ -29,8 +29,18 @@ def generate():
 
     data = request.get_json(silent=True) or {}
     goal = data.get("goal") or user.goal
+    split_type = data.get("split_type")
+    days_per_week = data.get("days_per_week")
+    if days_per_week:
+        days_per_week = int(days_per_week)
 
-    program = program_generator.generate_program(user, user.equipment_list(), goal=goal)
+    program = program_generator.generate_program(
+        user,
+        user.equipment_list(),
+        goal=goal,
+        split_type=split_type,
+        days_per_week=days_per_week,
+    )
     return jsonify({"message": "Programme généré", "program": program.to_dict()}), 201
 
 

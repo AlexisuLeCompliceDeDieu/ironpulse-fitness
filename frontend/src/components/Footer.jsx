@@ -5,7 +5,7 @@ export default function Footer() {
     <footer className="footer">
       <div className="footer-inner">
         <div>
-          <div className="footer-brand">💪 FITNESS ALGO</div>
+          <div className="footer-brand">💪 IRONPULSE</div>
           <p className="muted" style={{ margin: "0.5rem 0 0 0", maxWidth: "320px" }}>
             Votre coach IA pour l'entraînement et la nutrition. Progression guidée, programmes
             adaptatifs et suivi complet.
@@ -26,7 +26,7 @@ export default function Footer() {
       </div>
       <div className="footer-inner" style={{ marginTop: "1.5rem", borderTop: "1px solid rgba(255,255,255,0.08)", paddingTop: "1rem" }}>
         <p className="muted" style={{ margin: 0, fontSize: "0.85rem" }}>
-          © {new Date().getFullYear()} FITNESS ALGO — Projet étudiant.
+          © {new Date().getFullYear()} IRONPULSE — Projet étudiant.
         </p>
       </div>
     </footer>
