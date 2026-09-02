@@ -1201,3 +1201,197 @@ td {
 .install-text { flex: 1 1 260px; }
 .install-actions { display: flex; gap: 0.5rem; }
 .install-banner .btn-sm { white-space: nowrap; }
+
+/* ============================================================
+   MOBILE APP STYLE — barre de navigation en bas + zones tactiles
+   ============================================================ */
+
+/* Safe area pour les appareils avec encoche / barre d'accueil (iOS) */
+:root {
+  --safe-top: env(safe-area-inset-top, 0px);
+  --safe-right: env(safe-area-inset-right, 0px);
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+  --safe-left: env(safe-area-inset-left, 0px);
+  --tabbar-h: 62px;
+}
+
+/* Barre d'onglets en bas (mobile uniquement) */
+.mobile-tabbar {
+  display: none;
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 500;
+  background: rgba(15, 15, 19, 0.92);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+  border-top: 1px solid var(--border);
+  padding: 0.35rem 0 var(--safe-bottom);
+  overflow-x: auto;
+  overflow-y: hidden;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.mobile-tabbar::-webkit-scrollbar {
+  display: none;
+}
+
+/* Rangée d'onglets défilante */
+.mobile-tabbar {
+  white-space: nowrap;
+  text-align: center;
+}
+
+.mobile-tab {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.1rem;
+  min-width: 74px;
+  padding: 0.4rem 0.55rem 0.3rem;
+  border-radius: 14px;
+  color: var(--muted);
+  min-height: 50px;
+  vertical-align: middle;
+  transition: color 0.2s, transform 0.15s var(--ease), background 0.2s;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.mobile-tab:active {
+  transform: scale(0.9);
+}
+
+.mobile-tab.active {
+  color: var(--primary);
+}
+
+.mobile-tab-icon {
+  font-size: 1.35rem;
+  line-height: 1;
+  filter: grayscale(0.2) opacity(0.75);
+  transition: filter 0.2s, transform 0.2s var(--ease);
+}
+
+.mobile-tab.active .mobile-tab-icon {
+  filter: none;
+  transform: translateY(-1px);
+}
+
+.mobile-tab-label {
+  font-size: 0.6rem;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+/* Contenu : ne pas cacher derrière la barre du bas (mobile) */
+@media (max-width: 767px) {
+  .app > .container {
+    padding-bottom: calc(4.5rem + var(--safe-bottom));
+  }
+}
+
+/* ====== Mobile (< 768px) : mode app native ======
+   - on masque le menu horizontal du haut et la zone utilisateur
+   - on garde une barre du haut compacte (juste le logo)
+   - on affiche la barre d'onglets fixe en bas                    */
+@media (max-width: 767px) {
+  .mobile-tabbar {
+    display: block;
+  }
+
+  .navbar {
+    padding: 0.5rem 0.9rem;
+  }
+
+  .navbar .nav,
+  .navbar .nav-user {
+    display: none;
+  }
+
+  .brand-mark {
+    width: 34px;
+    height: 34px;
+    font-size: 1.05rem;
+    border-radius: 10px;
+  }
+
+  .brand-name {
+    font-size: 1.1rem;
+  }
+
+  /* Zones tactiles agrandies pour le pouce */
+  .btn {
+    min-height: 48px;
+    padding: 0.8rem 1.3rem;
+  }
+
+  .btn-sm {
+    min-height: 42px;
+    padding: 0.5rem 1rem;
+  }
+
+  .tab {
+    padding: 0.75rem 1.1rem;
+    min-height: 44px;
+  }
+
+  .chip {
+    padding: 0.65rem 1rem;
+    min-height: 44px;
+    display: inline-flex;
+    align-items: center;
+  }
+
+  input, select, textarea {
+    padding: 0.85rem 1rem;
+    font-size: 1rem;
+  }
+
+  .exercise-row {
+    padding: 0.9rem 0.6rem;
+    min-height: 56px;
+  }
+
+  .container {
+    padding: 1.25rem 1.1rem 4.5rem;
+  }
+
+  .hero {
+    padding: 1.6rem 1.4rem;
+    border-radius: 20px;
+  }
+
+  .hero h1 {
+    font-size: 1.6rem;
+  }
+
+  .stat-value {
+    font-size: 1.6rem !important;
+  }
+
+  h1, h2 {
+    font-size: max(1.4rem, 5vw);
+  }
+
+  /* Le footer ne doit pas être masqué par la barre du bas */
+  .footer {
+    padding-bottom: calc(3.5rem + var(--safe-bottom));
+  }
+
+  /* La bannière d'installation ne doit pas chevaucher la barre du bas */
+  .install-banner {
+    bottom: calc(calc(var(--tabbar-h) + 0.75rem) + var(--safe-bottom));
+    width: min(560px, calc(100vw - 2rem));
+  }
+}
+
+/* ====== Dasktop / tablette (>= 768px) : menu horizontal classique ====== */
+@media (min-width: 768px) {
+  .mobile-tabbar {
+    display: none;
+  }
+}
+

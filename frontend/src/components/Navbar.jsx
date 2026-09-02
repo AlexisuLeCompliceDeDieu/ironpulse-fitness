@@ -1,6 +1,18 @@
 import { useEffect, useState, useRef } from "react";
 import { Link, NavLink, useNavigate } from "react-router-dom";
 
+const TAB_ITEMS = [
+  { to: "/", end: true, icon: "🏠", label: "Accueil" },
+  { to: "/training", end: false, icon: "🗓️", label: "Programme" },
+  { to: "/session", end: false, icon: "📋", label: "Séance" },
+  { to: "/nutrition", end: false, icon: "🥗", label: "Nutrition" },
+  { to: "/machines", end: false, icon: "🏋️", label: "Machines" },
+  { to: "/social", end: false, icon: "🏆", label: "Classement" },
+  { to: "/progress", end: false, icon: "📈", label: "Progression" },
+  { to: "/friends", end: false, icon: "👥", label: "Amis" },
+  { to: "/profile", end: false, icon: "👤", label: "Profil" },
+];
+
 export default function Navbar({ user, onLogout }) {
   const navigate = useNavigate();
   const [open, setOpen] = useState(null);
@@ -22,107 +34,126 @@ export default function Navbar({ user, onLogout }) {
   };
 
   return (
-    <nav className="navbar" ref={navRef}>
-      <Link to="/" className="brand">
-        <span className="brand-mark">💪</span>
-        <span className="brand-name">IRONPULSE</span>
-      </Link>
+    <>
+      {/* ===== Barre du haut (desktop + compact sur mobile) ===== */}
+      <nav className="navbar" ref={navRef}>
+        <Link to="/" className="brand">
+          <span className="brand-mark">💪</span>
+          <span className="brand-name">IRONPULSE</span>
+        </Link>
 
-      <div className="nav">
-        <div className="nav-item">
-          <NavLink
-            to="/"
-            end
-            className={({ isActive }) => "nav-link" + (isActive ? " active" : "")}
-          >
-            <span>🏠</span> Accueil
-          </NavLink>
-        </div>
-
-        <div className={"nav-item" + (open === "training" ? " open" : "")} onClick={() => toggle("training")}>
-          <span className="nav-link">
-            <span>🏋️</span> Entraînement <span className="nav-caret">▾</span>
-          </span>
-          <div className="dropdown">
-            <NavLink to="/training" onClick={() => setOpen(null)}>
-              <span className="drop-icon">🗓️</span>
-              <span>
-                Mon programme
-                <span className="drop-desc">Votre plan d'entraînement personnalisé</span>
-              </span>
+        <div className="nav">
+          <div className="nav-item">
+            <NavLink
+              to="/"
+              end
+              className={({ isActive }) => "nav-link" + (isActive ? " active" : "")}
+            >
+              <span>🏠</span> Accueil
             </NavLink>
-            <NavLink to="/session" onClick={() => setOpen(null)}>
-              <span className="drop-icon">📋</span>
-              <span>
-                Suivi de séance
-                <span className="drop-desc">Enregistrer charges et ressenti</span>
-              </span>
+          </div>
+
+          <div className={"nav-item" + (open === "training" ? " open" : "")} onClick={() => toggle("training")}>
+            <span className="nav-link">
+              <span>🏋️</span> Entraînement <span className="nav-caret">▾</span>
+            </span>
+            <div className="dropdown">
+              <NavLink to="/training" onClick={() => setOpen(null)}>
+                <span className="drop-icon">🗓️</span>
+                <span>
+                  Mon programme
+                  <span className="drop-desc">Votre plan d'entraînement personnalisé</span>
+                </span>
+              </NavLink>
+              <NavLink to="/session" onClick={() => setOpen(null)}>
+                <span className="drop-icon">📋</span>
+                <span>
+                  Suivi de séance
+                  <span className="drop-desc">Enregistrer charges et ressenti</span>
+                </span>
+              </NavLink>
+            </div>
+          </div>
+
+          <div className="nav-item">
+            <NavLink
+              to="/nutrition"
+              className={({ isActive }) => "nav-link" + (isActive ? " active" : "")}
+            >
+              <span>🥗</span> Nutrition
+            </NavLink>
+          </div>
+
+          <div className="nav-item">
+            <NavLink
+              to="/machines"
+              className={({ isActive }) => "nav-link" + (isActive ? " active" : "")}
+            >
+              <span>🏋️</span> Machines
+            </NavLink>
+          </div>
+
+          <div className="nav-item">
+            <NavLink
+              to="/friends"
+              className={({ isActive }) => "nav-link" + (isActive ? " active" : "")}
+            >
+              <span>👥</span> Amis
+            </NavLink>
+          </div>
+
+          <div className="nav-item">
+            <NavLink
+              to="/social"
+              className={({ isActive }) => "nav-link" + (isActive ? " active" : "")}
+            >
+              <span>🏆</span> Classement
+            </NavLink>
+          </div>
+
+          <div className="nav-item">
+            <NavLink
+              to="/progress"
+              className={({ isActive }) => "nav-link" + (isActive ? " active" : "")}
+            >
+              <span>📈</span> Progression
+            </NavLink>
+          </div>
+
+          <div className="nav-item">
+            <NavLink
+              to="/profile"
+              className={({ isActive }) => "nav-link" + (isActive ? " active" : "")}
+            >
+              <span>👤</span> Profil
             </NavLink>
           </div>
         </div>
 
-        <div className="nav-item">
-          <NavLink
-            to="/nutrition"
-            className={({ isActive }) => "nav-link" + (isActive ? " active" : "")}
-          >
-            <span>🥗</span> Nutrition
-          </NavLink>
+        <div className="nav-user">
+          <div className="avatar">{user?.username?.charAt(0)?.toUpperCase() || "U"}</div>
+          <span style={{ fontWeight: 700 }}>{user?.username}</span>
+          <button className="btn btn-secondary btn-sm" onClick={logout}>
+            Déconnexion
+          </button>
         </div>
+      </nav>
 
-        <div className="nav-item">
+      {/* ===== Barre d'onglets en bas (mobile, style app native) ===== */}
+      <nav className="mobile-tabbar" aria-label="Navigation mobile">
+        {TAB_ITEMS.map((t) => (
           <NavLink
-            to="/machines"
-            className={({ isActive }) => "nav-link" + (isActive ? " active" : "")}
+            key={t.to + (t.end ? "-end" : "")}
+            to={t.to}
+            end={t.end}
+            className={({ isActive }) => "mobile-tab" + (isActive ? " active" : "")}
+            onClick={() => setOpen(null)}
           >
-            <span>🏋️</span> Machines
+            <span className="mobile-tab-icon">{t.icon}</span>
+            <span className="mobile-tab-label">{t.label}</span>
           </NavLink>
-        </div>
-
-        <div className="nav-item">
-          <NavLink
-            to="/friends"
-            className={({ isActive }) => "nav-link" + (isActive ? " active" : "")}
-          >
-            <span>👥</span> Amis
-          </NavLink>
-        </div>
-
-        <div className="nav-item">
-          <NavLink
-            to="/social"
-            className={({ isActive }) => "nav-link" + (isActive ? " active" : "")}
-          >
-            <span>🏆</span> Classement
-          </NavLink>
-        </div>
-
-        <div className="nav-item">
-          <NavLink
-            to="/progress"
-            className={({ isActive }) => "nav-link" + (isActive ? " active" : "")}
-          >
-            <span>📈</span> Progression
-          </NavLink>
-        </div>
-
-        <div className="nav-item">
-          <NavLink
-            to="/profile"
-            className={({ isActive }) => "nav-link" + (isActive ? " active" : "")}
-          >
-            <span>👤</span> Profil
-          </NavLink>
-        </div>
-      </div>
-
-      <div className="nav-user">
-        <div className="avatar">{user?.username?.charAt(0)?.toUpperCase() || "U"}</div>
-        <span style={{ fontWeight: 700 }}>{user?.username}</span>
-        <button className="btn btn-secondary btn-sm" onClick={logout}>
-          Déconnexion
-        </button>
-      </div>
-    </nav>
+        ))}
+      </nav>
+    </>
   );
 }
