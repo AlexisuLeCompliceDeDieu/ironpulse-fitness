@@ -41,8 +41,13 @@ export default function App() {
   }, []);
 
   useEffect(() => {
-    if (user && !showTour && !isTourDone()) {
+    if (!user || showTour) return;
+    let justRegistered = false;
+    try { justRegistered = sessionStorage.getItem("ironpulse_just_registered") === "1"; } catch (e) {}
+    // Force le guide après l'inscription (PC + mobile) sinon après le premier login
+    if (justRegistered || !isTourDone()) {
       setShowTour(true);
+      try { sessionStorage.removeItem("ironpulse_just_registered"); } catch (e) {}
     }
   }, [user]);
 

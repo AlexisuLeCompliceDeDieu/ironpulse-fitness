@@ -66,6 +66,11 @@ export default function Register({ onAuth }) {
     payload.split_type = form.split_type || null;
     try {
       const res = await api.post("/auth/register", payload);
+      // On force le guide d'introduction juste après l'inscription (PC + mobile)
+      try {
+        localStorage.removeItem("ironpulse_tour_done_v2");
+        sessionStorage.setItem("ironpulse_just_registered", "1");
+      } catch (e) {}
       onAuth(res.data.user);
     } catch (err) {
       setError(err.response?.data?.error || "Erreur d'inscription");
