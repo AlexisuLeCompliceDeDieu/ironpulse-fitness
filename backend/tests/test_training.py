@@ -17,6 +17,14 @@ def test_generate_program(auth_client):
             assert pe["exercise"] is not None
 
 
+def test_rest_depends_on_exercise_size(auth_client):
+    """Repos : 2min30 sur les exercices polyarticulaires, 1min30 sur les isolations."""
+    program = auth_client.post("/api/training/program/generate").get_json()["program"]
+    rests = {pe["exercise"]["is_compound"]: pe["rest_seconds"] for day in program["days"] for pe in day["exercises"]}
+    assert rests.get(True) == 150
+    assert rests.get(False) == 90
+
+
 def test_current_program(auth_client):
     auth_client.post("/api/training/program/generate")
     resp = auth_client.get("/api/training/program/current")

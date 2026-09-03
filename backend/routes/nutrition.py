@@ -1,6 +1,6 @@
 from flask import Blueprint, request, jsonify, session
 from models import db, Food, MealPlan, ShoppingList
-from services import meal_generator
+from services import meal_generator, nutrition as nutrition_service
 
 nutrition_bp = Blueprint("nutrition", __name__)
 
@@ -46,6 +46,20 @@ def generate_plan():
     meal_generator.remove_old_plans(user.id, plan.id)
 
     return jsonify({"message": "Plan généré", "plan": plan.to_dict()}), 201
+
+
+@nutrition_bp.route("/target", methods=["GET"])
+def calorie_target():
+    """Objectif calorique : valeur suggérée (calculée) et valeur utilisée."""
+    user = current_user()
+    if not user:
+        return jsonify({"error": "Non authentifié"}), 401
+    suggested = nutrition_service.compute_daily_calories(user)
+    return jsonify({
+        "suggested": suggested,
+        "current": nutrition_service.current_calories(user),
+        "calories_auto": bool(user.calories_auto),
+    }), 200
 
 
 @nutrition_bp.route("/shopping-list/generate", methods=["POST"])

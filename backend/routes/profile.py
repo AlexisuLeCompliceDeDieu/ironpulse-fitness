@@ -35,6 +35,16 @@ def update_profile():
         if field in data:
             setattr(user, field, data[field])
 
+    # Calories : si on passe explicitement calories_auto, on l'applique.
+    # Sinon, une saisie manuelle de daily_calories bascule en manuel.
+    if "calories_auto" in data:
+        user.calories_auto = bool(data["calories_auto"])
+        if user.calories_auto:
+            from services.nutrition import compute_daily_calories
+            user.daily_calories = compute_daily_calories(user)
+    elif "daily_calories" in data:
+        user.calories_auto = False
+
     if "split_type" in data:
         user.split_type = data["split_type"] or None
     if "sessions_per_week" in data:

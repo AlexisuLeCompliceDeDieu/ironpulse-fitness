@@ -22,8 +22,8 @@ def register():
 
     user = User(username=username, email=email)
     user.set_password(password)
-    user.goal = data.get("goal", user.goal)
-    user.level = data.get("level", user.level)
+    user.goal = data.get("goal", "prise_masse")
+    user.level = data.get("level", "debutant")
     if data.get("weight") is not None:
         user.weight = data["weight"]
     if data.get("target_weight") is not None:
@@ -41,6 +41,18 @@ def register():
         user.sessions_per_week = int(val) if val else None
 
     db.session.add(user)
+    db.session.flush()  # matérialise les valeurs par défaut (poids, taille, âge)
+
+    # Calories : par défaut calculées automatiquement depuis le profil renseigné.
+    # Si l'utilisateur a fourni explicitement une valeur (ou désactivé l'auto),
+    # on garde sa saisie manuelle.
+    from services.nutrition import compute_daily_calories
+    daily_calories_provided = data.get("daily_calories") is not None
+    calories_auto = data.get("calories_auto", not daily_calories_provided)
+    user.calories_auto = bool(calories_auto)
+    if calories_auto:
+        user.daily_calories = compute_daily_calories(user)
+
     db.session.commit()
 
     # Connexion directe après l'inscription (pas de 2FA)

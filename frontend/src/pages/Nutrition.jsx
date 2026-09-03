@@ -23,8 +23,12 @@ export default function Nutrition({ user }) {
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
   const [messageType, setMessageType] = useState("success");
+  const [targetKcal, setTargetKcal] = useState(user.daily_calories);
 
   useEffect(() => {
+    api.get("/nutrition/target")
+      .then((res) => setTargetKcal(res.data?.current ?? user.daily_calories))
+      .catch(() => {});
     api.get("/nutrition/plan/latest")
       .then((res) => setPlan(res.data.plan))
       .catch(() => setPlan(null));
@@ -83,7 +87,7 @@ export default function Nutrition({ user }) {
         title="🥗 Nutrition"
         subtitle="Générez vos menus et listes de courses selon votre objectif calorique personnalisé."
         image={FIT_IMAGES.nutrition}
-        tags={[`🎯 ${user.daily_calories} kcal / jour`, `🥑 Repas équilibrés`, `🛒 Liste de courses`]}
+        tags={[`🎯 ${targetKcal} kcal / jour`, `🥑 Repas équilibrés`, `🛒 Liste de courses`]}
       />
 
       {message && <div className={messageType === "error" ? "error" : "success-msg"}>{message}</div>}
@@ -95,7 +99,7 @@ export default function Nutrition({ user }) {
               🎯 Objectif calorique
             </h3>
             <p style={{ margin: "0.3rem 0 0 0" }}>
-              <strong style={{ fontSize: "1.6rem", color: "var(--primary)" }}>{user.daily_calories}</strong>{" "}
+              <strong style={{ fontSize: "1.6rem", color: "var(--primary)" }}>{targetKcal}</strong>{" "}
               kcal / jour
             </p>
           </div>

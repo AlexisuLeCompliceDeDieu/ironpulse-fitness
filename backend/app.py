@@ -41,6 +41,7 @@ def create_app():
 
         db.create_all()
         _migrate_columns()
+        _ensure_calories_auto()
         seed_exercises()
         seed_foods()
         seed_machines()
@@ -141,6 +142,29 @@ def _migrate_columns():
         db.session.commit()
         db.session.execute(text("UPDATE friendships SET status = 'accepted'"))
         db.session.commit()
+
+
+def _ensure_calories_auto():
+    """Ajoute la colonne `calories_auto` sur toutes les bases (Postgres inclus).
+
+    `db.create_all()` ne modifie pas les tables existantes : pour les bases fixes
+    (ex. Supabase) il faut un ALTER TABLE idempotent ré-exécuté à chaque démarrage.
+    """
+    from sqlalchemy import inspect, text
+
+    try:
+        inspector = inspect(db.engine)
+        columns_u = [c["name"] for c in inspector.get_columns("users")]
+        if "calories_auto" in columns_u:
+            return
+        db.session.execute(text("ALTER TABLE users ADD COLUMN calories_auto BOOLEAN DEFAULT 1"))
+        db.session.commit()
+    except Exception as e:  # pragma: no cover - sécurité de démarrage
+        print(f"calories_auto migration skipped: {e}")
+        try:
+            db.session.rollback()
+        except Exception:
+            pass
 
 
 def seed_machines():

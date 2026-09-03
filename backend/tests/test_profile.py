@@ -6,7 +6,10 @@ def test_profile_unauthenticated(client):
 def test_get_profile(auth_client):
     resp = auth_client.get("/api/profile/")
     assert resp.status_code == 200
-    assert resp.get_json()["user"]["daily_calories"] == 2500
+    user = resp.get_json()["user"]
+    # Nouvel utilisateur : calories calculées automatiquement depuis le profil par défaut
+    assert user["daily_calories"] == 2550
+    assert user["calories_auto"] is True
 
 
 def test_update_profile(auth_client):

@@ -16,12 +16,40 @@ def test_generate_plan(auth_client):
     assert resp.status_code == 201
     plan = resp.get_json()["plan"]
     assert plan["num_days"] == 7
-    assert plan["target_calories"] == 2500
+    # L'objectif calorique est calculé automatiquement depuis le profil par défaut
+    # (prise_masse, debutant, 70kg, 175cm, 25 ans) -> Mifflin-St Jeor ajusté.
+    assert plan["target_calories"] == 2550
     # 4 repas/jour x 7 jours = 28 repas
     assert len(plan["meals"]) == 28
     for meal in plan["meals"]:
         assert meal["items"]  # chaque repas contient des aliments
         assert meal["totals"]["kcal"] > 0
+
+
+def test_plan_meals_vary(auth_client):
+    """Sur une semaine, les repas d'un même type ne sont pas tous identiques."""
+    plan = auth_client.post("/api/nutrition/plan/generate", json={"num_days": 7}).get_json()["plan"]
+    breakfasts = [m["name"] for m in plan["meals"] if m["meal_type"] == "Petit-déjeuner"]
+    assert len(set(breakfasts)) > 1
+
+
+def test_calorie_target_autocalculated(auth_client):
+    resp = auth_client.get("/api/nutrition/target")
+    assert resp.status_code == 200
+    data = resp.get_json()
+    assert data["calories_auto"] is True
+    assert data["suggested"] > 0
+    assert data["current"] == data["suggested"] == 2550
+
+
+def test_calorie_target_manual_overrides(auth_client):
+    auth_client.put("/api/profile/", json={"daily_calories": 3000, "calories_auto": False})
+    resp = auth_client.get("/api/nutrition/target")
+    data = resp.get_json()
+    assert data["calories_auto"] is False
+    assert data["current"] == 3000
+    # suggested reste calculé, mais current utilise la saisie manuelle
+    assert data["suggested"] == 2550
 
 
 def test_latest_plan(auth_client):

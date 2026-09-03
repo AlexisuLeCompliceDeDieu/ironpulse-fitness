@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import api from "../api.js";
 import PageHero, { FIT_IMAGES } from "../components/PageHero.jsx";
 
@@ -106,6 +106,17 @@ export default function Profile({ user, onUpdate }) {
   const [weightMsg, setWeightMsg] = useState("");
   const [weightMsgOk, setWeightMsgOk] = useState(true);
   const [confirm, setConfirm] = useState(null);
+  const [caloriesAuto, setCaloriesAuto] = useState(user.calories_auto !== false);
+  const [suggestedKcal, setSuggestedKcal] = useState(null);
+
+  useEffect(() => {
+    api.get("/nutrition/target")
+      .then((res) => {
+        setSuggestedKcal(res.data?.suggested ?? null);
+        setCaloriesAuto(res.data?.calories_auto !== false);
+      })
+      .catch(() => {});
+  }, []);
 
   const onChange = (e) => setForm({ ...form, [e.target.name]: e.target.value });
 
@@ -131,10 +142,17 @@ export default function Profile({ user, onUpdate }) {
     };
     try {
       const numeric = {};
-      for (const k of ["weight", "target_weight", "height", "age", "daily_calories"]) {
+      for (const k of ["weight", "target_weight", "height", "age"]) {
         numeric[k] = Number(form[k]);
       }
       const payload = { ...form, ...numeric };
+      payload.calories_auto = caloriesAuto;
+      // En mode automatique, on ne force pas de valeur manuelle : le serveur recalcule
+      if (caloriesAuto) {
+        payload.daily_calories = null;
+      } else {
+        payload.daily_calories = Number(form.daily_calories);
+      }
       payload.split_type = form.split_type || null;
       payload.sessions_per_week = form.sessions_per_week ? Number(form.sessions_per_week) : null;
       const res = await api.put("/profile/", payload);
@@ -257,8 +275,29 @@ export default function Profile({ user, onUpdate }) {
             <input name="age" type="number" value={form.age} onChange={onChange} />
           </div>
           <div className="form-group">
-            <label>Calories quotidiennes (kcal)</label>
-            <input name="daily_calories" type="number" value={form.daily_calories} onChange={onChange} />
+            <label style={{ display: "flex", alignItems: "center", gap: "0.5rem", cursor: "pointer" }}>
+              <input
+                type="checkbox"
+                style={{ width: "20px", height: "20px", margin: 0, accentColor: "var(--primary)" }}
+                checked={caloriesAuto}
+                onChange={(e) => setCaloriesAuto(e.target.checked)}
+              />
+              Calories automatiques (selon mon profil)
+            </label>
+            {caloriesAuto ? (
+              <small className="muted" style={{ display: "block", marginTop: "0.3rem" }}>
+                {suggestedKcal ? `ℹ️ Objectif calculé : ${suggestedKcal} kcal/jour selon votre profil. Recalculez en sauvegardant.` : "Recalcul automatique activé."}
+              </small>
+            ) : (
+              <>
+                <input name="daily_calories" type="number" value={form.daily_calories} onChange={onChange} />
+                {suggestedKcal && (
+                  <small className="muted" style={{ display: "block", marginTop: "0.3rem" }}>
+                    Suggéré selon votre profil : {suggestedKcal} kcal/jour
+                  </small>
+                )}
+              </>
+            )}
           </div>
           <div className="form-group">
             <label>Séances par semaine</label>

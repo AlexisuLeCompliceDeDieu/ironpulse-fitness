@@ -8,6 +8,7 @@ Algorithme:
 """
 
 from datetime import date, timedelta
+import random
 
 SPLITS = {
     "prise_masse": {
@@ -238,6 +239,8 @@ def generate_program(user, available_equipment=None, goal=None, split_type=None,
     db.session.flush()
 
     day_specs = build_days(templates, target_days)
+    # Générateur aléatoire propre au programme : chaque régénération varie
+    rng = random.Random()
     day_number = 1
     for day_spec in day_specs:
         day = ProgramDay(program_id=program.id, day_number=day_number, name=day_spec["name"])
@@ -247,14 +250,17 @@ def generate_program(user, available_equipment=None, goal=None, split_type=None,
         order = 1
         for category in day_spec["categories"]:
             count = day_spec.get("exercises_per_category", 1)
-            exercises = select_exercises(category, count, available_equipment)
+            exercises = select_exercises(category, count, available_equipment, rng=rng)
             for ex in exercises:
+                # Repos : plus long sur les gros exercices (polyarticulaires), plus court
+                # sur les petits (isolations).
+                rest_seconds = 150 if ex.is_compound else 90
                 db.session.add(ProgramExercise(
                     day_id=day.id,
                     exercise_id=ex.id,
                     sets=prescription["sets"],
                     reps=prescription["reps"],
-                    rest_seconds=prescription["rest"],
+                    rest_seconds=rest_seconds,
                     target_weight=estimate_weight(user, ex, prescription),
                     order=order,
                 ))
@@ -266,9 +272,15 @@ def generate_program(user, available_equipment=None, goal=None, split_type=None,
     return program
 
 
-def select_exercises(category, count, available_equipment):
-    """Sélectionne `count` exercices de la catégorie, préférant les polyarticulaires."""
+def select_exercises(category, count, available_equipment, rng=None):
+    """Sélectionne `count` exercices de la catégorie, préférant les polyarticulaires.
+
+    `rng` (random.Random) permet de varier la sélection d'un programme à l'autre :
+    les exercices polyarticulaires sont prioritaires mais leur ordre est mélangé.
+    """
     from models import Exercise
+
+    rng = rng or random
 
     query = Exercise.query.filter_by(category=category)
     all_ex = query.all()
@@ -289,6 +301,10 @@ def select_exercises(category, count, available_equipment):
 
     compound = sorted([e for e in matching if e.is_compound], key=lambda e: e.id)
     isolation = sorted([e for e in matching if not e.is_compound], key=lambda e: e.id)
+
+    # Mélange pour varier, tout en gardant la priorité aux polyarticulaires
+    rng.shuffle(compound)
+    rng.shuffle(isolation)
 
     selected = []
     for e in (compound + isolation):

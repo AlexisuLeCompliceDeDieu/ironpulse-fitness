@@ -21,6 +21,7 @@ class User(db.Model):
     height = db.Column(db.Float, default=175.0)
     age = db.Column(db.Integer, default=25)
     daily_calories = db.Column(db.Integer, default=2500)
+    calories_auto = db.Column(db.Boolean, default=True)  # True = calcul auto selon le profil
     available_equipment = db.Column(db.Text, default="[]")  # JSON list of equipment names
     dietary_preferences = db.Column(db.Text, default="[]")  # JSON list: vegetarien, vegan, sans_lactose, sans_gluten, sans_noix
     split_type = db.Column(db.String(30), default=None)     # full_body, upper_lower, push_pull_legs, etc. (None = auto selon l'objectif)
@@ -62,6 +63,7 @@ class User(db.Model):
             "height": self.height,
             "age": self.age,
             "daily_calories": self.daily_calories,
+            "calories_auto": bool(self.calories_auto),
             "available_equipment": self.equipment_list(),
             "dietary_preferences": self.preferences_list(),
             "split_type": self.split_type,
@@ -147,7 +149,9 @@ class ProgramDay(db.Model):
         setup_per_ex = 0.75      # ~45s pour charger/régler le matériel
         warmup_per_ex = 1.0      # 1 série d'échauffement par exercice
         transition = 2.0         # minutes pour passer d'un exercice à l'autre
-        total = 0.0
+        global_warmup = 6.0      # échauffement général / mise en route en début de séance
+        cleanup = 5.0            # nettoyage + rangement du matériel en fin de séance
+        total = global_warmup + cleanup
         ex_list = list(self.exercises)
         for pe in ex_list:
             effort = (pe.reps * effort_per_rep * pe.sets) / 60

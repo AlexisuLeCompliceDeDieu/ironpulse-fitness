@@ -51,6 +51,7 @@ export default function Register({ onAuth }) {
   });
   const [error, setError] = useState("");
   const [submitting, setSubmitting] = useState(false);
+  const [caloriesAuto, setCaloriesAuto] = useState(true);
 
   const onChange = (e) => setForm({ ...form, [e.target.name]: e.target.value });
 
@@ -64,6 +65,8 @@ export default function Register({ onAuth }) {
     }
     payload.sessions_per_week = form.sessions_per_week ? Number(form.sessions_per_week) : null;
     payload.split_type = form.split_type || null;
+    payload.calories_auto = caloriesAuto;
+    payload.daily_calories = caloriesAuto ? null : (form.daily_calories ? Number(form.daily_calories) : null);
     try {
       const res = await api.post("/auth/register", payload);
       // On force le guide d'introduction juste après l'inscription (PC + mobile)
@@ -168,9 +171,23 @@ export default function Register({ onAuth }) {
               </select>
             </div>
             <div className="form-group">
-              <label>Calories quotidiennes (kcal)</label>
-              <input type="number" name="daily_calories" value={form.daily_calories} onChange={onChange} />
-              <small className="muted">Valeur indicative par défaut, ajustable dans votre profil.</small>
+              <label style={{ display: "flex", alignItems: "center", gap: "0.5rem", cursor: "pointer" }}>
+                <input
+                  type="checkbox"
+                  style={{ width: "20px", height: "20px", margin: 0, accentColor: "var(--primary)" }}
+                  checked={caloriesAuto}
+                  onChange={(e) => setCaloriesAuto(e.target.checked)}
+                />
+                Calculer mes calories automatiquement selon mon profil
+              </label>
+              {!caloriesAuto && (
+                <input type="number" name="daily_calories" value={form.daily_calories} onChange={onChange} />
+              )}
+              <small className="muted">
+                {caloriesAuto
+                  ? "L'application calcule votre objectif calorique selon votre poids, taille, âge, niveau et objectif."
+                  : "Objectif calorique manuel (utilisé tel quel)."}
+              </small>
             </div>
           </div>
 

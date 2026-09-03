@@ -48,6 +48,15 @@ export default function TrainingProgram({ user }) {
       .catch(() => setProgram(null));
   }, []);
 
+  // Pré-sélection automatique depuis le profil (split choisi OU objectif),
+  // pour éviter de re-rentrer les choses à la main.
+  useEffect(() => {
+    if (presets.length === 0 || selectedSplit) return;
+    const fromProfileSplit = presets.find((p) => p.split_type && p.split_type === user.split_type);
+    const fromGoal = presets.find((p) => p.goal === user.goal);
+    setSelectedSplit(fromProfileSplit || fromGoal || null);
+  }, [presets, user.split_type, user.goal]);
+
   const splitOptions = presets.filter((p) => p.kind === "split");
   const goalOptions = presets.filter((p) => p.kind === "goal");
 
@@ -74,11 +83,18 @@ export default function TrainingProgram({ user }) {
     return (
       <div className="container">
         <PageHero
-          title="🏋️ Créez votre programme"
-          subtitle="Choisissez un type de séance et votre nombre de séances par semaine pour générer un programme personnalisé."
+          title="🏋️ Votre programme personnalisé"
+          subtitle="Généré directement depuis votre profil : objectif, niveau, matériel et séances par semaine. Vous pouvez ajuster le split ci-dessous."
           image={FIT_IMAGES.training}
-          tags={[`🎚️ Niveau : ${user.level}`, `💡 ${presets.length} options disponibles`]}
+          tags={[`🎚️ Niveau : ${user.level}`, `🎯 ${goalMetaLabel(user.goal)}`, `📆 ${daysPerWeek} séances/semaine`]}
         />
+
+        <div className="card" style={{ marginTop: "1rem" }}>
+          <p style={{ margin: 0, fontSize: "0.95rem" }}>
+            ✅ <strong>Le split et le nombre de séances sont pré-remplis depuis votre profil.</strong>{" "}
+            Cliquez simplement sur « ⚡ Générer mon programme » en bas pour obtenir un plan adapté, ou ajustez ci-dessous.
+          </p>
+        </div>
 
         <div className="section-title">🏗️ Type de séance (split)</div>
         <div className="grid grid-2">
@@ -260,4 +276,8 @@ const GOAL_LABELS = {
 
 function goalLabel(goal) {
   return GOAL_LABELS[goal] || goal;
+}
+
+function goalMetaLabel(goal) {
+  return (GOAL_META[goal] || {}).label || goal;
 }

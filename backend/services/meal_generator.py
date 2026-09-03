@@ -7,6 +7,7 @@ Algorithme:
 """
 
 import json
+import random
 
 # Recettes: nom -> liste (food_name, quantite_grammes)
 # Basées sur les aliments présents dans foods.json
@@ -96,7 +97,9 @@ def generate_meal_plan(user, num_days, foods_by_name):
     """Génère un plan alimentaire pour `num_days` jours avec un objectif calorique."""
     from models import MealPlan, Meal, MealItem, db
 
-    target_calories = user.daily_calories or 2500
+    from services.nutrition import current_calories
+
+    target_calories = current_calories(user)
     preferences = user.preferences_list() if hasattr(user, "preferences_list") else []
 
     plan = MealPlan(
@@ -107,8 +110,9 @@ def generate_meal_plan(user, num_days, foods_by_name):
     db.session.add(plan)
     db.session.flush()
 
-    # Rotation des recettes pour varier les menus
-    used = {}  # recette -> compteur
+    # Rotation des recettes pour varier les menus (on évite de répéter indéfiniment)
+    used = {}          # recette -> compteur
+    last_picked = {}   # type de repas -> recette choisie au tour précédent
 
     def pick_for(type_):
         pool = [r for r in RECIPES if r["meal_type"] == type_]
@@ -119,9 +123,21 @@ def generate_meal_plan(user, num_days, foods_by_name):
             pool = [r for r in RECIPES if _recipe_is_compatible(r, preferences, foods_by_name)]
         if not pool:
             pool = RECIPES
+
+        # On privilégie les recettes les moins utilisées pour équilibrer les menus
         pool_sorted = sorted(pool, key=lambda r: used.get(r["name"], 0))
-        chosen = pool_sorted[0]
+        min_used = used.get(pool_sorted[0]["name"], 0)
+        least_used = [r for r in pool_sorted if used.get(r["name"], 0) == min_used]
+
+        # On évite de remettre la même recette d'affilée pour ce type de repas
+        prev = last_picked.get(type_)
+        others = [r for r in least_used if r["name"] != prev]
+        if others:
+            least_used = others
+
+        chosen = random.choice(least_used)
         used[chosen["name"]] = used.get(chosen["name"], 0) + 1
+        last_picked[type_] = chosen["name"]
         return chosen
 
     for day in range(1, num_days + 1):
