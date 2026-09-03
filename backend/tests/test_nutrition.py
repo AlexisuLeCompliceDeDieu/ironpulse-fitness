@@ -33,6 +33,28 @@ def test_plan_meals_vary(auth_client):
     assert len(set(breakfasts)) > 1
 
 
+def test_plan_up_to_three_months(auth_client):
+    """Un plan peut couvrir 90 jours (~3 mois) avec une belle variété de recettes."""
+    plan = auth_client.post("/api/nutrition/plan/generate", json={"num_days": 90}).get_json()["plan"]
+    assert plan["num_days"] == 90
+    # 4 repas/jour x 90 jours = 360 repas
+    assert len(plan["meals"]) == 360
+    for meal in plan["meals"]:
+        assert meal["items"]
+        assert meal["totals"]["kcal"] > 0
+    # variété : au moins ~40 recettes différentes sur 3 mois
+    names = {m["name"] for m in plan["meals"]}
+    assert len(names) >= 40, f"Peu de recettes distinctes: {len(names)}"
+
+
+def test_plan_num_days_clamped(auth_client):
+    """num_days est borné entre 1 et 90."""
+    too_big = auth_client.post("/api/nutrition/plan/generate", json={"num_days": 9999}).get_json()["plan"]
+    assert too_big["num_days"] == 90
+    too_small = auth_client.post("/api/nutrition/plan/generate", json={"num_days": 0}).get_json()["plan"]
+    assert too_small["num_days"] == 1
+
+
 def test_calorie_target_autocalculated(auth_client):
     resp = auth_client.get("/api/nutrition/target")
     assert resp.status_code == 200

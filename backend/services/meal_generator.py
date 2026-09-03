@@ -10,7 +10,8 @@ import json
 import random
 
 # Recettes: nom -> liste (food_name, quantite_grammes)
-# Basées sur les aliments présents dans foods.json
+# Basées sur les aliments présents dans foods.json.
+# ~100 recettes (25 par type de repas) pour varier les menus sur plusieurs mois.
 RECIPES = [
     # ------- Petit-déjeuner -------
     {"name": "Omelette aux épinards", "meal_type": "Petit-déjeuner", "items": [["Œufs", 160], ["Épinards", 80], ["Tomates", 60]]},
@@ -25,6 +26,19 @@ RECIPES = [
     {"name": "Œufs brouillés et avocat", "meal_type": "Petit-déjeuner", "items": [["Œufs", 160], ["Avocat", 70], ["Pain complet", 60]]},
     {"name": "Bowl d'avoine aux amandes", "meal_type": "Petit-déjeuner", "items": [["Avoine", 80], ["Yaourt grec", 120], ["Amandes", 25]]},
     {"name": "Crêpes de banane aux œufs", "meal_type": "Petit-déjeuner", "items": [["Œufs", 140], ["Banane", 100], ["Avoine", 40]]},
+    {"name": "Omelette champignons-épinards", "meal_type": "Petit-déjeuner", "items": [["Œufs", 150], ["Champignons", 80], ["Épinards", 60]]},
+    {"name": "Porridge aux myrtilles et chia", "meal_type": "Petit-déjeuner", "items": [["Avoine", 80], ["Myrtilles", 60], ["Graines de chia", 15]]},
+    {"name": "Tartine avocat et œuf", "meal_type": "Petit-déjeuner", "items": [["Pain complet", 70], ["Avocat", 60], ["Œufs", 55]]},
+    {"name": "Fromage blanc, pomme et amandes", "meal_type": "Petit-déjeuner", "items": [["Fromage blanc", 200], ["Pomme", 120], ["Amandes", 20]]},
+    {"name": "Shake avoine et beurre de cacahuète", "meal_type": "Petit-déjeuner", "items": [["Protéine en poudre (whey)", 35], ["Beurre de cacahuète", 25], ["Avoine", 40]]},
+    {"name": "Œufs brouillés aux tomates", "meal_type": "Petit-déjeuner", "items": [["Œufs", 180], ["Tomates", 80], ["Épinards", 40]]},
+    {"name": "Porridge banane-pomme", "meal_type": "Petit-déjeuner", "items": [["Avoine", 80], ["Banane", 80], ["Pomme", 80]]},
+    {"name": "Cottage cheese aux noix de cajou", "meal_type": "Petit-déjeuner", "items": [["Cottage cheese", 180], ["Noix de cajou", 25], ["Banane", 60]]},
+    {"name": "Tartines à l'édam et tomates", "meal_type": "Petit-déjeuner", "items": [["Pain complet", 80], ["Édam", 50], ["Tomates", 60]]},
+    {"name": "Bowl de yaourt grec et fruits rouges", "meal_type": "Petit-déjeuner", "items": [["Yaourt grec", 200], ["Fraise", 70], ["Myrtilles", 50]]},
+    {"name": "Omelette aux poivrons", "meal_type": "Petit-déjeuner", "items": [["Œufs", 160], ["Poivron rouge", 80], ["Oignon", 30]]},
+    {"name": "Avoine chia et fruits rouges", "meal_type": "Petit-déjeuner", "items": [["Avoine", 70], ["Graines de chia", 15], ["Myrtilles", 60]]},
+    {"name": "Tartine banane et beurre de cacahuète", "meal_type": "Petit-déjeuner", "items": [["Pain complet", 80], ["Beurre de cacahuète", 25], ["Banane", 90]]},
     # ------- Déjeuner -------
     {"name": "Poulet, riz et brocoli", "meal_type": "Déjeuner", "items": [["Blanc de poulet", 200], ["Riz basmati cuit", 250], ["Brocoli", 150]]},
     {"name": "Haricots rouges et riz", "meal_type": "Déjeuner", "items": [["Haricots rouges", 200], ["Riz basmati cuit", 200], ["Avocat", 40]]},
@@ -38,6 +52,19 @@ RECIPES = [
     {"name": "Poulet, pâtes et tomates", "meal_type": "Déjeuner", "items": [["Blanc de poulet", 190], ["Pâtes complètes cuites", 220], ["Tomates", 80]]},
     {"name": "Couscous au poulet et légumes", "meal_type": "Déjeuner", "items": [["Blanc de poulet", 190], ["Couscous cuit", 220], ["Carottes", 60], ["Courgettes", 80]]},
     {"name": "Bowl thon, haricots et maïs", "meal_type": "Déjeuner", "items": [["Thon", 150], ["Haricots rouges", 150], ["Salade verte", 80]]},
+    {"name": "Poulet, quinoa et épinards", "meal_type": "Déjeuner", "items": [["Blanc de poulet", 190], ["Quinoa cuit", 200], ["Épinards", 100]]},
+    {"name": "Dinde, riz et brocoli", "meal_type": "Déjeuner", "items": [["Escalope de dinde", 190], ["Riz basmati cuit", 220], ["Brocoli", 130]]},
+    {"name": "Bœuf, riz et haricots verts", "meal_type": "Déjeuner", "items": [["Bœuf haché 5%", 180], ["Riz complet cuit", 220], ["Haricots verts", 120]]},
+    {"name": "Thon, pâtes et tomates", "meal_type": "Déjeuner", "items": [["Thon", 160], ["Pâtes complètes cuites", 220], ["Tomates", 80]]},
+    {"name": "Poulet, lentilles et courgettes", "meal_type": "Déjeuner", "items": [["Blanc de poulet", 190], ["Lentilles", 180], ["Courgettes", 120]]},
+    {"name": "Tofu, riz et épinards", "meal_type": "Déjeuner", "items": [["Tofu", 180], ["Riz basmati cuit", 200], ["Épinards", 100]]},
+    {"name": "Crevettes, pâtes et brocoli", "meal_type": "Déjeuner", "items": [["Crevettes", 170], ["Pâtes complètes cuites", 200], ["Brocoli", 120]]},
+    {"name": "Couscous dinde et courgettes", "meal_type": "Déjeuner", "items": [["Escalope de dinde", 180], ["Couscous cuit", 220], ["Courgettes", 120]]},
+    {"name": "Bœuf, pois chiches et riz", "meal_type": "Déjeuner", "items": [["Bœuf haché 5%", 170], ["Pois chiches", 150], ["Riz complet cuit", 180]]},
+    {"name": "Poulet, semoule et carottes", "meal_type": "Déjeuner", "items": [["Blanc de poulet", 190], ["Semoule de blé cuite", 220], ["Carottes", 80]]},
+    {"name": "Omelette, riz et poivrons", "meal_type": "Déjeuner", "items": [["Œufs", 160], ["Riz basmati cuit", 200], ["Poivron rouge", 80]]},
+    {"name": "Saumon, riz et tomates", "meal_type": "Déjeuner", "items": [["Saumon", 170], ["Riz basmati cuit", 200], ["Tomates", 80]]},
+    {"name": "Pois chiches, quinoa et légumes", "meal_type": "Déjeuner", "items": [["Pois chiches", 170], ["Quinoa cuit", 180], ["Poivron rouge", 60], ["Carottes", 50]]},
     # ------- Dîner -------
     {"name": "Saumon et quinoa", "meal_type": "Dîner", "items": [["Saumon", 180], ["Quinoa cuit", 200], ["Brocoli", 120]]},
     {"name": "Saumon, riz et brocoli", "meal_type": "Dîner", "items": [["Saumon", 170], ["Riz basmati cuit", 220], ["Brocoli", 120]]},
@@ -51,6 +78,19 @@ RECIPES = [
     {"name": "Bœuf haché, patates et haricots verts", "meal_type": "Dîner", "items": [["Bœuf haché 5%", 180], ["Patates douces", 220], ["Haricots verts", 120]]},
     {"name": "Saumon, couscous et courgettes", "meal_type": "Dîner", "items": [["Saumon", 170], ["Couscous cuit", 200], ["Courgettes", 120]]},
     {"name": "Soupe légumes et lentilles", "meal_type": "Dîner", "items": [["Lentilles", 150], ["Carottes", 80], ["Oignon", 50], ["Champignons", 60]]},
+    {"name": "Saumon, patates douces et épinards", "meal_type": "Dîner", "items": [["Saumon", 170], ["Patates douces", 240], ["Épinards", 100]]},
+    {"name": "Dinde, quinoa et haricots verts", "meal_type": "Dîner", "items": [["Escalope de dinde", 180], ["Quinoa cuit", 180], ["Haricots verts", 120]]},
+    {"name": "Bœuf, riz et champignons", "meal_type": "Dîner", "items": [["Bœuf haché 5%", 180], ["Riz complet cuit", 200], ["Champignons", 110]]},
+    {"name": "Crevettes, pâtes et épinards", "meal_type": "Dîner", "items": [["Crevettes", 170], ["Pâtes complètes cuites", 200], ["Épinards", 90]]},
+    {"name": "Tofu, semoule et courgettes", "meal_type": "Dîner", "items": [["Tofu", 170], ["Semoule de blé cuite", 200], ["Courgettes", 120]]},
+    {"name": "Poulet, lentilles et tomates", "meal_type": "Dîner", "items": [["Blanc de poulet", 190], ["Lentilles", 170], ["Tomates", 80]]},
+    {"name": "Omelette aux légumes et patates douces", "meal_type": "Dîner", "items": [["Œufs", 160], ["Patates douces", 220], ["Poivron rouge", 60]]},
+    {"name": "Saumon, riz complet et petits légumes", "meal_type": "Dîner", "items": [["Saumon", 170], ["Riz complet cuit", 200], ["Carottes", 60], ["Courgettes", 70]]},
+    {"name": "Soupe de légumes aux crevettes", "meal_type": "Dîner", "items": [["Crevettes", 150], ["Carottes", 80], ["Courgettes", 80], ["Oignon", 50]]},
+    {"name": "Dinde, couscous et épinards", "meal_type": "Dîner", "items": [["Escalope de dinde", 180], ["Couscous cuit", 200], ["Épinards", 90]]},
+    {"name": "Bœuf, patates douces et haricots verts", "meal_type": "Dîner", "items": [["Bœuf haché 5%", 180], ["Patates douces", 200], ["Haricots verts", 120]]},
+    {"name": "Poulet, quinoa et brocoli", "meal_type": "Dîner", "items": [["Blanc de poulet", 190], ["Quinoa cuit", 180], ["Brocoli", 130]]},
+    {"name": "Tofu, riz et brocoli", "meal_type": "Dîner", "items": [["Tofu", 170], ["Riz basmati cuit", 200], ["Brocoli", 110]]},
     # ------- Collation -------
     {"name": "Shake protéiné", "meal_type": "Collation", "items": [["Protéine en poudre (whey)", 40], ["Banane", 100], ["Avoine", 40]]},
     {"name": "Yaourt grec aux fruits", "meal_type": "Collation", "items": [["Yaourt grec", 200], ["Banane", 80], ["Amandes", 30]]},
@@ -63,7 +103,20 @@ RECIPES = [
     {"name": "Edam et pomme", "meal_type": "Collation", "items": [["Édam", 60], ["Pomme", 150]]},
     {"name": "Shake protéiné aux fruits rouges", "meal_type": "Collation", "items": [["Protéine en poudre (whey)", 35], ["Fraise", 80], ["Avoine", 30]]},
     {"name": "Tartines d'avocat et œuf", "meal_type": "Collation", "items": [["Pain complet", 60], ["Avocat", 50], ["Œufs", 55]]},
-    {"name": "Yaourt grec, pomme et noix de cajou", "meal_type": "Collation", "items": [["Yaourt grec", 180], ["Pomme", 100], ["Noix de cajou", 20]]},
+    {"name": "Fromage blanc, noix de cajou et pomme", "meal_type": "Collation", "items": [["Fromage blanc", 200], ["Noix de cajou", 25], ["Pomme", 80]]},
+    {"name": "Shake protéiné au beurre de cacahuète", "meal_type": "Collation", "items": [["Protéine en poudre (whey)", 35], ["Beurre de cacahuète", 20], ["Banane", 80]]},
+    {"name": "Yaourt grec aux amandes", "meal_type": "Collation", "items": [["Yaourt grec", 200], ["Amandes", 25], ["Myrtilles", 50]]},
+    {"name": "Pomme et noix de cajou", "meal_type": "Collation", "items": [["Pomme", 150], ["Noix de cajou", 20]]},
+    {"name": "Cottage cheese, banane et chia", "meal_type": "Collation", "items": [["Cottage cheese", 180], ["Banane", 90], ["Graines de chia", 10]]},
+    {"name": "Œufs durs, noix et orange", "meal_type": "Collation", "items": [["Œufs", 110], ["Amandes", 20], ["Orange", 150]]},
+    {"name": "Toast d'avocat et tomates", "meal_type": "Collation", "items": [["Pain complet", 60], ["Avocat", 60], ["Tomates", 40]]},
+    {"name": "Shake avoine et fruits rouges", "meal_type": "Collation", "items": [["Protéine en poudre (whey)", 30], ["Fraise", 80], ["Avoine", 30]]},
+    {"name": "Yaourt grec, pomme et amandes", "meal_type": "Collation", "items": [["Yaourt grec", 180], ["Pomme", 100], ["Amandes", 15]]},
+    {"name": "Banane au beurre de cacahuète", "meal_type": "Collation", "items": [["Banane", 120], ["Beurre de cacahuète", 25], ["Avoine", 20]]},
+    {"name": "Œufs et épinards express", "meal_type": "Collation", "items": [["Œufs", 110], ["Épinards", 50]]},
+    {"name": "Cottage cheese et fraises", "meal_type": "Collation", "items": [["Cottage cheese", 180], ["Fraise", 80], ["Graines de chia", 10]]},
+    {"name": "Shake whey aux amandes", "meal_type": "Collation", "items": [["Protéine en poudre (whey)", 35], ["Amandes", 20], ["Pomme", 100]]},
+    {"name": "Fromage blanc, myrtilles et avoine", "meal_type": "Collation", "items": [["Fromage blanc", 200], ["Myrtilles", 60], ["Avoine", 25]]},
 ]
 
 MEAL_TYPES_PER_DAY = ["Petit-déjeuner", "Déjeuner", "Collation", "Dîner"]

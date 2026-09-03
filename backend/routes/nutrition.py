@@ -31,7 +31,7 @@ def generate_plan():
 
     data = request.get_json(silent=True) or {}
     num_days = int(data.get("num_days", 7))
-    num_days = max(1, min(num_days, 14))
+    num_days = max(1, min(num_days, 90))
 
     if user.daily_calories and "daily_calories" not in data:
         pass  # on garde l'objectif actuel

@@ -106,11 +106,16 @@ export default function Nutrition({ user }) {
           <div style={{ display: "flex", gap: "0.5rem", alignItems: "end" }}>
             <div className="form-group" style={{ margin: 0 }}>
               <label>Jours</label>
-              <input type="number" min="1" max="14" value={days} onChange={(e) => setDays(Number(e.target.value))} style={{ width: "90px" }} />
+              <input type="number" min="1" max="90" value={days} onChange={(e) => setDays(Number(e.target.value))} style={{ width: "90px" }} />
             </div>
             <button className="btn" onClick={generate} disabled={loading}>
               {loading ? "⏳ Génération..." : "⚡ Générer les menus"}
             </button>
+            <div style={{ display: "flex", gap: "0.3rem" }}>
+              <button className="btn btn-ghost" onClick={() => setDays(7)}>[7j]</button>
+              <button className="btn btn-ghost" onClick={() => setDays(30)}>[1 mois]</button>
+              <button className="btn btn-ghost" onClick={() => setDays(90)}>[3 mois]</button>
+            </div>
           </div>
         </div>
       </div>
