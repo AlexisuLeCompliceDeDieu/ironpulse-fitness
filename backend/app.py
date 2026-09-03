@@ -59,7 +59,9 @@ def create_app():
 def _register_diag(app):
     """Endpoint public d'aide au diagnostic (sans secrets), pour vérifier à distance
     que la base a bien la colonne `calories_auto` (cause des 500 sur /login et /register)."""
+    import traceback as _tb
     from sqlalchemy import inspect
+    from models import User
 
     @app.route("/healthz/db", methods=["GET"])
     def _healthz_db():
@@ -74,6 +76,16 @@ def _register_diag(app):
             }
         except Exception as e:
             return {"error": repr(e)}, 500
+
+    @app.route("/healthz/probe", methods=["GET"])
+    def _healthz_probe():
+        """Rejoue le chemin exact de /login pour capturer l'exception réelle."""
+        try:
+            user = User.query.filter_by(email="__probe_does_not_exist__@nowhere").first()
+            ok = bool(user)
+            return {"login_query_ok": True, "found": ok}
+        except Exception:
+            return {"login_query_ok": False, "traceback": _tb.format_exc().splitlines()[-8:]}, 500
 
 
 def _register_frontend(app):
