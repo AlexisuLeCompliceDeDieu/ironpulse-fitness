@@ -65,14 +65,38 @@ def _register_diag(app):
 
     @app.route("/healthz/db", methods=["GET"])
     def _healthz_db():
+        from sqlalchemy import text as _t
+        is_pg = db.engine.url.drivername.startswith("postgres")
+        schema_info = {}
         try:
             inspector = inspect(db.engine)
             cols_users = [c["name"] for c in inspector.get_columns("users")]
+            if is_pg:
+                with db.engine.connect() as conn:
+                    cur_schema = conn.execute(_t("SELECT current_schema()")).scalar()
+                    search_path = conn.execute(_t("SHOW search_path")).scalar()
+                    in_cur = conn.execute(
+                        _t("SELECT column_name FROM information_schema.columns WHERE table_schema=:s AND table_name='users' AND column_name='calories_auto'"),
+                        {"s": cur_schema},
+                    ).first() is not None
+                    in_pub = conn.execute(
+                        _t("SELECT column_name FROM information_schema.columns WHERE table_schema='public' AND table_name='users' AND column_name='calories_auto'"),
+                    ).first() is not None
+                    pub_cols = [r[0] for r in conn.execute(
+                        _t("SELECT column_name FROM information_schema.columns WHERE table_schema='public' AND table_name='users' ORDER BY ordinal_position")
+                    )]
+                schema_info = {
+                    "current_schema": cur_schema,
+                    "search_path": search_path,
+                    "calories_auto_in_current_schema": in_cur,
+                    "calories_auto_in_public": in_pub,
+                    "public_users_columns": pub_cols,
+                }
             return {
                 "dialect": db.engine.url.drivername,
-                "users_table": True,
                 "has_calories_auto": "calories_auto" in cols_users,
-                "user_columns": cols_users,
+                "user_columns_divergence": cols_users,
+                **schema_info,
             }
         except Exception as e:
             return {"error": repr(e)}, 500
