@@ -51,8 +51,29 @@ def create_app():
         # Active le fallback SPA afin que les routes type /login, /friends...
         # soient résolues par BrowserRouter de React (mode production Render).
         _register_frontend(app)
+        _register_diag(app)
 
     return app
+
+
+def _register_diag(app):
+    """Endpoint public d'aide au diagnostic (sans secrets), pour vérifier à distance
+    que la base a bien la colonne `calories_auto` (cause des 500 sur /login et /register)."""
+    from sqlalchemy import inspect
+
+    @app.route("/healthz/db", methods=["GET"])
+    def _healthz_db():
+        try:
+            inspector = inspect(db.engine)
+            cols_users = [c["name"] for c in inspector.get_columns("users")]
+            return {
+                "dialect": db.engine.url.drivername,
+                "users_table": True,
+                "has_calories_auto": "calories_auto" in cols_users,
+                "user_columns": cols_users,
+            }
+        except Exception as e:
+            return {"error": repr(e)}, 500
 
 
 def _register_frontend(app):
@@ -149,18 +170,24 @@ def _ensure_calories_auto():
 
     `db.create_all()` ne modifie pas les tables existantes : pour les bases fixes
     (ex. Supabase) il faut un ALTER TABLE idempotent ré-exécuté à chaque démarrage.
+    On privilégie `ADD COLUMN IF NOT EXISTS` (Postgres 9.6+) pour être robuste même
+    si la colonne vient d'être créée ailleurs, et on journalise en stderr pour
+    pouvoir diagnostiquer via les logs Render.
     """
+    import sys
     from sqlalchemy import inspect, text
 
     try:
         inspector = inspect(db.engine)
         columns_u = [c["name"] for c in inspector.get_columns("users")]
         if "calories_auto" in columns_u:
+            print("calories_auto column already present.", file=sys.stderr)
             return
-        db.session.execute(text("ALTER TABLE users ADD COLUMN calories_auto BOOLEAN DEFAULT 1"))
+        db.session.execute(text("ALTER TABLE users ADD COLUMN IF NOT EXISTS calories_auto BOOLEAN DEFAULT 1"))
         db.session.commit()
+        print("calories_auto column added via ALTER TABLE.", file=sys.stderr)
     except Exception as e:  # pragma: no cover - sécurité de démarrage
-        print(f"calories_auto migration skipped: {e}")
+        print(f"calories_auto migration FAILED: {e}", file=sys.stderr)
         try:
             db.session.rollback()
         except Exception:
