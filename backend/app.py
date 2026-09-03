@@ -84,8 +84,16 @@ def _register_diag(app):
             user = User.query.filter_by(email="__probe_does_not_exist__@nowhere").first()
             ok = bool(user)
             return {"login_query_ok": True, "found": ok}
-        except Exception:
-            return {"login_query_ok": False, "traceback": _tb.format_exc().splitlines()[-8:]}, 500
+        except Exception as e:
+            fmt = _tb.format_exc()
+            # isole le message d'erreur principal (ligne de l'exception)
+            headline = [l for l in fmt.splitlines() if "Error" in l or "error" in l or l.startswith("sqlalchemy")]
+            return {
+                "login_query_ok": False,
+                "exc_type": type(e).__name__,
+                "message": str(e),
+                "headline": headline[-3:],
+            }, 500
 
 
 def _register_frontend(app):
