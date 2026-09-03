@@ -41,6 +41,7 @@ def create_app():
 
         db.create_all()
         _migrate_columns()
+        _ensure_machine_image_text()
         _ensure_calories_auto()
         seed_exercises()
         seed_foods()
@@ -209,27 +210,86 @@ def _migrate_columns():
         db.session.commit()
 
 
-def _ensure_calories_auto():
-    """Ajoute la colonne `calories_auto` sur toutes les bases (Postgres inclus).
+def _ensure_machine_image_text():
+    """Élargit `machines.image_url` en TEXT pour stocker les data-URI SVG.
 
-    `db.create_all()` ne modifie pas les tables existantes : pour les bases fixes
-    (ex. Supabase) il faut un ALTER TABLE idempotent ré-exécuté à chaque démarrage.
-    On privilégie `ADD COLUMN IF NOT EXISTS` (Postgres 9.6+) pour être robuste même
-    si la colonne vient d'être créée ailleurs, et on journalise en stderr pour
-    pouvoir diagnostiquer via les logs Render.
+    Les icônes SVG « machine seule » sont encodées en base64 et dépassent
+    largement le VARCHAR(200) d'origine → PostgreSQL doit basculer la colonne
+    en TEXT (idempotent, ré-exécuté à chaque démarrage).
     """
     import sys
     from sqlalchemy import inspect, text
 
     try:
         inspector = inspect(db.engine)
-        columns_u = [c["name"] for c in inspector.get_columns("users")]
-        if "calories_auto" in columns_u:
+        col_type = None
+        for c in inspector.get_columns("machines"):
+            if c["name"] == "image_url":
+                col_type = str(c["type"].__class__.__name__)
+        if col_type in ("Text",):
+            return
+        db.session.execute(text("ALTER TABLE machines ALTER COLUMN image_url TYPE TEXT"))
+        db.session.commit()
+        print("machines.image_url widened to TEXT.", file=sys.stderr)
+    except Exception as e:  # pragma: no cover - sécurité de démarrage
+        print(f"machines.image_url migration FAILED: {e}", file=sys.stderr)
+        try:
+            db.session.rollback()
+        except Exception:
+            pass
+
+
+def _ensure_calories_auto():
+    """Ajoute la colonne `calories_auto` sur toutes les bases (Postgres inclus).
+
+    `db.create_all()` ne modifie pas les tables existantes : pour les bases fixes
+    (ex. Supabase) il faut un ALTER TABLE idempotent ré-exécuté à chaque démarrage.
+
+    On cible explicitement le schéma `public` (le pooler Supabase peut exécuter les
+    requêtes non qualifiées dans un autre schéma), on vérifie ensuite par une vraie
+    requête `information_schema`, et on retente en cas de latence du DDL. On
+    journalise en stderr pour pouvoir diagnostiquer via les logs Render.
+    """
+    import sys
+    import time
+    from sqlalchemy import inspect, text
+
+    schemas = ["public"]
+    if db.engine.url.drivername.startswith("sqlite"):
+        schemas = None  # pas de notion de schéma sur SQLite
+
+    def column_in_public():
+        with db.engine.connect() as conn:
+            cur_schema = conn.execute(text("SELECT current_schema()")).scalar()
+            if schemas is None:
+                cols = [c["name"] for c in inspect(db.engine).get_columns("users")]
+                return "calories_auto" in cols
+            # on vérifie dans le schéma réel de la table (public attendu)
+            row = conn.execute(
+                text(
+                    "SELECT table_schema FROM information_schema.columns "
+                    "WHERE column_name='calories_auto' AND table_name='users' "
+                    "ORDER BY (table_schema = current_schema()) DESC LIMIT 1"
+                )
+            ).first()
+            _ = cur_schema
+            return row is not None
+
+    try:
+        if column_in_public():
             print("calories_auto column already present.", file=sys.stderr)
             return
-        db.session.execute(text("ALTER TABLE users ADD COLUMN IF NOT EXISTS calories_auto BOOLEAN DEFAULT 1"))
-        db.session.commit()
-        print("calories_auto column added via ALTER TABLE.", file=sys.stderr)
+        target = "users" if schemas is None else "public.users"
+        for attempt in range(2):
+            db.session.execute(
+                text(f"ALTER TABLE {target} ADD COLUMN IF NOT EXISTS calories_auto BOOLEAN DEFAULT 1")
+            )
+            db.session.commit()
+            if column_in_public():
+                print(f"calories_auto column added via ALTER TABLE (attempt {attempt + 1}).", file=sys.stderr)
+                return
+            time.sleep(1)
+        print("calories_auto ALTER committed but column not visible yet; will retry next boot.", file=sys.stderr)
     except Exception as e:  # pragma: no cover - sécurité de démarrage
         print(f"calories_auto migration FAILED: {e}", file=sys.stderr)
         try:

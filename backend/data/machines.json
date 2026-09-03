@@ -6,7 +6,7 @@
     "category": "pectoraux",
     "code": "TCG-PESC-01",
     "location": "Zone musculation (étage 1)",
-    "image_url": "https://commons.wikimedia.org/wiki/Special:FilePath/Bench_press.png?width=480",
+    "image_url": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA0MDAgNDAwIiB3aWR0aD0iNDAwIiBoZWlnaHQ9IjQwMCI+PGRlZnM+PGxpbmVhckdyYWRpZW50IGlkPSJnIiB4MT0iMCIgeTE9IjAiIHgyPSIwIiB5Mj0iMSI+PHN0b3Agb2Zmc2V0PSIwIiBzdG9wLWNvbG9yPSIjMWExYTIyIi8+PHN0b3Agb2Zmc2V0PSIxIiBzdG9wLWNvbG9yPSIjMjYyNjJmIi8+PC9saW5lYXJHcmFkaWVudD48L2RlZnM+PHJlY3Qgd2lkdGg9IjQwMCIgaGVpZ2h0PSI0MDAiIGZpbGw9InVybCgjZykiLz48ZyBmaWxsPSJub25lIiBzdHJva2U9IiNkMTlhNjMiIHN0cm9rZS13aWR0aD0iOCIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIj48cmVjdCB4PSI5MCIgeT0iMjEwIiB3aWR0aD0iMjMwIiBoZWlnaHQ9IjIyIiByeD0iMTAiLz48cmVjdCB4PSIxMjAiIHk9IjIzMiIgd2lkdGg9IjE4IiBoZWlnaHQ9IjYwIi8+PHJlY3QgeD0iMjY1IiB5PSIyMzIiIHdpZHRoPSIxOCIgaGVpZ2h0PSI2MCIvPjxyZWN0IHg9IjMwMCIgeT0iOTAiIHdpZHRoPSIyMiIgaGVpZ2h0PSIxMjAiIHJ4PSI4Ii8+PHJlY3QgeD0iNzgiIHk9IjkwIiB3aWR0aD0iMjIiIGhlaWdodD0iMTIwIiByeD0iOCIvPjxsaW5lIHgxPSI4OSIgeTE9IjkwIiB4Mj0iODkiIHkyPSI2MCIvPjxsaW5lIHgxPSIzMTEiIHkxPSI5MCIgeDI9IjMxMSIgeTI9IjYwIi8+PHJlY3QgeD0iNzAiIHk9IjQ1IiB3aWR0aD0iMzQiIGhlaWdodD0iMjAiIHJ4PSIxMCIvPjxyZWN0IHg9IjI5NiIgeT0iNDUiIHdpZHRoPSIzNCIgaGVpZ2h0PSIyMCIgcng9IjEwIi8+PGNpcmNsZSBjeD0iMTQwIiBjeT0iMTMwIiByPSIxMSIvPjxjaXJjbGUgY3g9IjI2MCIgY3k9IjEzMCIgcj0iMTEiLz48L2c+PC9zdmc+",
     "setup_tips": "Réglez l'assise pour que les poignées arrivent au milieu des pectoraux. Serrez les omoplates contre le dossier."
   },
   {
@@ -16,7 +16,7 @@
     "category": "pectoraux",
     "code": "TCG-PECS-02",
     "location": "Zone musculation (étage 1)",
-    "image_url": "https://commons.wikimedia.org/wiki/Special:FilePath/Pec_deck_Fly.jpg?width=480",
+    "image_url": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA0MDAgNDAwIiB3aWR0aD0iNDAwIiBoZWlnaHQ9IjQwMCI+PGRlZnM+PGxpbmVhckdyYWRpZW50IGlkPSJnIiB4MT0iMCIgeTE9IjAiIHgyPSIwIiB5Mj0iMSI+PHN0b3Agb2Zmc2V0PSIwIiBzdG9wLWNvbG9yPSIjMWExYTIyIi8+PHN0b3Agb2Zmc2V0PSIxIiBzdG9wLWNvbG9yPSIjMjYyNjJmIi8+PC9saW5lYXJHcmFkaWVudD48L2RlZnM+PHJlY3Qgd2lkdGg9IjQwMCIgaGVpZ2h0PSI0MDAiIGZpbGw9InVybCgjZykiLz48ZyBmaWxsPSJub25lIiBzdHJva2U9IiNkMTlhNjMiIHN0cm9rZS13aWR0aD0iOCIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIj48cmVjdCB4PSI5MCIgeT0iMjEwIiB3aWR0aD0iMjMwIiBoZWlnaHQ9IjIyIiByeD0iMTAiLz48cmVjdCB4PSIxMjAiIHk9IjIzMiIgd2lkdGg9IjE4IiBoZWlnaHQ9IjYwIi8+PHJlY3QgeD0iMjY1IiB5PSIyMzIiIHdpZHRoPSIxOCIgaGVpZ2h0PSI2MCIvPjxyZWN0IHg9IjkwIiB5PSI3MCIgd2lkdGg9IjIyIiBoZWlnaHQ9IjgwIi8+PHBhdGggZD0iTTExMiA4NCBDMTQwIDYwIDI2MCA2MCAyODggODQiLz48cmVjdCB4PSIyODgiIHk9IjcwIiB3aWR0aD0iMjIiIGhlaWdodD0iODAiLz48L2c+PC9zdmc+",
     "setup_tips": "Les mains suivent un arc de cercle. Serrez les pecs en fin de mouvement sans à-coup."
   },
   {
@@ -26,7 +26,7 @@
     "category": "pectoraux",
     "code": "MTX-PECS-03",
     "location": "Zone musculation (étage 1)",
-    "image_url": "https://commons.wikimedia.org/wiki/Special:FilePath/Chest_Incline.jpg?width=480",
+    "image_url": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA0MDAgNDAwIiB3aWR0aD0iNDAwIiBoZWlnaHQ9IjQwMCI+PGRlZnM+PGxpbmVhckdyYWRpZW50IGlkPSJnIiB4MT0iMCIgeTE9IjAiIHgyPSIwIiB5Mj0iMSI+PHN0b3Agb2Zmc2V0PSIwIiBzdG9wLWNvbG9yPSIjMWExYTIyIi8+PHN0b3Agb2Zmc2V0PSIxIiBzdG9wLWNvbG9yPSIjMjYyNjJmIi8+PC9saW5lYXJHcmFkaWVudD48L2RlZnM+PHJlY3Qgd2lkdGg9IjQwMCIgaGVpZ2h0PSI0MDAiIGZpbGw9InVybCgjZykiLz48ZyBmaWxsPSJub25lIiBzdHJva2U9IiNkMTlhNjMiIHN0cm9rZS13aWR0aD0iOCIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIj48cmVjdCB4PSI5MCIgeT0iNzAiIHdpZHRoPSIyNiIgaGVpZ2h0PSIyMzAiLz48cmVjdCB4PSIyODQiIHk9IjcwIiB3aWR0aD0iMjYiIGhlaWdodD0iMjMwIi8+PHJlY3QgeD0iOTAiIHk9IjMwMCIgd2lkdGg9IjIyMCIgaGVpZ2h0PSIyMiIvPjxsaW5lIHgxPSIxMDMiIHkxPSIxMTAiIHgyPSIyOTciIHkyPSIxMTAiLz48cmVjdCB4PSIyMDAiIHk9IjcwIiB3aWR0aD0iMjYiIGhlaWdodD0iMTIwIiByeD0iMTAiLz48bGluZSB4MT0iMjEzIiB5MT0iMTIwIiB4Mj0iMTQwIiB5Mj0iNzAiLz48bGluZSB4MT0iMjEzIiB5MT0iMTIwIiB4Mj0iMjYwIiB5Mj0iNzAiLz48cmVjdCB4PSIxMTAiIHk9IjUwIiB3aWR0aD0iNDIiIGhlaWdodD0iMjIiIHJ4PSIxMSIvPjxyZWN0IHg9IjI0OCIgeT0iNTAiIHdpZHRoPSI0MiIgaGVpZ2h0PSIyMiIgcng9IjExIi8+PC9nPjwvc3ZnPg==",
     "setup_tips": "Poignées à hauteur des pectoraux, poussez devant sans verrouiller les coudes."
   },
   {
@@ -36,7 +36,7 @@
     "category": "pectoraux",
     "code": "MTX-PECS-06",
     "location": "Zone musculation (étage 1)",
-    "image_url": "https://commons.wikimedia.org/wiki/Special:FilePath/Decline-bench-press-1.png?width=480",
+    "image_url": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA0MDAgNDAwIiB3aWR0aD0iNDAwIiBoZWlnaHQ9IjQwMCI+PGRlZnM+PGxpbmVhckdyYWRpZW50IGlkPSJnIiB4MT0iMCIgeTE9IjAiIHgyPSIwIiB5Mj0iMSI+PHN0b3Agb2Zmc2V0PSIwIiBzdG9wLWNvbG9yPSIjMWExYTIyIi8+PHN0b3Agb2Zmc2V0PSIxIiBzdG9wLWNvbG9yPSIjMjYyNjJmIi8+PC9saW5lYXJHcmFkaWVudD48L2RlZnM+PHJlY3Qgd2lkdGg9IjQwMCIgaGVpZ2h0PSI0MDAiIGZpbGw9InVybCgjZykiLz48ZyBmaWxsPSJub25lIiBzdHJva2U9IiNkMTlhNjMiIHN0cm9rZS13aWR0aD0iOCIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIj48dGl0bGU+PC90aXRsZT48cmVjdCB4PSI5MCIgeT0iMjAwIiB3aWR0aD0iMTIwIiBoZWlnaHQ9IjIyIiByeD0iMTAiLz48cmVjdCB4PSIyMDUiIHk9IjIzMCIgd2lkdGg9IjEyMCIgaGVpZ2h0PSIyMiIgcng9IjEwIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTAgMjY1IDI0MSkiLz48cmVjdCB4PSIxMjAiIHk9IjIyMiIgd2lkdGg9IjE2IiBoZWlnaHQ9IjcwIi8+PHJlY3QgeD0iMjUwIiB5PSIyMjIiIHdpZHRoPSIxNiIgaGVpZ2h0PSI2MCIvPjxsaW5lIHgxPSIyMDUiIHkxPSIxMjAiIHgyPSIyNjAiIHkyPSI3MCIvPjxsaW5lIHgxPSIyMDUiIHkxPSIxMjAiIHgyPSIxNTAiIHkyPSI3MCIvPjxyZWN0IHg9IjEyMiIgeT0iNTUiIHdpZHRoPSI0MiIgaGVpZ2h0PSIyMCIgcng9IjEwIi8+PHJlY3QgeD0iMjMwIiB5PSI1NSIgd2lkdGg9IjQyIiBoZWlnaHQ9IjIwIiByeD0iMTAiLz48L2c+PC9zdmc+",
     "setup_tips": "Buste incliné vers le bas, redescendez la barre entre le sternum et les seins."
   },
   {
@@ -46,7 +46,7 @@
     "category": "pectoraux",
     "code": "LIF-PECS-04",
     "location": "Zone musculation (étage 1)",
-    "image_url": "https://commons.wikimedia.org/wiki/Special:FilePath/Dumbbell-incline-bench-press-1.png?width=480",
+    "image_url": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA0MDAgNDAwIiB3aWR0aD0iNDAwIiBoZWlnaHQ9IjQwMCI+PGRlZnM+PGxpbmVhckdyYWRpZW50IGlkPSJnIiB4MT0iMCIgeTE9IjAiIHgyPSIwIiB5Mj0iMSI+PHN0b3Agb2Zmc2V0PSIwIiBzdG9wLWNvbG9yPSIjMWExYTIyIi8+PHN0b3Agb2Zmc2V0PSIxIiBzdG9wLWNvbG9yPSIjMjYyNjJmIi8+PC9saW5lYXJHcmFkaWVudD48L2RlZnM+PHJlY3Qgd2lkdGg9IjQwMCIgaGVpZ2h0PSI0MDAiIGZpbGw9InVybCgjZykiLz48ZyBmaWxsPSJub25lIiBzdHJva2U9IiNkMTlhNjMiIHN0cm9rZS13aWR0aD0iOCIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIj48cmVjdCB4PSI5MCIgeT0iMjAwIiB3aWR0aD0iMTIwIiBoZWlnaHQ9IjIyIiByeD0iMTAiLz48cmVjdCB4PSIyMDUiIHk9IjE3NSIgd2lkdGg9IjEyMCIgaGVpZ2h0PSIyMiIgcng9IjEwIiB0cmFuc2Zvcm09InJvdGF0ZSgxMiAyMDUgMTg2KSIvPjxyZWN0IHg9IjEzMCIgeT0iMjIyIiB3aWR0aD0iMTgiIGhlaWdodD0iNzAiLz48cmVjdCB4PSIyNTAiIHk9IjIyMiIgd2lkdGg9IjE4IiBoZWlnaHQ9IjYwIi8+PHBhdGggZD0iTTE1MCA2MCBxMTggNzAgNTUgNzgiLz48cGF0aCBkPSJNMjUwIDYwIHEtMTggNzAgLTU1IDc4Ii8+PHJlY3QgeD0iNzAiIHk9IjQ4IiB3aWR0aD0iMzQiIGhlaWdodD0iMjAiIHJ4PSIxMCIvPjxyZWN0IHg9IjI5NiIgeT0iNDgiIHdpZHRoPSIzNCIgaGVpZ2h0PSIyMCIgcng9IjEwIi8+PC9nPjwvc3ZnPg==",
     "setup_tips": "Coudes à 45° du buste, mouvement lent et contrôlé pour protéger les épaules."
   },
   {
@@ -56,7 +56,7 @@
     "category": "pectoraux",
     "code": "PNT-PECS-07",
     "location": "Zone musculation (étage 1)",
-    "image_url": "https://commons.wikimedia.org/wiki/Special:FilePath/Chest_Incline.jpg?width=480",
+    "image_url": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA0MDAgNDAwIiB3aWR0aD0iNDAwIiBoZWlnaHQ9IjQwMCI+PGRlZnM+PGxpbmVhckdyYWRpZW50IGlkPSJnIiB4MT0iMCIgeTE9IjAiIHgyPSIwIiB5Mj0iMSI+PHN0b3Agb2Zmc2V0PSIwIiBzdG9wLWNvbG9yPSIjMWExYTIyIi8+PHN0b3Agb2Zmc2V0PSIxIiBzdG9wLWNvbG9yPSIjMjYyNjJmIi8+PC9saW5lYXJHcmFkaWVudD48L2RlZnM+PHJlY3Qgd2lkdGg9IjQwMCIgaGVpZ2h0PSI0MDAiIGZpbGw9InVybCgjZykiLz48ZyBmaWxsPSJub25lIiBzdHJva2U9IiNkMTlhNjMiIHN0cm9rZS13aWR0aD0iOCIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIj48cmVjdCB4PSI5MCIgeT0iNzAiIHdpZHRoPSIyNiIgaGVpZ2h0PSIyMzAiLz48cmVjdCB4PSIyODQiIHk9IjcwIiB3aWR0aD0iMjYiIGhlaWdodD0iMjMwIi8+PHJlY3QgeD0iOTAiIHk9IjMwMCIgd2lkdGg9IjIyMCIgaGVpZ2h0PSIyMiIvPjxsaW5lIHgxPSIxMDMiIHkxPSIxMTAiIHgyPSIyOTciIHkyPSIxMTAiLz48cmVjdCB4PSIxODAiIHk9IjQwIiB3aWR0aD0iNDAiIGhlaWdodD0iMjIiIHJ4PSIxMSIvPjxsaW5lIHgxPSIyMDAiIHkxPSI2MiIgeDI9IjIwMCIgeTI9IjEyMCIvPjxsaW5lIHgxPSIyMDAiIHkxPSIxMjAiIHgyPSI5MCIgeTI9IjE4MCIvPjxsaW5lIHgxPSIyMDAiIHkxPSIxMjAiIHgyPSIzMTAiIHkyPSIxODAiLz48cmVjdCB4PSI5MCIgeT0iMTUwIiB3aWR0aD0iMjIiIGhlaWdodD0iMzAiLz48cmVjdCB4PSIyODgiIHk9IjE1MCIgd2lkdGg9IjIyIiBoZWlnaHQ9IjMwIi8+PGxpbmUgeDE9IjIwMCIgeTE9IjMwMCIgeDI9IjEwMyIgeTI9IjMwMCIvPjxsaW5lIHgxPSIyMDAiIHkxPSIzMDAiIHgyPSIyOTciIHkyPSIzMDAiLz48L2c+PC9zdmc+",
     "setup_tips": "Poussez les deux bras devant vous en expirant, dos plaqué au dossier."
   },
   {
@@ -66,7 +66,7 @@
     "category": "pectoraux",
     "code": "HSM-PECS-08",
     "location": "Zone musculation (étage 1)",
-    "image_url": "https://commons.wikimedia.org/wiki/Special:FilePath/Bench_press.png?width=480",
+    "image_url": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA0MDAgNDAwIiB3aWR0aD0iNDAwIiBoZWlnaHQ9IjQwMCI+PGRlZnM+PGxpbmVhckdyYWRpZW50IGlkPSJnIiB4MT0iMCIgeTE9IjAiIHgyPSIwIiB5Mj0iMSI+PHN0b3Agb2Zmc2V0PSIwIiBzdG9wLWNvbG9yPSIjMWExYTIyIi8+PHN0b3Agb2Zmc2V0PSIxIiBzdG9wLWNvbG9yPSIjMjYyNjJmIi8+PC9saW5lYXJHcmFkaWVudD48L2RlZnM+PHJlY3Qgd2lkdGg9IjQwMCIgaGVpZ2h0PSI0MDAiIGZpbGw9InVybCgjZykiLz48ZyBmaWxsPSJub25lIiBzdHJva2U9IiNkMTlhNjMiIHN0cm9rZS13aWR0aD0iOCIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIj48cmVjdCB4PSI5MCIgeT0iMjEwIiB3aWR0aD0iMjMwIiBoZWlnaHQ9IjIyIiByeD0iMTAiLz48cmVjdCB4PSIxMjAiIHk9IjIzMiIgd2lkdGg9IjE4IiBoZWlnaHQ9IjYwIi8+PHJlY3QgeD0iMjY1IiB5PSIyMzIiIHdpZHRoPSIxOCIgaGVpZ2h0PSI2MCIvPjxyZWN0IHg9IjExMCIgeT0iNjAiIHdpZHRoPSIxODAiIGhlaWdodD0iMTQiIHJ4PSI3Ii8+PHJlY3QgeD0iMTIwIiB5PSI3NCIgd2lkdGg9IjE2IiBoZWlnaHQ9IjE0MCIvPjxyZWN0IHg9IjI2NCIgeT0iNzQiIHdpZHRoPSIxNiIgaGVpZ2h0PSIxNDAiLz48Y2lyY2xlIGN4PSIxMjgiIGN5PSI1MiIgcj0iOSIvPjxjaXJjbGUgY3g9IjI3MiIgY3k9IjUyIiByPSI5Ii8+PC9nPjwvc3ZnPg==",
     "setup_tips": "Chaque bras travaille indépendamment : montez le poids sans élan."
   },
   {
@@ -76,7 +76,7 @@
     "category": "pectoraux",
     "code": "BDS-PECS-09",
     "location": "Zone barres libres (étage 1)",
-    "image_url": "https://commons.wikimedia.org/wiki/Special:FilePath/Bench_press.png?width=480",
+    "image_url": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA0MDAgNDAwIiB3aWR0aD0iNDAwIiBoZWlnaHQ9IjQwMCI+PGRlZnM+PGxpbmVhckdyYWRpZW50IGlkPSJnIiB4MT0iMCIgeTE9IjAiIHgyPSIwIiB5Mj0iMSI+PHN0b3Agb2Zmc2V0PSIwIiBzdG9wLWNvbG9yPSIjMWExYTIyIi8+PHN0b3Agb2Zmc2V0PSIxIiBzdG9wLWNvbG9yPSIjMjYyNjJmIi8+PC9saW5lYXJHcmFkaWVudD48L2RlZnM+PHJlY3Qgd2lkdGg9IjQwMCIgaGVpZ2h0PSI0MDAiIGZpbGw9InVybCgjZykiLz48ZyBmaWxsPSJub25lIiBzdHJva2U9IiNkMTlhNjMiIHN0cm9rZS13aWR0aD0iOCIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIj48cmVjdCB4PSI5MCIgeT0iMjEwIiB3aWR0aD0iMjMwIiBoZWlnaHQ9IjIyIiByeD0iMTAiLz48cmVjdCB4PSIxMjAiIHk9IjIzMiIgd2lkdGg9IjE4IiBoZWlnaHQ9IjYwIi8+PHJlY3QgeD0iMjY1IiB5PSIyMzIiIHdpZHRoPSIxOCIgaGVpZ2h0PSI2MCIvPjxyZWN0IHg9IjkyIiB5PSIxNTAiIHdpZHRoPSIyMTYiIGhlaWdodD0iMTYiIHJ4PSI4Ii8+PHJlY3QgeD0iMTIwIiB5PSIxNjYiIHdpZHRoPSIxOCIgaGVpZ2h0PSI0OCIvPjxyZWN0IHg9IjI2MiIgeT0iMTY2IiB3aWR0aD0iMTgiIGhlaWdodD0iNDgiLz48L2c+PC9zdmc+",
     "setup_tips": "Pieds au sol, glissez la barre au milieu de la poitrine puis poussez."
   },
   {
@@ -86,7 +86,7 @@
     "category": "pectoraux",
     "code": "BDS-PECS-10",
     "location": "Zone barres libres (étage 1)",
-    "image_url": "https://commons.wikimedia.org/wiki/Special:FilePath/Dumbbell-incline-bench-press-1.png?width=480",
+    "image_url": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA0MDAgNDAwIiB3aWR0aD0iNDAwIiBoZWlnaHQ9IjQwMCI+PGRlZnM+PGxpbmVhckdyYWRpZW50IGlkPSJnIiB4MT0iMCIgeTE9IjAiIHgyPSIwIiB5Mj0iMSI+PHN0b3Agb2Zmc2V0PSIwIiBzdG9wLWNvbG9yPSIjMWExYTIyIi8+PHN0b3Agb2Zmc2V0PSIxIiBzdG9wLWNvbG9yPSIjMjYyNjJmIi8+PC9saW5lYXJHcmFkaWVudD48L2RlZnM+PHJlY3Qgd2lkdGg9IjQwMCIgaGVpZ2h0PSI0MDAiIGZpbGw9InVybCgjZykiLz48ZyBmaWxsPSJub25lIiBzdHJva2U9IiNkMTlhNjMiIHN0cm9rZS13aWR0aD0iOCIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIj48cmVjdCB4PSI5MCIgeT0iMjAwIiB3aWR0aD0iMTIwIiBoZWlnaHQ9IjIyIiByeD0iMTAiLz48cmVjdCB4PSIyMDUiIHk9IjE3NSIgd2lkdGg9IjEyMCIgaGVpZ2h0PSIyMiIgcng9IjEwIiB0cmFuc2Zvcm09InJvdGF0ZSgxMiAyMDUgMTg2KSIvPjxyZWN0IHg9IjEzMCIgeT0iMjIyIiB3aWR0aD0iMTgiIGhlaWdodD0iNzAiLz48cmVjdCB4PSIyNTAiIHk9IjIyMiIgd2lkdGg9IjE4IiBoZWlnaHQ9IjYwIi8+PC9nPjwvc3ZnPg==",
     "setup_tips": "Réglable de 0 à 90° : sert pour toutes les positions de développé."
   },
   {
@@ -96,7 +96,7 @@
     "category": "dos",
     "code": "MTX-DOS-01",
     "location": "Zone musculation (étage 2)",
-    "image_url": "https://commons.wikimedia.org/wiki/Special:FilePath/Diverging_Lat_Pulldown_Machine.jpg?width=480",
+    "image_url": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA0MDAgNDAwIiB3aWR0aD0iNDAwIiBoZWlnaHQ9IjQwMCI+PGRlZnM+PGxpbmVhckdyYWRpZW50IGlkPSJnIiB4MT0iMCIgeTE9IjAiIHgyPSIwIiB5Mj0iMSI+PHN0b3Agb2Zmc2V0PSIwIiBzdG9wLWNvbG9yPSIjMWExYTIyIi8+PHN0b3Agb2Zmc2V0PSIxIiBzdG9wLWNvbG9yPSIjMjYyNjJmIi8+PC9saW5lYXJHcmFkaWVudD48L2RlZnM+PHJlY3Qgd2lkdGg9IjQwMCIgaGVpZ2h0PSI0MDAiIGZpbGw9InVybCgjZykiLz48ZyBmaWxsPSJub25lIiBzdHJva2U9IiNkMTlhNjMiIHN0cm9rZS13aWR0aD0iOCIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIj48cmVjdCB4PSI5MCIgeT0iNzAiIHdpZHRoPSIyNiIgaGVpZ2h0PSIyMzAiLz48cmVjdCB4PSIyODQiIHk9IjcwIiB3aWR0aD0iMjYiIGhlaWdodD0iMjMwIi8+PHJlY3QgeD0iOTAiIHk9IjMwMCIgd2lkdGg9IjIyMCIgaGVpZ2h0PSIyMiIvPjxsaW5lIHgxPSIxMDMiIHkxPSIxMTAiIHgyPSIyOTciIHkyPSIxMTAiLz48cGF0aCBkPSJNMTAzIDcwIEMxMjAgMTMwIDE4MCAxODAgMjk3IDE4MCIvPjxsaW5lIHgxPSIyMDAiIHkxPSIxODAiIHgyPSIyMDAiIHkyPSIzMDAiLz48L2c+PC9zdmc+",
     "setup_tips": "Cuisses calées sous les coussins, tirez la barre vers le haut de la poitrine, buste droit."
   },
   {
@@ -106,7 +106,7 @@
     "category": "dos",
     "code": "TCG-DOS-02",
     "location": "Zone musculation (étage 2)",
-    "image_url": "https://commons.wikimedia.org/wiki/Special:FilePath/Woman_using_a_seated_cable_row_machine_at_the_gym.jpg?width=480",
+    "image_url": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA0MDAgNDAwIiB3aWR0aD0iNDAwIiBoZWlnaHQ9IjQwMCI+PGRlZnM+PGxpbmVhckdyYWRpZW50IGlkPSJnIiB4MT0iMCIgeTE9IjAiIHgyPSIwIiB5Mj0iMSI+PHN0b3Agb2Zmc2V0PSIwIiBzdG9wLWNvbG9yPSIjMWExYTIyIi8+PHN0b3Agb2Zmc2V0PSIxIiBzdG9wLWNvbG9yPSIjMjYyNjJmIi8+PC9saW5lYXJHcmFkaWVudD48L2RlZnM+PHJlY3Qgd2lkdGg9IjQwMCIgaGVpZ2h0PSI0MDAiIGZpbGw9InVybCgjZykiLz48ZyBmaWxsPSJub25lIiBzdHJva2U9IiNkMTlhNjMiIHN0cm9rZS13aWR0aD0iOCIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIj48cmVjdCB4PSI5MCIgeT0iMTUwIiB3aWR0aD0iMjYiIGhlaWdodD0iMTMwIi8+PHJlY3QgeD0iMjg0IiB5PSIxNTAiIHdpZHRoPSIyNiIgaGVpZ2h0PSIxMzAiLz48cmVjdCB4PSI5MCIgeT0iMjgwIiB3aWR0aD0iMjIwIiBoZWlnaHQ9IjI0IiByeD0iMTAiLz48cmVjdCB4PSIxMjAiIHk9IjE3MCIgd2lkdGg9IjE2MCIgaGVpZ2h0PSIxOCIgcng9IjkiLz48L2c+PC9zdmc+",
     "setup_tips": "Pieds sur le plateau, dos droit. Tirez vers le nombril en serrant les omoplates."
   },
   {
@@ -116,7 +116,7 @@
     "category": "dos",
     "code": "HSM-DOS-03",
     "location": "Zone musculation (étage 2)",
-    "image_url": "https://commons.wikimedia.org/wiki/Special:FilePath/Amer-Lat-Pulldown.jpg?width=480",
+    "image_url": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA0MDAgNDAwIiB3aWR0aD0iNDAwIiBoZWlnaHQ9IjQwMCI+PGRlZnM+PGxpbmVhckdyYWRpZW50IGlkPSJnIiB4MT0iMCIgeTE9IjAiIHgyPSIwIiB5Mj0iMSI+PHN0b3Agb2Zmc2V0PSIwIiBzdG9wLWNvbG9yPSIjMWExYTIyIi8+PHN0b3Agb2Zmc2V0PSIxIiBzdG9wLWNvbG9yPSIjMjYyNjJmIi8+PC9saW5lYXJHcmFkaWVudD48L2RlZnM+PHJlY3Qgd2lkdGg9IjQwMCIgaGVpZ2h0PSI0MDAiIGZpbGw9InVybCgjZykiLz48ZyBmaWxsPSJub25lIiBzdHJva2U9IiNkMTlhNjMiIHN0cm9rZS13aWR0aD0iOCIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIj48cmVjdCB4PSI5MCIgeT0iNzAiIHdpZHRoPSIyNiIgaGVpZ2h0PSIyMzAiLz48cmVjdCB4PSIyODQiIHk9IjcwIiB3aWR0aD0iMjYiIGhlaWdodD0iMjMwIi8+PHJlY3QgeD0iOTAiIHk9IjMwMCIgd2lkdGg9IjIyMCIgaGVpZ2h0PSIyMiIvPjxsaW5lIHgxPSIxMDMiIHkxPSIxMTAiIHgyPSIyOTciIHkyPSIxMTAiLz48cGF0aCBkPSJNMTQwIDcwIEMxNDAgMTUwIDI2MCAxNjAgMjk3IDE3MCIvPjxwYXRoIGQ9Ik0xMjAgMTYwIFEyMDAgMjEwIDIwMCAzMDAiLz48L2c+PC9zdmc+",
     "setup_tips": "Chaque poignée travaille seule. Tirez de façon symétrique, buste immobile."
   },
   {
@@ -126,7 +126,7 @@
     "category": "dos",
     "code": "LIF-DOS-05",
     "location": "Zone musculation (étage 2)",
-    "image_url": "https://commons.wikimedia.org/wiki/Special:FilePath/Woman_using_a_seated_cable_row_machine_at_the_gym.jpg?width=480",
+    "image_url": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA0MDAgNDAwIiB3aWR0aD0iNDAwIiBoZWlnaHQ9IjQwMCI+PGRlZnM+PGxpbmVhckdyYWRpZW50IGlkPSJnIiB4MT0iMCIgeTE9IjAiIHgyPSIwIiB5Mj0iMSI+PHN0b3Agb2Zmc2V0PSIwIiBzdG9wLWNvbG9yPSIjMWExYTIyIi8+PHN0b3Agb2Zmc2V0PSIxIiBzdG9wLWNvbG9yPSIjMjYyNjJmIi8+PC9saW5lYXJHcmFkaWVudD48L2RlZnM+PHJlY3Qgd2lkdGg9IjQwMCIgaGVpZ2h0PSI0MDAiIGZpbGw9InVybCgjZykiLz48ZyBmaWxsPSJub25lIiBzdHJva2U9IiNkMTlhNjMiIHN0cm9rZS13aWR0aD0iOCIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIj48dGl0bGU+PC90aXRsZT48cmVjdCB4PSIxMTAiIHk9IjE1MCIgd2lkdGg9IjI4IiBoZWlnaHQ9IjEyMCIvPjxyZWN0IHg9IjI2MiIgeT0iMTUwIiB3aWR0aD0iMjgiIGhlaWdodD0iMTIwIi8+PHJlY3QgeD0iMTEwIiB5PSIyNzAiIHdpZHRoPSIxODAiIGhlaWdodD0iMjIiLz48cmVjdCB4PSI5MCIgeT0iMTIwIiB3aWR0aD0iNTAiIGhlaWdodD0iMjIiIHJ4PSIxMSIvPjxyZWN0IHg9IjI2MCIgeT0iMTIwIiB3aWR0aD0iNTAiIGhlaWdodD0iMjIiIHJ4PSIxMSIvPjxsaW5lIHgxPSIxMjAiIHkxPSIxMzUiIHgyPSIxMjAiIHkyPSI5MCIvPjxsaW5lIHgxPSIyODAiIHkxPSIxMzUiIHgyPSIyODAiIHkyPSI5MCIvPjwvZz48L3N2Zz4=",
     "setup_tips": "Pieds calés, pouce vers le haut, tirez la poignée vers le nombril."
   },
   {
@@ -136,7 +136,7 @@
     "category": "dos",
     "code": "PRE-DOS-06",
     "location": "Zone musculation (étage 2)",
-    "image_url": "",
+    "image_url": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA0MDAgNDAwIiB3aWR0aD0iNDAwIiBoZWlnaHQ9IjQwMCI+PGRlZnM+PGxpbmVhckdyYWRpZW50IGlkPSJnIiB4MT0iMCIgeTE9IjAiIHgyPSIwIiB5Mj0iMSI+PHN0b3Agb2Zmc2V0PSIwIiBzdG9wLWNvbG9yPSIjMWExYTIyIi8+PHN0b3Agb2Zmc2V0PSIxIiBzdG9wLWNvbG9yPSIjMjYyNjJmIi8+PC9saW5lYXJHcmFkaWVudD48L2RlZnM+PHJlY3Qgd2lkdGg9IjQwMCIgaGVpZ2h0PSI0MDAiIGZpbGw9InVybCgjZykiLz48ZyBmaWxsPSJub25lIiBzdHJva2U9IiNkMTlhNjMiIHN0cm9rZS13aWR0aD0iOCIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIj48cmVjdCB4PSI5MCIgeT0iMTUwIiB3aWR0aD0iMjYiIGhlaWdodD0iMTMwIi8+PHJlY3QgeD0iMjg0IiB5PSIxNTAiIHdpZHRoPSIyNiIgaGVpZ2h0PSIxMzAiLz48cmVjdCB4PSI5MCIgeT0iMjgwIiB3aWR0aD0iMjIwIiBoZWlnaHQ9IjI0IiByeD0iMTAiLz48cmVjdCB4PSIxMjAiIHk9IjE4MCIgd2lkdGg9IjE2MCIgaGVpZ2h0PSIxNiIgcng9IjgiLz48bGluZSB4MT0iMjAwIiB5MT0iMTgwIiB4Mj0iMjAwIiB5Mj0iMTIwIi8+PC9nPjwvc3ZnPg==",
     "setup_tips": "Buste droit, ne balancez pas le dos pour soulever plus lourd."
   },
   {
@@ -146,7 +146,7 @@
     "category": "dos",
     "code": "HOI-DOS-07",
     "location": "Zone musculation (étage 2)",
-    "image_url": "https://commons.wikimedia.org/wiki/Special:FilePath/T-bar-row-1.png?width=480",
+    "image_url": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA0MDAgNDAwIiB3aWR0aD0iNDAwIiBoZWlnaHQ9IjQwMCI+PGRlZnM+PGxpbmVhckdyYWRpZW50IGlkPSJnIiB4MT0iMCIgeTE9IjAiIHgyPSIwIiB5Mj0iMSI+PHN0b3Agb2Zmc2V0PSIwIiBzdG9wLWNvbG9yPSIjMWExYTIyIi8+PHN0b3Agb2Zmc2V0PSIxIiBzdG9wLWNvbG9yPSIjMjYyNjJmIi8+PC9saW5lYXJHcmFkaWVudD48L2RlZnM+PHJlY3Qgd2lkdGg9IjQwMCIgaGVpZ2h0PSI0MDAiIGZpbGw9InVybCgjZykiLz48ZyBmaWxsPSJub25lIiBzdHJva2U9IiNkMTlhNjMiIHN0cm9rZS13aWR0aD0iOCIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIj48dGl0bGU+PC90aXRsZT48cmVjdCB4PSI5MCIgeT0iMjQwIiB3aWR0aD0iMjIwIiBoZWlnaHQ9IjI0IiByeD0iMTAiLz48bGluZSB4MT0iMjAwIiB5MT0iMjY0IiB4Mj0iMjAwIiB5Mj0iOTAiLz48cmVjdCB4PSIxNzAiIHk9IjYwIiB3aWR0aD0iNjAiIGhlaWdodD0iMzAiIHJ4PSIxMCIvPjxsaW5lIHgxPSI5MCIgeTE9IjI1MiIgeDI9IjExMCIgeTI9IjE2MCIvPjxsaW5lIHgxPSIzMTAiIHkxPSIyNTIiIHgyPSIyOTAiIHkyPSIxNjAiLz48L2c+PC9zdmc+",
     "setup_tips": "Tirez la barre vers vous en gardant le buste fixe, coudes le long du corps."
   },
   {
@@ -156,7 +156,7 @@
     "category": "dos",
     "code": "LIF-DOS-08",
     "location": "Zone musculation (étage 2)",
-    "image_url": "",
+    "image_url": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA0MDAgNDAwIiB3aWR0aD0iNDAwIiBoZWlnaHQ9IjQwMCI+PGRlZnM+PGxpbmVhckdyYWRpZW50IGlkPSJnIiB4MT0iMCIgeTE9IjAiIHgyPSIwIiB5Mj0iMSI+PHN0b3Agb2Zmc2V0PSIwIiBzdG9wLWNvbG9yPSIjMWExYTIyIi8+PHN0b3Agb2Zmc2V0PSIxIiBzdG9wLWNvbG9yPSIjMjYyNjJmIi8+PC9saW5lYXJHcmFkaWVudD48L2RlZnM+PHJlY3Qgd2lkdGg9IjQwMCIgaGVpZ2h0PSI0MDAiIGZpbGw9InVybCgjZykiLz48ZyBmaWxsPSJub25lIiBzdHJva2U9IiNkMTlhNjMiIHN0cm9rZS13aWR0aD0iOCIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIj48cmVjdCB4PSI5MCIgeT0iNzAiIHdpZHRoPSIyNiIgaGVpZ2h0PSIyMzAiLz48cmVjdCB4PSIyODQiIHk9IjcwIiB3aWR0aD0iMjYiIGhlaWdodD0iMjMwIi8+PHJlY3QgeD0iOTAiIHk9IjMwMCIgd2lkdGg9IjIyMCIgaGVpZ2h0PSIyMiIvPjxsaW5lIHgxPSIxMDMiIHkxPSIxMTAiIHgyPSIyOTciIHkyPSIxMTAiLz48cGF0aCBkPSJNMTIwIDcwIEMxMjAgMTUwIDIwMCAxODAgMjAwIDMwMCIvPjxwYXRoIGQ9Ik0yMDAgNzAgQzIwMCAxNTAgMjgwIDE4MCAyODAgMzAwIi8+PC9nPjwvc3ZnPg==",
     "setup_tips": "Placez les genoux sur la plateforme : elle compense une partie de votre poids."
   },
   {
@@ -166,7 +166,7 @@
     "category": "dos",
     "code": "NLT-DOS-09",
     "location": "Zone musculation (étage 2)",
-    "image_url": "https://commons.wikimedia.org/wiki/Special:FilePath/Barbell-rear-delt-row-1.png?width=480",
+    "image_url": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA0MDAgNDAwIiB3aWR0aD0iNDAwIiBoZWlnaHQ9IjQwMCI+PGRlZnM+PGxpbmVhckdyYWRpZW50IGlkPSJnIiB4MT0iMCIgeTE9IjAiIHgyPSIwIiB5Mj0iMSI+PHN0b3Agb2Zmc2V0PSIwIiBzdG9wLWNvbG9yPSIjMWExYTIyIi8+PHN0b3Agb2Zmc2V0PSIxIiBzdG9wLWNvbG9yPSIjMjYyNjJmIi8+PC9saW5lYXJHcmFkaWVudD48L2RlZnM+PHJlY3Qgd2lkdGg9IjQwMCIgaGVpZ2h0PSI0MDAiIGZpbGw9InVybCgjZykiLz48ZyBmaWxsPSJub25lIiBzdHJva2U9IiNkMTlhNjMiIHN0cm9rZS13aWR0aD0iOCIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIj48cmVjdCB4PSI5MCIgeT0iNzAiIHdpZHRoPSIyNiIgaGVpZ2h0PSIyMzAiLz48cmVjdCB4PSIyODQiIHk9IjcwIiB3aWR0aD0iMjYiIGhlaWdodD0iMjMwIi8+PHJlY3QgeD0iOTAiIHk9IjMwMCIgd2lkdGg9IjIyMCIgaGVpZ2h0PSIyMiIvPjxsaW5lIHgxPSIxMDMiIHkxPSIxMTAiIHgyPSIyOTciIHkyPSIxMTAiLz48Y2lyY2xlIGN4PSIyMDAiIGN5PSIxMjAiIHI9IjM0Ii8+PGxpbmUgeDE9IjIwMCIgeTE9IjEyMCIgeDI9IjE0MCIgeTI9IjIwMCIvPjxsaW5lIHgxPSIyMDAiIHkxPSIxMjAiIHgyPSIyNjAiIHkyPSIyMDAiLz48cmVjdCB4PSIxMjAiIHk9IjI3MCIgd2lkdGg9IjE2MCIgaGVpZ2h0PSIyMiIgcng9IjEwIi8+PC9nPjwvc3ZnPg==",
     "setup_tips": "Tirez vers les oreilles en écartant les bras pour travailler l'arrière d'épaule."
   },
   {
@@ -176,7 +176,7 @@
     "category": "dos",
     "code": "TCG-DOS-10",
     "location": "Zone musculation (étage 2)",
-    "image_url": "https://commons.wikimedia.org/wiki/Special:FilePath/Amer-Lat-Pulldown.jpg?width=480",
+    "image_url": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA0MDAgNDAwIiB3aWR0aD0iNDAwIiBoZWlnaHQ9IjQwMCI+PGRlZnM+PGxpbmVhckdyYWRpZW50IGlkPSJnIiB4MT0iMCIgeTE9IjAiIHgyPSIwIiB5Mj0iMSI+PHN0b3Agb2Zmc2V0PSIwIiBzdG9wLWNvbG9yPSIjMWExYTIyIi8+PHN0b3Agb2Zmc2V0PSIxIiBzdG9wLWNvbG9yPSIjMjYyNjJmIi8+PC9saW5lYXJHcmFkaWVudD48L2RlZnM+PHJlY3Qgd2lkdGg9IjQwMCIgaGVpZ2h0PSI0MDAiIGZpbGw9InVybCgjZykiLz48ZyBmaWxsPSJub25lIiBzdHJva2U9IiNkMTlhNjMiIHN0cm9rZS13aWR0aD0iOCIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIj48cmVjdCB4PSI5MCIgeT0iNzAiIHdpZHRoPSIyNiIgaGVpZ2h0PSIyMzAiLz48cmVjdCB4PSIyODQiIHk9IjcwIiB3aWR0aD0iMjYiIGhlaWdodD0iMjMwIi8+PHJlY3QgeD0iOTAiIHk9IjMwMCIgd2lkdGg9IjIyMCIgaGVpZ2h0PSIyMiIvPjxsaW5lIHgxPSIxMDMiIHkxPSIxMTAiIHgyPSIyOTciIHkyPSIxMTAiLz48bGluZSB4MT0iMjAwIiB5MT0iODAiIHgyPSIyMDAiIHkyPSIzMDAiLz48bGluZSB4MT0iMTAzIiB5MT0iMTQwIiB4Mj0iMjk3IiB5Mj0iMTEwIi8+PGxpbmUgeDE9IjE2MCIgeTE9IjE5MCIgeDI9IjI0MCIgeTI9IjIzMCIvPjwvZz48L3N2Zz4=",
     "setup_tips": "Station à câbles : poignées interchangeables pour multiples tirages."
   },
   {
@@ -186,7 +186,7 @@
     "category": "epaule",
     "code": "TCG-EPAU-01",
     "location": "Zone musculation (étage 1)",
-    "image_url": "https://commons.wikimedia.org/wiki/Special:FilePath/Shoulder-press-machine-1.png?width=480",
+    "image_url": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA0MDAgNDAwIiB3aWR0aD0iNDAwIiBoZWlnaHQ9IjQwMCI+PGRlZnM+PGxpbmVhckdyYWRpZW50IGlkPSJnIiB4MT0iMCIgeTE9IjAiIHgyPSIwIiB5Mj0iMSI+PHN0b3Agb2Zmc2V0PSIwIiBzdG9wLWNvbG9yPSIjMWExYTIyIi8+PHN0b3Agb2Zmc2V0PSIxIiBzdG9wLWNvbG9yPSIjMjYyNjJmIi8+PC9saW5lYXJHcmFkaWVudD48L2RlZnM+PHJlY3Qgd2lkdGg9IjQwMCIgaGVpZ2h0PSI0MDAiIGZpbGw9InVybCgjZykiLz48ZyBmaWxsPSJub25lIiBzdHJva2U9IiNkMTlhNjMiIHN0cm9rZS13aWR0aD0iOCIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIj48cmVjdCB4PSI5MCIgeT0iNzAiIHdpZHRoPSIyNiIgaGVpZ2h0PSIyMzAiLz48cmVjdCB4PSIyODQiIHk9IjcwIiB3aWR0aD0iMjYiIGhlaWdodD0iMjMwIi8+PHJlY3QgeD0iOTAiIHk9IjMwMCIgd2lkdGg9IjIyMCIgaGVpZ2h0PSIyMiIvPjxsaW5lIHgxPSIxMDMiIHkxPSIxMTAiIHgyPSIyOTciIHkyPSIxMTAiLz48cmVjdCB4PSIyMDAiIHk9IjcwIiB3aWR0aD0iMjQiIGhlaWdodD0iMTIwIiByeD0iMTAiLz48bGluZSB4MT0iMjEyIiB5MT0iMTIwIiB4Mj0iMTUwIiB5Mj0iNzAiLz48bGluZSB4MT0iMjEyIiB5MT0iMTIwIiB4Mj0iMjcwIiB5Mj0iNzAiLz48cmVjdCB4PSIxMTgiIHk9IjUyIiB3aWR0aD0iNDYiIGhlaWdodD0iMjAiIHJ4PSIxMCIvPjxyZWN0IHg9IjIzNiIgeT0iNTIiIHdpZHRoPSI0NiIgaGVpZ2h0PSIyMCIgcng9IjEwIi8+PC9nPjwvc3ZnPg==",
     "setup_tips": "Dossier à ~85°, poignées au niveau des épaules, poussez vers le haut."
   },
   {
@@ -196,7 +196,7 @@
     "category": "epaule",
     "code": "MTX-EPAU-02",
     "location": "Zone musculation (étage 2)",
-    "image_url": "https://commons.wikimedia.org/wiki/Special:FilePath/Cable-seated-rear-lateral-raise-2.png?width=480",
+    "image_url": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA0MDAgNDAwIiB3aWR0aD0iNDAwIiBoZWlnaHQ9IjQwMCI+PGRlZnM+PGxpbmVhckdyYWRpZW50IGlkPSJnIiB4MT0iMCIgeTE9IjAiIHgyPSIwIiB5Mj0iMSI+PHN0b3Agb2Zmc2V0PSIwIiBzdG9wLWNvbG9yPSIjMWExYTIyIi8+PHN0b3Agb2Zmc2V0PSIxIiBzdG9wLWNvbG9yPSIjMjYyNjJmIi8+PC9saW5lYXJHcmFkaWVudD48L2RlZnM+PHJlY3Qgd2lkdGg9IjQwMCIgaGVpZ2h0PSI0MDAiIGZpbGw9InVybCgjZykiLz48ZyBmaWxsPSJub25lIiBzdHJva2U9IiNkMTlhNjMiIHN0cm9rZS13aWR0aD0iOCIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIj48cmVjdCB4PSI5MCIgeT0iMTUwIiB3aWR0aD0iMjYiIGhlaWdodD0iMTMwIi8+PHJlY3QgeD0iMjg0IiB5PSIxNTAiIHdpZHRoPSIyNiIgaGVpZ2h0PSIxMzAiLz48cmVjdCB4PSI5MCIgeT0iMjgwIiB3aWR0aD0iMjIwIiBoZWlnaHQ9IjI0IiByeD0iMTAiLz48bGluZSB4MT0iMTAzIiB5MT0iMTYwIiB4Mj0iMTIwIiB5Mj0iOTAiLz48bGluZSB4MT0iMjk3IiB5MT0iMTYwIiB4Mj0iMjgwIiB5Mj0iOTAiLz48Y2lyY2xlIGN4PSIxMjAiIGN5PSI4NSIgcj0iMTAiLz48Y2lyY2xlIGN4PSIyODAiIGN5PSI4NSIgcj0iMTAiLz48L2c+PC9zdmc+",
     "setup_tips": "Montez les bras à hauteur d'épaule, coudes légèrement fléchis, descendez lentement."
   },
   {
@@ -206,7 +206,7 @@
     "category": "epaule",
     "code": "CYB-EPAU-04",
     "location": "Zone musculation (étage 1)",
-    "image_url": "https://commons.wikimedia.org/wiki/Special:FilePath/Shoulder-press-machine-1.png?width=480",
+    "image_url": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA0MDAgNDAwIiB3aWR0aD0iNDAwIiBoZWlnaHQ9IjQwMCI+PGRlZnM+PGxpbmVhckdyYWRpZW50IGlkPSJnIiB4MT0iMCIgeTE9IjAiIHgyPSIwIiB5Mj0iMSI+PHN0b3Agb2Zmc2V0PSIwIiBzdG9wLWNvbG9yPSIjMWExYTIyIi8+PHN0b3Agb2Zmc2V0PSIxIiBzdG9wLWNvbG9yPSIjMjYyNjJmIi8+PC9saW5lYXJHcmFkaWVudD48L2RlZnM+PHJlY3Qgd2lkdGg9IjQwMCIgaGVpZ2h0PSI0MDAiIGZpbGw9InVybCgjZykiLz48ZyBmaWxsPSJub25lIiBzdHJva2U9IiNkMTlhNjMiIHN0cm9rZS13aWR0aD0iOCIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIj48cmVjdCB4PSI5MCIgeT0iNzAiIHdpZHRoPSIyNiIgaGVpZ2h0PSIyMzAiLz48cmVjdCB4PSIyODQiIHk9IjcwIiB3aWR0aD0iMjYiIGhlaWdodD0iMjMwIi8+PHJlY3QgeD0iOTAiIHk9IjMwMCIgd2lkdGg9IjIyMCIgaGVpZ2h0PSIyMiIvPjxsaW5lIHgxPSIxMDMiIHkxPSIxMTAiIHgyPSIyOTciIHkyPSIxMTAiLz48cmVjdCB4PSIyMDAiIHk9IjgwIiB3aWR0aD0iMjIiIGhlaWdodD0iMTEwIiByeD0iMTAiLz48bGluZSB4MT0iMjExIiB5MT0iMTIwIiB4Mj0iMTUwIiB5Mj0iNzAiLz48bGluZSB4MT0iMjExIiB5MT0iMTIwIiB4Mj0iMjUwIiB5Mj0iNzAiLz48Y2lyY2xlIGN4PSIyMDAiIGN5PSI2MCIgcj0iMjYiLz48Y2lyY2xlIGN4PSIyMDAiIGN5PSI2MCIgcj0iMTIiLz48L2c+PC9zdmc+",
     "setup_tips": "Poussez sans verrouiller les coudes en haut du mouvement."
   },
   {
@@ -216,7 +216,7 @@
     "category": "epaule",
     "code": "PNT-EPAU-03",
     "location": "Zone musculation (étage 2)",
-    "image_url": "https://commons.wikimedia.org/wiki/Special:FilePath/Cable-seated-rear-lateral-raise-2.png?width=480",
+    "image_url": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA0MDAgNDAwIiB3aWR0aD0iNDAwIiBoZWlnaHQ9IjQwMCI+PGRlZnM+PGxpbmVhckdyYWRpZW50IGlkPSJnIiB4MT0iMCIgeTE9IjAiIHgyPSIwIiB5Mj0iMSI+PHN0b3Agb2Zmc2V0PSIwIiBzdG9wLWNvbG9yPSIjMWExYTIyIi8+PHN0b3Agb2Zmc2V0PSIxIiBzdG9wLWNvbG9yPSIjMjYyNjJmIi8+PC9saW5lYXJHcmFkaWVudD48L2RlZnM+PHJlY3Qgd2lkdGg9IjQwMCIgaGVpZ2h0PSI0MDAiIGZpbGw9InVybCgjZykiLz48ZyBmaWxsPSJub25lIiBzdHJva2U9IiNkMTlhNjMiIHN0cm9rZS13aWR0aD0iOCIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIj48cmVjdCB4PSI5MCIgeT0iNzAiIHdpZHRoPSIyNiIgaGVpZ2h0PSIyMzAiLz48cmVjdCB4PSIyODQiIHk9IjcwIiB3aWR0aD0iMjYiIGhlaWdodD0iMjMwIi8+PHJlY3QgeD0iOTAiIHk9IjMwMCIgd2lkdGg9IjIyMCIgaGVpZ2h0PSIyMiIvPjxsaW5lIHgxPSIxMDMiIHkxPSIxMTAiIHgyPSIyOTciIHkyPSIxMTAiLz48bGluZSB4MT0iMTYwIiB5MT0iMTIwIiB4Mj0iMTYwIiB5Mj0iMzAwIi8+PGxpbmUgeDE9IjI0MCIgeTE9IjEyMCIgeDI9IjI0MCIgeTI9IjMwMCIvPjxsaW5lIHgxPSIxNjAiIHkxPSIxMjAiIHgyPSIxMjAiIHkyPSI4MCIvPjxsaW5lIHgxPSIyNDAiIHkxPSIxMjAiIHgyPSIyODAiIHkyPSI4MCIvPjxyZWN0IHg9IjkwIiB5PSI2MCIgd2lkdGg9IjQwIiBoZWlnaHQ9IjE4IiByeD0iOSIvPjxyZWN0IHg9IjI3MCIgeT0iNjAiIHdpZHRoPSI0MCIgaGVpZ2h0PSIxOCIgcng9IjkiLz48L2c+PC9zdmc+",
     "setup_tips": "Seulement les épaules travaillent : ne haussez pas les épaules."
   },
   {
@@ -226,7 +226,7 @@
     "category": "epaule",
     "code": "NLT-EPAU-05",
     "location": "Zone musculation (étage 1)",
-    "image_url": "https://commons.wikimedia.org/wiki/Special:FilePath/Barbell-rear-delt-row-1.png?width=480",
+    "image_url": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA0MDAgNDAwIiB3aWR0aD0iNDAwIiBoZWlnaHQ9IjQwMCI+PGRlZnM+PGxpbmVhckdyYWRpZW50IGlkPSJnIiB4MT0iMCIgeTE9IjAiIHgyPSIwIiB5Mj0iMSI+PHN0b3Agb2Zmc2V0PSIwIiBzdG9wLWNvbG9yPSIjMWExYTIyIi8+PHN0b3Agb2Zmc2V0PSIxIiBzdG9wLWNvbG9yPSIjMjYyNjJmIi8+PC9saW5lYXJHcmFkaWVudD48L2RlZnM+PHJlY3Qgd2lkdGg9IjQwMCIgaGVpZ2h0PSI0MDAiIGZpbGw9InVybCgjZykiLz48ZyBmaWxsPSJub25lIiBzdHJva2U9IiNkMTlhNjMiIHN0cm9rZS13aWR0aD0iOCIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIj48cmVjdCB4PSI5MCIgeT0iNzAiIHdpZHRoPSIyNiIgaGVpZ2h0PSIyMzAiLz48cmVjdCB4PSIyODQiIHk9IjcwIiB3aWR0aD0iMjYiIGhlaWdodD0iMjMwIi8+PHJlY3QgeD0iOTAiIHk9IjMwMCIgd2lkdGg9IjIyMCIgaGVpZ2h0PSIyMiIvPjxsaW5lIHgxPSIxMDMiIHkxPSIxMTAiIHgyPSIyOTciIHkyPSIxMTAiLz48cmVjdCB4PSI5MCIgeT0iMTIwIiB3aWR0aD0iMjQiIGhlaWdodD0iMTMwIi8+PHJlY3QgeD0iMjg2IiB5PSIxMjAiIHdpZHRoPSIyNCIgaGVpZ2h0PSIxMzAiLz48cmVjdCB4PSI5MCIgeT0iMTIwIiB3aWR0aD0iNDQiIGhlaWdodD0iMjIiIHJ4PSIxMSIvPjxyZWN0IHg9IjI2NiIgeT0iMTIwIiB3aWR0aD0iNDQiIGhlaWdodD0iMjIiIHJ4PSIxMSIvPjxsaW5lIHgxPSIyMDAiIHkxPSIxMjAiIHgyPSIyMDAiIHkyPSI3MCIvPjwvZz48L3N2Zz4=",
     "setup_tips": "Écartez les bras vers l'arrière pour renforcer l'arrière des épaules."
   },
   {
@@ -236,7 +236,7 @@
     "category": "jambes",
     "code": "TCG-JAMB-01",
     "location": "Zone jambes (étage 1)",
-    "image_url": "https://commons.wikimedia.org/wiki/Special:FilePath/Leg-press-1-1024x670.png?width=480",
+    "image_url": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA0MDAgNDAwIiB3aWR0aD0iNDAwIiBoZWlnaHQ9IjQwMCI+PGRlZnM+PGxpbmVhckdyYWRpZW50IGlkPSJnIiB4MT0iMCIgeTE9IjAiIHgyPSIwIiB5Mj0iMSI+PHN0b3Agb2Zmc2V0PSIwIiBzdG9wLWNvbG9yPSIjMWExYTIyIi8+PHN0b3Agb2Zmc2V0PSIxIiBzdG9wLWNvbG9yPSIjMjYyNjJmIi8+PC9saW5lYXJHcmFkaWVudD48L2RlZnM+PHJlY3Qgd2lkdGg9IjQwMCIgaGVpZ2h0PSI0MDAiIGZpbGw9InVybCgjZykiLz48ZyBmaWxsPSJub25lIiBzdHJva2U9IiNkMTlhNjMiIHN0cm9rZS13aWR0aD0iOCIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIj48dGl0bGU+PC90aXRsZT48cGF0aCBkPSJNOTAgMzAwIEwyNjAgMzAwIEw5MCA5MCBaIi8+PHJlY3QgeD0iMTUwIiB5PSIxODAiIHdpZHRoPSIxMjAiIGhlaWdodD0iMTIwIi8+PGxpbmUgeDE9IjI2MCIgeTE9IjMwMCIgeDI9IjI2MCIgeTI9IjIwMCIvPjxyZWN0IHg9IjEyMCIgeT0iMTYwIiB3aWR0aD0iMzQiIGhlaWdodD0iMjAiIHJ4PSIxMCIvPjwvZz48L3N2Zz4=",
     "setup_tips": "Pieds à largeur d'épaules, descendez sans décoller le bassin ni bloquer les genoux."
   },
   {
@@ -246,7 +246,7 @@
     "category": "jambes",
     "code": "MTX-JAMB-02",
     "location": "Zone jambes (étage 1)",
-    "image_url": "https://commons.wikimedia.org/wiki/Special:FilePath/Leg_Extension.jpg?width=480",
+    "image_url": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA0MDAgNDAwIiB3aWR0aD0iNDAwIiBoZWlnaHQ9IjQwMCI+PGRlZnM+PGxpbmVhckdyYWRpZW50IGlkPSJnIiB4MT0iMCIgeTE9IjAiIHgyPSIwIiB5Mj0iMSI+PHN0b3Agb2Zmc2V0PSIwIiBzdG9wLWNvbG9yPSIjMWExYTIyIi8+PHN0b3Agb2Zmc2V0PSIxIiBzdG9wLWNvbG9yPSIjMjYyNjJmIi8+PC9saW5lYXJHcmFkaWVudD48L2RlZnM+PHJlY3Qgd2lkdGg9IjQwMCIgaGVpZ2h0PSI0MDAiIGZpbGw9InVybCgjZykiLz48ZyBmaWxsPSJub25lIiBzdHJva2U9IiNkMTlhNjMiIHN0cm9rZS13aWR0aD0iOCIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIj48cmVjdCB4PSI5MCIgeT0iMTUwIiB3aWR0aD0iMjYiIGhlaWdodD0iMTMwIi8+PHJlY3QgeD0iMjg0IiB5PSIxNTAiIHdpZHRoPSIyNiIgaGVpZ2h0PSIxMzAiLz48cmVjdCB4PSI5MCIgeT0iMjgwIiB3aWR0aD0iMjIwIiBoZWlnaHQ9IjI0IiByeD0iMTAiLz48cmVjdCB4PSIxNzAiIHk9IjEyMCIgd2lkdGg9IjYwIiBoZWlnaHQ9IjQwIiByeD0iMTAiLz48bGluZSB4MT0iMjAwIiB5MT0iMTYwIiB4Mj0iMjAwIiB5Mj0iMTIwIi8+PC9nPjwvc3ZnPg==",
     "setup_tips": "Pli du genou dans l'axe de la machine, montez sans à-coup."
   },
   {
@@ -256,7 +256,7 @@
     "category": "jambes",
     "code": "MTX-JAMB-03",
     "location": "Zone jambes (étage 1)",
-    "image_url": "https://commons.wikimedia.org/wiki/Special:FilePath/Seated-leg-curl-1.png?width=480",
+    "image_url": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA0MDAgNDAwIiB3aWR0aD0iNDAwIiBoZWlnaHQ9IjQwMCI+PGRlZnM+PGxpbmVhckdyYWRpZW50IGlkPSJnIiB4MT0iMCIgeTE9IjAiIHgyPSIwIiB5Mj0iMSI+PHN0b3Agb2Zmc2V0PSIwIiBzdG9wLWNvbG9yPSIjMWExYTIyIi8+PHN0b3Agb2Zmc2V0PSIxIiBzdG9wLWNvbG9yPSIjMjYyNjJmIi8+PC9saW5lYXJHcmFkaWVudD48L2RlZnM+PHJlY3Qgd2lkdGg9IjQwMCIgaGVpZ2h0PSI0MDAiIGZpbGw9InVybCgjZykiLz48ZyBmaWxsPSJub25lIiBzdHJva2U9IiNkMTlhNjMiIHN0cm9rZS13aWR0aD0iOCIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIj48cmVjdCB4PSI5MCIgeT0iMTUwIiB3aWR0aD0iMjYiIGhlaWdodD0iMTMwIi8+PHJlY3QgeD0iMjg0IiB5PSIxNTAiIHdpZHRoPSIyNiIgaGVpZ2h0PSIxMzAiLz48cmVjdCB4PSI5MCIgeT0iMjgwIiB3aWR0aD0iMjIwIiBoZWlnaHQ9IjI0IiByeD0iMTAiLz48cGF0aCBkPSJNMTUwIDE3MCBRMTUwIDIyMCAyMDAgMjIwIFEyNTAgMjIwIDI1MCAxNzAiLz48L2c+PC9zdmc+",
     "setup_tips": "Rouleau au-dessus des talons, pliez sans soulever les hanches."
   },
   {
@@ -266,7 +266,7 @@
     "category": "jambes",
     "code": "PRE-JAMB-04",
     "location": "Zone jambes (étage 1)",
-    "image_url": "https://commons.wikimedia.org/wiki/Special:FilePath/Leg-press-1-1024x670.png?width=480",
+    "image_url": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA0MDAgNDAwIiB3aWR0aD0iNDAwIiBoZWlnaHQ9IjQwMCI+PGRlZnM+PGxpbmVhckdyYWRpZW50IGlkPSJnIiB4MT0iMCIgeTE9IjAiIHgyPSIwIiB5Mj0iMSI+PHN0b3Agb2Zmc2V0PSIwIiBzdG9wLWNvbG9yPSIjMWExYTIyIi8+PHN0b3Agb2Zmc2V0PSIxIiBzdG9wLWNvbG9yPSIjMjYyNjJmIi8+PC9saW5lYXJHcmFkaWVudD48L2RlZnM+PHJlY3Qgd2lkdGg9IjQwMCIgaGVpZ2h0PSI0MDAiIGZpbGw9InVybCgjZykiLz48ZyBmaWxsPSJub25lIiBzdHJva2U9IiNkMTlhNjMiIHN0cm9rZS13aWR0aD0iOCIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIj48dGl0bGU+PC90aXRsZT48cmVjdCB4PSI5MCIgeT0iOTAiIHdpZHRoPSIyMjAiIGhlaWdodD0iMjYiIHJ4PSIxMiIvPjxyZWN0IHg9IjkwIiB5PSIyNTAiIHdpZHRoPSIyMjAiIGhlaWdodD0iMjYiIHJ4PSIxMiIvPjxyZWN0IHg9IjkwIiB5PSIxMTYiIHdpZHRoPSIyMTYiIGhlaWdodD0iMTIiLz48cmVjdCB4PSI5MCIgeT0iMjM4IiB3aWR0aD0iMjE2IiBoZWlnaHQ9IjEyIi8+PHJlY3QgeD0iNjAiIHk9IjE1MCIgd2lkdGg9IjM0IiBoZWlnaHQ9IjM0IiByeD0iOCIvPjxyZWN0IHg9IjI5NiIgeT0iMTAwIiB3aWR0aD0iNDQiIGhlaWdodD0iNDQiIHJ4PSI4Ii8+PC9nPjwvc3ZnPg==",
     "setup_tips": "Même principe que la presse inclinée, course horizontale."
   },
   {
@@ -276,7 +276,7 @@
     "category": "jambes",
     "code": "CYB-JAMB-05",
     "location": "Zone jambes (étage 1)",
-    "image_url": "https://commons.wikimedia.org/wiki/Special:FilePath/Seated-leg-curl-1.png?width=480",
+    "image_url": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA0MDAgNDAwIiB3aWR0aD0iNDAwIiBoZWlnaHQ9IjQwMCI+PGRlZnM+PGxpbmVhckdyYWRpZW50IGlkPSJnIiB4MT0iMCIgeTE9IjAiIHgyPSIwIiB5Mj0iMSI+PHN0b3Agb2Zmc2V0PSIwIiBzdG9wLWNvbG9yPSIjMWExYTIyIi8+PHN0b3Agb2Zmc2V0PSIxIiBzdG9wLWNvbG9yPSIjMjYyNjJmIi8+PC9saW5lYXJHcmFkaWVudD48L2RlZnM+PHJlY3Qgd2lkdGg9IjQwMCIgaGVpZ2h0PSI0MDAiIGZpbGw9InVybCgjZykiLz48ZyBmaWxsPSJub25lIiBzdHJva2U9IiNkMTlhNjMiIHN0cm9rZS13aWR0aD0iOCIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIj48dGl0bGU+PC90aXRsZT48cmVjdCB4PSIxMTAiIHk9IjEzMCIgd2lkdGg9IjE4MCIgaGVpZ2h0PSIyMCIgcng9IjEwIi8+PHJlY3QgeD0iMTIwIiB5PSIxNTAiIHdpZHRoPSIxOCIgaGVpZ2h0PSIxMzAiLz48cmVjdCB4PSIyNjIiIHk9IjE1MCIgd2lkdGg9IjE4IiBoZWlnaHQ9IjEzMCIvPjxwYXRoIGQ9Ik0xNTAgMTcwIFExNTAgMjMwIDIwMCAyMzAgUTI1MCAyMzAgMjUwIDE3MCIvPjwvZz48L3N2Zz4=",
     "setup_tips": "Rouleau derrière la cheville, recourbez la jambe sans bouger les cuisses."
   },
   {
@@ -286,7 +286,7 @@
     "category": "jambes",
     "code": "KSR-JAMB-06",
     "location": "Zone jambes (étage 1)",
-    "image_url": "https://commons.wikimedia.org/wiki/Special:FilePath/Hip-adduction-1-634x1024.png?width=480",
+    "image_url": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA0MDAgNDAwIiB3aWR0aD0iNDAwIiBoZWlnaHQ9IjQwMCI+PGRlZnM+PGxpbmVhckdyYWRpZW50IGlkPSJnIiB4MT0iMCIgeTE9IjAiIHgyPSIwIiB5Mj0iMSI+PHN0b3Agb2Zmc2V0PSIwIiBzdG9wLWNvbG9yPSIjMWExYTIyIi8+PHN0b3Agb2Zmc2V0PSIxIiBzdG9wLWNvbG9yPSIjMjYyNjJmIi8+PC9saW5lYXJHcmFkaWVudD48L2RlZnM+PHJlY3Qgd2lkdGg9IjQwMCIgaGVpZ2h0PSI0MDAiIGZpbGw9InVybCgjZykiLz48ZyBmaWxsPSJub25lIiBzdHJva2U9IiNkMTlhNjMiIHN0cm9rZS13aWR0aD0iOCIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIj48dGl0bGU+PC90aXRsZT48cmVjdCB4PSIxMjAiIHk9IjEyMCIgd2lkdGg9IjE2MCIgaGVpZ2h0PSIyMCIgcng9IjEwIi8+PHJlY3QgeD0iMTMwIiB5PSIxNDAiIHdpZHRoPSIxOCIgaGVpZ2h0PSIxNDAiLz48cmVjdCB4PSIyNTIiIHk9IjE0MCIgd2lkdGg9IjE4IiBoZWlnaHQ9IjE0MCIvPjxsaW5lIHgxPSIxMjAiIHkxPSIxODAiIHgyPSI5MCIgeTI9IjE4MCIvPjxsaW5lIHgxPSIyODAiIHkxPSIxODAiIHgyPSIzMTAiIHkyPSIxODAiLz48cmVjdCB4PSI3MCIgeT0iMTY1IiB3aWR0aD0iMjYiIGhlaWdodD0iMzAiIHJ4PSI4Ii8+PHJlY3QgeD0iMzA0IiB5PSIxNjUiIHdpZHRoPSIyNiIgaGVpZ2h0PSIzMCIgcng9IjgiLz48L2c+PC9zdmc+",
     "setup_tips": "Serrez les cuisses l'une vers l'autre en expirant."
   },
   {
@@ -296,7 +296,7 @@
     "category": "jambes",
     "code": "TCG-JAMB-07",
     "location": "Zone jambes (étage 1)",
-    "image_url": "https://commons.wikimedia.org/wiki/Special:FilePath/Hip_abduction-CDC_strength_training_for_older_adults.gif?width=480",
+    "image_url": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA0MDAgNDAwIiB3aWR0aD0iNDAwIiBoZWlnaHQ9IjQwMCI+PGRlZnM+PGxpbmVhckdyYWRpZW50IGlkPSJnIiB4MT0iMCIgeTE9IjAiIHgyPSIwIiB5Mj0iMSI+PHN0b3Agb2Zmc2V0PSIwIiBzdG9wLWNvbG9yPSIjMWExYTIyIi8+PHN0b3Agb2Zmc2V0PSIxIiBzdG9wLWNvbG9yPSIjMjYyNjJmIi8+PC9saW5lYXJHcmFkaWVudD48L2RlZnM+PHJlY3Qgd2lkdGg9IjQwMCIgaGVpZ2h0PSI0MDAiIGZpbGw9InVybCgjZykiLz48ZyBmaWxsPSJub25lIiBzdHJva2U9IiNkMTlhNjMiIHN0cm9rZS13aWR0aD0iOCIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIj48dGl0bGU+PC90aXRsZT48cmVjdCB4PSIxMjAiIHk9IjEyMCIgd2lkdGg9IjE2MCIgaGVpZ2h0PSIyMCIgcng9IjEwIi8+PHJlY3QgeD0iMTMwIiB5PSIxNDAiIHdpZHRoPSIxOCIgaGVpZ2h0PSIxNDAiLz48cmVjdCB4PSIyNTIiIHk9IjE0MCIgd2lkdGg9IjE4IiBoZWlnaHQ9IjE0MCIvPjxsaW5lIHgxPSIxMjAiIHkxPSIyMDAiIHgyPSI5MCIgeTI9IjEyMCIvPjxsaW5lIHgxPSIyODAiIHkxPSIyMDAiIHgyPSIzMTAiIHkyPSIxMjAiLz48cmVjdCB4PSI3MCIgeT0iMTAwIiB3aWR0aD0iMjYiIGhlaWdodD0iMzQiIHJ4PSI4Ii8+PHJlY3QgeD0iMzA0IiB5PSIxMDAiIHdpZHRoPSIyNiIgaGVpZ2h0PSIzNCIgcng9IjgiLz48L2c+PC9zdmc+",
     "setup_tips": "Écartez les cuisses contre la résistance, mouvement lent."
   },
   {
@@ -306,7 +306,7 @@
     "category": "jambes",
     "code": "LIF-JAMB-08",
     "location": "Zone jambes (étage 1)",
-    "image_url": "https://commons.wikimedia.org/wiki/Special:FilePath/Hack-squat-1-856x1024.png?width=480",
+    "image_url": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA0MDAgNDAwIiB3aWR0aD0iNDAwIiBoZWlnaHQ9IjQwMCI+PGRlZnM+PGxpbmVhckdyYWRpZW50IGlkPSJnIiB4MT0iMCIgeTE9IjAiIHgyPSIwIiB5Mj0iMSI+PHN0b3Agb2Zmc2V0PSIwIiBzdG9wLWNvbG9yPSIjMWExYTIyIi8+PHN0b3Agb2Zmc2V0PSIxIiBzdG9wLWNvbG9yPSIjMjYyNjJmIi8+PC9saW5lYXJHcmFkaWVudD48L2RlZnM+PHJlY3Qgd2lkdGg9IjQwMCIgaGVpZ2h0PSI0MDAiIGZpbGw9InVybCgjZykiLz48ZyBmaWxsPSJub25lIiBzdHJva2U9IiNkMTlhNjMiIHN0cm9rZS13aWR0aD0iOCIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIj48dGl0bGU+PC90aXRsZT48cGF0aCBkPSJNOTAgMzAwIEwyNTAgMzAwIEwyNTAgMjIwIEwxODAgMjIwIEwxODAgMTIwIEwzMDAgMTIwIEwzMDAgMjIwIEwyNTAgMjIwIi8+PHJlY3QgeD0iMTQwIiB5PSIxNTAiIHdpZHRoPSIxNjAiIGhlaWdodD0iNDAiIHJ4PSI4Ii8+PGxpbmUgeDE9IjkwIiB5MT0iMzAwIiB4Mj0iMzEwIiB5Mj0iMzAwIi8+PC9nPjwvc3ZnPg==",
     "setup_tips": "Dos plaqué au dossier incliné, pieds à mi-plateau, descendez jusqu'à 90°."
   },
   {
@@ -316,7 +316,7 @@
     "category": "jambes",
     "code": "MTX-JAMB-09",
     "location": "Zone jambes (étage 1)",
-    "image_url": "https://commons.wikimedia.org/wiki/Special:FilePath/Carlon_Colker_Squat_Machine.jpg?width=480",
+    "image_url": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA0MDAgNDAwIiB3aWR0aD0iNDAwIiBoZWlnaHQ9IjQwMCI+PGRlZnM+PGxpbmVhckdyYWRpZW50IGlkPSJnIiB4MT0iMCIgeTE9IjAiIHgyPSIwIiB5Mj0iMSI+PHN0b3Agb2Zmc2V0PSIwIiBzdG9wLWNvbG9yPSIjMWExYTIyIi8+PHN0b3Agb2Zmc2V0PSIxIiBzdG9wLWNvbG9yPSIjMjYyNjJmIi8+PC9saW5lYXJHcmFkaWVudD48L2RlZnM+PHJlY3Qgd2lkdGg9IjQwMCIgaGVpZ2h0PSI0MDAiIGZpbGw9InVybCgjZykiLz48ZyBmaWxsPSJub25lIiBzdHJva2U9IiNkMTlhNjMiIHN0cm9rZS13aWR0aD0iOCIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIj48cmVjdCB4PSI5MCIgeT0iNzAiIHdpZHRoPSIyNiIgaGVpZ2h0PSIyMzAiLz48cmVjdCB4PSIyODQiIHk9IjcwIiB3aWR0aD0iMjYiIGhlaWdodD0iMjMwIi8+PHJlY3QgeD0iOTAiIHk9IjMwMCIgd2lkdGg9IjIyMCIgaGVpZ2h0PSIyMiIvPjxsaW5lIHgxPSIxMDMiIHkxPSIxMTAiIHgyPSIyOTciIHkyPSIxMTAiLz48cmVjdCB4PSIxMjAiIHk9IjE3MCIgd2lkdGg9IjE2MCIgaGVpZ2h0PSI5MCIgcng9IjgiLz48bGluZSB4MT0iMjAwIiB5MT0iMTcwIiB4Mj0iMjAwIiB5Mj0iMTIwIi8+PC9nPjwvc3ZnPg==",
     "setup_tips": "Épaules sous les coussins, fléchissez sans décoller le buste."
   },
   {
@@ -326,7 +326,7 @@
     "category": "jambes",
     "code": "BDS-JAMB-10",
     "location": "Zone jambes (étage 1)",
-    "image_url": "https://commons.wikimedia.org/wiki/Special:FilePath/Seated_calf_machine.jpg?width=480",
+    "image_url": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA0MDAgNDAwIiB3aWR0aD0iNDAwIiBoZWlnaHQ9IjQwMCI+PGRlZnM+PGxpbmVhckdyYWRpZW50IGlkPSJnIiB4MT0iMCIgeTE9IjAiIHgyPSIwIiB5Mj0iMSI+PHN0b3Agb2Zmc2V0PSIwIiBzdG9wLWNvbG9yPSIjMWExYTIyIi8+PHN0b3Agb2Zmc2V0PSIxIiBzdG9wLWNvbG9yPSIjMjYyNjJmIi8+PC9saW5lYXJHcmFkaWVudD48L2RlZnM+PHJlY3Qgd2lkdGg9IjQwMCIgaGVpZ2h0PSI0MDAiIGZpbGw9InVybCgjZykiLz48ZyBmaWxsPSJub25lIiBzdHJva2U9IiNkMTlhNjMiIHN0cm9rZS13aWR0aD0iOCIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIj48dGl0bGU+PC90aXRsZT48cmVjdCB4PSI5MCIgeT0iMTMwIiB3aWR0aD0iMjIwIiBoZWlnaHQ9IjIyIiByeD0iMTAiLz48cmVjdCB4PSIyMDAiIHk9IjE1MiIgd2lkdGg9IjIyIiBoZWlnaHQ9IjkwIi8+PHJlY3QgeD0iOTAiIHk9IjE1MCIgd2lkdGg9IjM0IiBoZWlnaHQ9IjYwIiByeD0iOCIvPjxyZWN0IHg9IjI3NiIgeT0iMTUwIiB3aWR0aD0iMzQiIGhlaWdodD0iNjAiIHJ4PSI4Ii8+PHJlY3QgeD0iMjA2IiB5PSIzMDAiIHdpZHRoPSIxMCIgaGVpZ2h0PSI0MCIvPjxyZWN0IHg9IjkwIiB5PSIzMDAiIHdpZHRoPSIyMDAiIGhlaWdodD0iMTQiLz48L2c+PC9zdmc+",
     "setup_tips": "Pointe de pieds sur le plateau, montez sur la pointe puis descendez lentement."
   },
   {
@@ -336,7 +336,7 @@
     "category": "jambes",
     "code": "HOI-JAMB-11",
     "location": "Zone jambes (étage 1)",
-    "image_url": "https://commons.wikimedia.org/wiki/Special:FilePath/Rocking-standing-calf-raise-1.gif?width=480",
+    "image_url": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA0MDAgNDAwIiB3aWR0aD0iNDAwIiBoZWlnaHQ9IjQwMCI+PGRlZnM+PGxpbmVhckdyYWRpZW50IGlkPSJnIiB4MT0iMCIgeTE9IjAiIHgyPSIwIiB5Mj0iMSI+PHN0b3Agb2Zmc2V0PSIwIiBzdG9wLWNvbG9yPSIjMWExYTIyIi8+PHN0b3Agb2Zmc2V0PSIxIiBzdG9wLWNvbG9yPSIjMjYyNjJmIi8+PC9saW5lYXJHcmFkaWVudD48L2RlZnM+PHJlY3Qgd2lkdGg9IjQwMCIgaGVpZ2h0PSI0MDAiIGZpbGw9InVybCgjZykiLz48ZyBmaWxsPSJub25lIiBzdHJva2U9IiNkMTlhNjMiIHN0cm9rZS13aWR0aD0iOCIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIj48dGl0bGU+PC90aXRsZT48cmVjdCB4PSI5MCIgeT0iMzAwIiB3aWR0aD0iMjIwIiBoZWlnaHQ9IjE2Ii8+PHJlY3QgeD0iMjAwIiB5PSIxNDAiIHdpZHRoPSIyMCIgaGVpZ2h0PSIxNjAiLz48cmVjdCB4PSI5MCIgeT0iMTMwIiB3aWR0aD0iMjIwIiBoZWlnaHQ9IjIwIiByeD0iMTAiLz48cmVjdCB4PSIxMjAiIHk9IjE1MCIgd2lkdGg9IjMwIiBoZWlnaHQ9IjgwIiByeD0iOCIvPjxyZWN0IHg9IjI1MCIgeT0iMTUwIiB3aWR0aD0iMzAiIGhlaWdodD0iODAiIHJ4PSI4Ii8+PC9nPjwvc3ZnPg==",
     "setup_tips": "Bascule le corps sur l'avant du pied pour monter sur la pointe."
   },
   {
@@ -346,7 +346,7 @@
     "category": "jambes",
     "code": "PNT-JAMB-12",
     "location": "Zone jambes (étage 1)",
-    "image_url": "",
+    "image_url": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA0MDAgNDAwIiB3aWR0aD0iNDAwIiBoZWlnaHQ9IjQwMCI+PGRlZnM+PGxpbmVhckdyYWRpZW50IGlkPSJnIiB4MT0iMCIgeTE9IjAiIHgyPSIwIiB5Mj0iMSI+PHN0b3Agb2Zmc2V0PSIwIiBzdG9wLWNvbG9yPSIjMWExYTIyIi8+PHN0b3Agb2Zmc2V0PSIxIiBzdG9wLWNvbG9yPSIjMjYyNjJmIi8+PC9saW5lYXJHcmFkaWVudD48L2RlZnM+PHJlY3Qgd2lkdGg9IjQwMCIgaGVpZ2h0PSI0MDAiIGZpbGw9InVybCgjZykiLz48ZyBmaWxsPSJub25lIiBzdHJva2U9IiNkMTlhNjMiIHN0cm9rZS13aWR0aD0iOCIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIj48cmVjdCB4PSI5MCIgeT0iMjEwIiB3aWR0aD0iMjMwIiBoZWlnaHQ9IjIyIiByeD0iMTAiLz48cmVjdCB4PSIxMjAiIHk9IjIzMiIgd2lkdGg9IjE4IiBoZWlnaHQ9IjYwIi8+PHJlY3QgeD0iMjY1IiB5PSIyMzIiIHdpZHRoPSIxOCIgaGVpZ2h0PSI2MCIvPjxyZWN0IHg9IjE3MCIgeT0iMTIwIiB3aWR0aD0iNjAiIGhlaWdodD0iMjQiIHJ4PSIxMCIvPjxyZWN0IHg9IjIwMCIgeT0iMTQ0IiB3aWR0aD0iMjQiIGhlaWdodD0iNjYiLz48L2c+PC9zdmc+",
     "setup_tips": "Poussez les hanches vers le haut, dos sur l'appui, en serrant les fessiers."
   },
   {
@@ -356,7 +356,7 @@
     "category": "jambes",
     "code": "RGE-JAMB-13",
     "location": "Zone jambes (étage 1)",
-    "image_url": "",
+    "image_url": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA0MDAgNDAwIiB3aWR0aD0iNDAwIiBoZWlnaHQ9IjQwMCI+PGRlZnM+PGxpbmVhckdyYWRpZW50IGlkPSJnIiB4MT0iMCIgeTE9IjAiIHgyPSIwIiB5Mj0iMSI+PHN0b3Agb2Zmc2V0PSIwIiBzdG9wLWNvbG9yPSIjMWExYTIyIi8+PHN0b3Agb2Zmc2V0PSIxIiBzdG9wLWNvbG9yPSIjMjYyNjJmIi8+PC9saW5lYXJHcmFkaWVudD48L2RlZnM+PHJlY3Qgd2lkdGg9IjQwMCIgaGVpZ2h0PSI0MDAiIGZpbGw9InVybCgjZykiLz48ZyBmaWxsPSJub25lIiBzdHJva2U9IiNkMTlhNjMiIHN0cm9rZS13aWR0aD0iOCIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIj48dGl0bGU+PC90aXRsZT48cmVjdCB4PSIxMTAiIHk9IjE5MCIgd2lkdGg9IjE4MCIgaGVpZ2h0PSIyNCIgcng9IjEwIi8+PHBhdGggZD0iTTExMCAyMTQgTDExMCAxNTAgTDE3MCAxNTAgTDE3MCAxOTAiLz48cmVjdCB4PSIxMjAiIHk9IjIxNCIgd2lkdGg9IjI0IiBoZWlnaHQ9IjQ2Ii8+PHJlY3QgeD0iMjU2IiB5PSIyMTQiIHdpZHRoPSIyNCIgaGVpZ2h0PSI0NiIvPjwvZz48L3N2Zz4=",
     "setup_tips": "La charge pend à la ceinture : squat sans pression sur le dos."
   },
   {
@@ -366,7 +366,7 @@
     "category": "jambes",
     "code": "NLT-JAMB-14",
     "location": "Zone jambes (étage 1)",
-    "image_url": "",
+    "image_url": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA0MDAgNDAwIiB3aWR0aD0iNDAwIiBoZWlnaHQ9IjQwMCI+PGRlZnM+PGxpbmVhckdyYWRpZW50IGlkPSJnIiB4MT0iMCIgeTE9IjAiIHgyPSIwIiB5Mj0iMSI+PHN0b3Agb2Zmc2V0PSIwIiBzdG9wLWNvbG9yPSIjMWExYTIyIi8+PHN0b3Agb2Zmc2V0PSIxIiBzdG9wLWNvbG9yPSIjMjYyNjJmIi8+PC9saW5lYXJHcmFkaWVudD48L2RlZnM+PHJlY3Qgd2lkdGg9IjQwMCIgaGVpZ2h0PSI0MDAiIGZpbGw9InVybCgjZykiLz48ZyBmaWxsPSJub25lIiBzdHJva2U9IiNkMTlhNjMiIHN0cm9rZS13aWR0aD0iOCIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIj48dGl0bGU+PC90aXRsZT48cmVjdCB4PSIxMTAiIHk9IjIwMCIgd2lkdGg9IjE4MCIgaGVpZ2h0PSIyMiIgcng9IjEwIi8+PHJlY3QgeD0iMTIwIiB5PSIyMjIiIHdpZHRoPSIyMCIgaGVpZ2h0PSI2MCIvPjxyZWN0IHg9IjI2MCIgeT0iMjIyIiB3aWR0aD0iMjAiIGhlaWdodD0iNjAiLz48bGluZSB4MT0iMjAwIiB5MT0iMjAwIiB4Mj0iMjAwIiB5Mj0iMTUwIi8+PGNpcmNsZSBjeD0iMjAwIiBjeT0iMTQwIiByPSIxMiIvPjwvZz48L3N2Zz4=",
     "setup_tips": "Poussez la plateforme vers l'arrière avec le talon en contractant les fessiers."
   },
   {
@@ -376,7 +376,7 @@
     "category": "jambes",
     "code": "TCG-JAMB-15",
     "location": "Zone jambes (étage 1)",
-    "image_url": "https://commons.wikimedia.org/wiki/Special:FilePath/Hack-squat-1-856x1024.png?width=480",
+    "image_url": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA0MDAgNDAwIiB3aWR0aD0iNDAwIiBoZWlnaHQ9IjQwMCI+PGRlZnM+PGxpbmVhckdyYWRpZW50IGlkPSJnIiB4MT0iMCIgeTE9IjAiIHgyPSIwIiB5Mj0iMSI+PHN0b3Agb2Zmc2V0PSIwIiBzdG9wLWNvbG9yPSIjMWExYTIyIi8+PHN0b3Agb2Zmc2V0PSIxIiBzdG9wLWNvbG9yPSIjMjYyNjJmIi8+PC9saW5lYXJHcmFkaWVudD48L2RlZnM+PHJlY3Qgd2lkdGg9IjQwMCIgaGVpZ2h0PSI0MDAiIGZpbGw9InVybCgjZykiLz48ZyBmaWxsPSJub25lIiBzdHJva2U9IiNkMTlhNjMiIHN0cm9rZS13aWR0aD0iOCIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIj48cmVjdCB4PSI5MCIgeT0iNzAiIHdpZHRoPSIyNiIgaGVpZ2h0PSIyMzAiLz48cmVjdCB4PSIyODQiIHk9IjcwIiB3aWR0aD0iMjYiIGhlaWdodD0iMjMwIi8+PHJlY3QgeD0iOTAiIHk9IjMwMCIgd2lkdGg9IjIyMCIgaGVpZ2h0PSIyMiIvPjxsaW5lIHgxPSIxMDMiIHkxPSIxMTAiIHgyPSIyOTciIHkyPSIxMTAiLz48cGF0aCBkPSJNMTQwIDEyMCBMMjAwIDEyMCBMMjAwIDIyMCBMMzAwIDIyMCBMMzAwIDEyMCBMMTQwIDEyMCBaIi8+PGxpbmUgeDE9IjIwMCIgeTE9IjEyMCIgeDI9IjIwMCIgeTI9IjYwIi8+PC9nPjwvc3ZnPg==",
     "setup_tips": "Presse verticale : poussez le plateau vers le haut avec les jambes."
   },
   {
@@ -386,7 +386,7 @@
     "category": "jambes",
     "code": "HOI-JAMB-16",
     "location": "Zone jambes (étage 1)",
-    "image_url": "",
+    "image_url": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA0MDAgNDAwIiB3aWR0aD0iNDAwIiBoZWlnaHQ9IjQwMCI+PGRlZnM+PGxpbmVhckdyYWRpZW50IGlkPSJnIiB4MT0iMCIgeTE9IjAiIHgyPSIwIiB5Mj0iMSI+PHN0b3Agb2Zmc2V0PSIwIiBzdG9wLWNvbG9yPSIjMWExYTIyIi8+PHN0b3Agb2Zmc2V0PSIxIiBzdG9wLWNvbG9yPSIjMjYyNjJmIi8+PC9saW5lYXJHcmFkaWVudD48L2RlZnM+PHJlY3Qgd2lkdGg9IjQwMCIgaGVpZ2h0PSI0MDAiIGZpbGw9InVybCgjZykiLz48ZyBmaWxsPSJub25lIiBzdHJva2U9IiNkMTlhNjMiIHN0cm9rZS13aWR0aD0iOCIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIj48dGl0bGU+PC90aXRsZT48cmVjdCB4PSI5MCIgeT0iMTIwIiB3aWR0aD0iMjIwIiBoZWlnaHQ9IjI0IiByeD0iMTAiLz48bGluZSB4MT0iOTAiIHkxPSIxMzIiIHgyPSI5MCIgeTI9IjMwMCIvPjxsaW5lIHgxPSIzMTAiIHkxPSIxMzIiIHgyPSIzMTAiIHkyPSIzMDAiLz48bGluZSB4MT0iOTAiIHkxPSIzMDAiIHgyPSIzMTAiIHkyPSIzMDAiLz48Y2lyY2xlIGN4PSIxMjAiIGN5PSIyMDAiIHI9IjEyIi8+PGNpcmNsZSBjeD0iMjgwIiBjeT0iMjAwIiByPSIxMiIvPjwvZz48L3N2Zz4=",
     "setup_tips": "Machine multi-articulations pour adducteurs, abducteurs et fessiers."
   },
   {
@@ -396,7 +396,7 @@
     "category": "bras",
     "code": "TCG-BRAS-01",
     "location": "Zone musculation (étage 2)",
-    "image_url": "https://commons.wikimedia.org/wiki/Special:FilePath/One-arm-preacher-curl-2.gif?width=480",
+    "image_url": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA0MDAgNDAwIiB3aWR0aD0iNDAwIiBoZWlnaHQ9IjQwMCI+PGRlZnM+PGxpbmVhckdyYWRpZW50IGlkPSJnIiB4MT0iMCIgeTE9IjAiIHgyPSIwIiB5Mj0iMSI+PHN0b3Agb2Zmc2V0PSIwIiBzdG9wLWNvbG9yPSIjMWExYTIyIi8+PHN0b3Agb2Zmc2V0PSIxIiBzdG9wLWNvbG9yPSIjMjYyNjJmIi8+PC9saW5lYXJHcmFkaWVudD48L2RlZnM+PHJlY3Qgd2lkdGg9IjQwMCIgaGVpZ2h0PSI0MDAiIGZpbGw9InVybCgjZykiLz48ZyBmaWxsPSJub25lIiBzdHJva2U9IiNkMTlhNjMiIHN0cm9rZS13aWR0aD0iOCIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIj48dGl0bGU+PC90aXRsZT48cmVjdCB4PSIxNDAiIHk9IjkwIiB3aWR0aD0iMTIwIiBoZWlnaHQ9IjE2IiByeD0iOCIvPjxyZWN0IHg9IjIwMCIgeT0iMTA2IiB3aWR0aD0iMjIiIGhlaWdodD0iMTQwIi8+PHJlY3QgeD0iMTk1IiB5PSIyNDYiIHdpZHRoPSIzMiIgaGVpZ2h0PSI0MCIgcng9IjgiLz48cmVjdCB4PSIxNDAiIHk9IjkwIiB3aWR0aD0iMTYiIGhlaWdodD0iMTIwIi8+PHJlY3QgeD0iMjQ0IiB5PSI5MCIgd2lkdGg9IjE2IiBoZWlnaHQ9IjEyMCIvPjwvZz48L3N2Zz4=",
     "setup_tips": "Coude aligné avec l'axe de la machine, sans utiliser le dos."
   },
   {
@@ -406,7 +406,7 @@
     "category": "bras",
     "code": "TCG-BRAS-02",
     "location": "Zone musculation (étage 2)",
-    "image_url": "https://commons.wikimedia.org/wiki/Special:FilePath/Reverse-grip-triceps-pushdown-2.gif?width=480",
+    "image_url": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA0MDAgNDAwIiB3aWR0aD0iNDAwIiBoZWlnaHQ9IjQwMCI+PGRlZnM+PGxpbmVhckdyYWRpZW50IGlkPSJnIiB4MT0iMCIgeTE9IjAiIHgyPSIwIiB5Mj0iMSI+PHN0b3Agb2Zmc2V0PSIwIiBzdG9wLWNvbG9yPSIjMWExYTIyIi8+PHN0b3Agb2Zmc2V0PSIxIiBzdG9wLWNvbG9yPSIjMjYyNjJmIi8+PC9saW5lYXJHcmFkaWVudD48L2RlZnM+PHJlY3Qgd2lkdGg9IjQwMCIgaGVpZ2h0PSI0MDAiIGZpbGw9InVybCgjZykiLz48ZyBmaWxsPSJub25lIiBzdHJva2U9IiNkMTlhNjMiIHN0cm9rZS13aWR0aD0iOCIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIj48dGl0bGU+PC90aXRsZT48cmVjdCB4PSI5MCIgeT0iOTAiIHdpZHRoPSIyMjAiIGhlaWdodD0iMjAiIHJ4PSIxMCIvPjxsaW5lIHgxPSIyMDAiIHkxPSIxMTAiIHgyPSIyMDAiIHkyPSIxNTAiLz48cmVjdCB4PSIxODAiIHk9IjE1MCIgd2lkdGg9IjQwIiBoZWlnaHQ9IjQwIiByeD0iNiIvPjxyZWN0IHg9IjE5MCIgeT0iMTkwIiB3aWR0aD0iMjAiIGhlaWdodD0iNjAiLz48L2c+PC9zdmc+",
     "setup_tips": "Coudes fixes le long du corps, poussez les avant-bras vers le bas."
   },
   {
@@ -416,7 +416,7 @@
     "category": "bras",
     "code": "PRE-BRAS-04",
     "location": "Zone musculation (étage 2)",
-    "image_url": "https://commons.wikimedia.org/wiki/Special:FilePath/One-arm-preacher-curl-2.gif?width=480",
+    "image_url": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA0MDAgNDAwIiB3aWR0aD0iNDAwIiBoZWlnaHQ9IjQwMCI+PGRlZnM+PGxpbmVhckdyYWRpZW50IGlkPSJnIiB4MT0iMCIgeTE9IjAiIHgyPSIwIiB5Mj0iMSI+PHN0b3Agb2Zmc2V0PSIwIiBzdG9wLWNvbG9yPSIjMWExYTIyIi8+PHN0b3Agb2Zmc2V0PSIxIiBzdG9wLWNvbG9yPSIjMjYyNjJmIi8+PC9saW5lYXJHcmFkaWVudD48L2RlZnM+PHJlY3Qgd2lkdGg9IjQwMCIgaGVpZ2h0PSI0MDAiIGZpbGw9InVybCgjZykiLz48ZyBmaWxsPSJub25lIiBzdHJva2U9IiNkMTlhNjMiIHN0cm9rZS13aWR0aD0iOCIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIj48dGl0bGU+PC90aXRsZT48cmVjdCB4PSI5MCIgeT0iMjQwIiB3aWR0aD0iOTAiIGhlaWdodD0iMjIiIHJ4PSIxMCIvPjxyZWN0IHg9IjE4MCIgeT0iMTIwIiB3aWR0aD0iMzAiIGhlaWdodD0iMTQyIiByeD0iNiIvPjxyZWN0IHg9IjIwNSIgeT0iMTMwIiB3aWR0aD0iMTEwIiBoZWlnaHQ9IjIwIiByeD0iOSIvPjxsaW5lIHgxPSIxNTAiIHkxPSIyNDAiIHgyPSIxNTAiIHkyPSIzMDAiLz48bGluZSB4MT0iOTAiIHkxPSIzMDAiIHgyPSIzMTAiIHkyPSIzMDAiLz48L2c+PC9zdmc+",
     "setup_tips": "Les creux des coudes contre le coussin, montez la barre sans décoller les bras."
   },
   {
@@ -426,7 +426,7 @@
     "category": "bras",
     "code": "HOI-BRAS-03",
     "location": "Zone musculation (étage 2)",
-    "image_url": "https://commons.wikimedia.org/wiki/Special:FilePath/One-arm-preacher-curl-2.gif?width=480",
+    "image_url": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA0MDAgNDAwIiB3aWR0aD0iNDAwIiBoZWlnaHQ9IjQwMCI+PGRlZnM+PGxpbmVhckdyYWRpZW50IGlkPSJnIiB4MT0iMCIgeTE9IjAiIHgyPSIwIiB5Mj0iMSI+PHN0b3Agb2Zmc2V0PSIwIiBzdG9wLWNvbG9yPSIjMWExYTIyIi8+PHN0b3Agb2Zmc2V0PSIxIiBzdG9wLWNvbG9yPSIjMjYyNjJmIi8+PC9saW5lYXJHcmFkaWVudD48L2RlZnM+PHJlY3Qgd2lkdGg9IjQwMCIgaGVpZ2h0PSI0MDAiIGZpbGw9InVybCgjZykiLz48ZyBmaWxsPSJub25lIiBzdHJva2U9IiNkMTlhNjMiIHN0cm9rZS13aWR0aD0iOCIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIj48dGl0bGU+PC90aXRsZT48cmVjdCB4PSIxMjAiIHk9IjIwMCIgd2lkdGg9IjE2MCIgaGVpZ2h0PSIyMCIgcng9IjEwIi8+PHJlY3QgeD0iMjAwIiB5PSIxNTAiIHdpZHRoPSIyMCIgaGVpZ2h0PSI1MCIvPjxyZWN0IHg9IjE1MCIgeT0iMTIwIiB3aWR0aD0iMTAwIiBoZWlnaHQ9IjI2IiByeD0iMTIiLz48bGluZSB4MT0iMjAwIiB5MT0iMTQ2IiB4Mj0iMjAwIiB5Mj0iOTAiLz48cmVjdCB4PSI2MCIgeT0iMzAwIiB3aWR0aD0iMjgwIiBoZWlnaHQ9IjE2Ii8+PC9nPjwvc3ZnPg==",
     "setup_tips": "Avant-bras en appui, pliez sans bouger les épaules ni le buste."
   },
   {
@@ -436,7 +436,7 @@
     "category": "bras",
     "code": "MTX-BRAS-05",
     "location": "Zone musculation (étage 2)",
-    "image_url": "",
+    "image_url": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA0MDAgNDAwIiB3aWR0aD0iNDAwIiBoZWlnaHQ9IjQwMCI+PGRlZnM+PGxpbmVhckdyYWRpZW50IGlkPSJnIiB4MT0iMCIgeTE9IjAiIHgyPSIwIiB5Mj0iMSI+PHN0b3Agb2Zmc2V0PSIwIiBzdG9wLWNvbG9yPSIjMWExYTIyIi8+PHN0b3Agb2Zmc2V0PSIxIiBzdG9wLWNvbG9yPSIjMjYyNjJmIi8+PC9saW5lYXJHcmFkaWVudD48L2RlZnM+PHJlY3Qgd2lkdGg9IjQwMCIgaGVpZ2h0PSI0MDAiIGZpbGw9InVybCgjZykiLz48ZyBmaWxsPSJub25lIiBzdHJva2U9IiNkMTlhNjMiIHN0cm9rZS13aWR0aD0iOCIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIj48cmVjdCB4PSI5MCIgeT0iNzAiIHdpZHRoPSIyNiIgaGVpZ2h0PSIyMzAiLz48cmVjdCB4PSIyODQiIHk9IjcwIiB3aWR0aD0iMjYiIGhlaWdodD0iMjMwIi8+PHJlY3QgeD0iOTAiIHk9IjMwMCIgd2lkdGg9IjIyMCIgaGVpZ2h0PSIyMiIvPjxsaW5lIHgxPSIxMDMiIHkxPSIxMTAiIHgyPSIyOTciIHkyPSIxMTAiLz48cGF0aCBkPSJNMTQwIDE2MCBDMTQwIDIyMCAxNjAgMjQwIDIwMCAyNDAgQzI0MCAyNDAgMjYwIDIyMCAyNjAgMTYwIi8+PGxpbmUgeDE9IjIwMCIgeTE9IjE4MCIgeDI9IjIwMCIgeTI9IjI0MCIvPjwvZz48L3N2Zz4=",
     "setup_tips": "Plateforme qui compense le poids : poussez les barres vers le bas."
   },
   {
@@ -446,7 +446,7 @@
     "category": "bras",
     "code": "HSM-BRAS-06",
     "location": "Zone musculation (étage 2)",
-    "image_url": "",
+    "image_url": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA0MDAgNDAwIiB3aWR0aD0iNDAwIiBoZWlnaHQ9IjQwMCI+PGRlZnM+PGxpbmVhckdyYWRpZW50IGlkPSJnIiB4MT0iMCIgeTE9IjAiIHgyPSIwIiB5Mj0iMSI+PHN0b3Agb2Zmc2V0PSIwIiBzdG9wLWNvbG9yPSIjMWExYTIyIi8+PHN0b3Agb2Zmc2V0PSIxIiBzdG9wLWNvbG9yPSIjMjYyNjJmIi8+PC9saW5lYXJHcmFkaWVudD48L2RlZnM+PHJlY3Qgd2lkdGg9IjQwMCIgaGVpZ2h0PSI0MDAiIGZpbGw9InVybCgjZykiLz48ZyBmaWxsPSJub25lIiBzdHJva2U9IiNkMTlhNjMiIHN0cm9rZS13aWR0aD0iOCIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIj48dGl0bGU+PC90aXRsZT48cmVjdCB4PSI5MCIgeT0iMTIwIiB3aWR0aD0iMjIwIiBoZWlnaHQ9IjIyIiByeD0iMTAiLz48bGluZSB4MT0iOTAiIHkxPSIxMzEiIHgyPSI5MCIgeTI9IjMwMCIvPjxsaW5lIHgxPSIzMTAiIHkxPSIxMzEiIHgyPSIzMTAiIHkyPSIzMDAiLz48cmVjdCB4PSI5MCIgeT0iMzAwIiB3aWR0aD0iMjIwIiBoZWlnaHQ9IjE4Ii8+PGxpbmUgeDE9IjE0MCIgeTE9IjE1MCIgeDI9IjE0MCIgeTI9IjIwMCIvPjxsaW5lIHgxPSIyNjAiIHkxPSIxNTAiIHgyPSIyNjAiIHkyPSIyMDAiLz48L2c+PC9zdmc+",
     "setup_tips": "Descendez les épaules entre les barres puis poussez pour remonter."
   },
   {
@@ -456,7 +456,7 @@
     "category": "core",
     "code": "TCG-CORE-01",
     "location": "Zone musculation (étage 2)",
-    "image_url": "https://commons.wikimedia.org/wiki/Special:FilePath/Seated-ab-crunch-1.gif?width=480",
+    "image_url": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA0MDAgNDAwIiB3aWR0aD0iNDAwIiBoZWlnaHQ9IjQwMCI+PGRlZnM+PGxpbmVhckdyYWRpZW50IGlkPSJnIiB4MT0iMCIgeTE9IjAiIHgyPSIwIiB5Mj0iMSI+PHN0b3Agb2Zmc2V0PSIwIiBzdG9wLWNvbG9yPSIjMWExYTIyIi8+PHN0b3Agb2Zmc2V0PSIxIiBzdG9wLWNvbG9yPSIjMjYyNjJmIi8+PC9saW5lYXJHcmFkaWVudD48L2RlZnM+PHJlY3Qgd2lkdGg9IjQwMCIgaGVpZ2h0PSI0MDAiIGZpbGw9InVybCgjZykiLz48ZyBmaWxsPSJub25lIiBzdHJva2U9IiNkMTlhNjMiIHN0cm9rZS13aWR0aD0iOCIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIj48cmVjdCB4PSI5MCIgeT0iMTUwIiB3aWR0aD0iMjYiIGhlaWdodD0iMTMwIi8+PHJlY3QgeD0iMjg0IiB5PSIxNTAiIHdpZHRoPSIyNiIgaGVpZ2h0PSIxMzAiLz48cmVjdCB4PSI5MCIgeT0iMjgwIiB3aWR0aD0iMjIwIiBoZWlnaHQ9IjI0IiByeD0iMTAiLz48cmVjdCB4PSIxNTAiIHk9IjE1MCIgd2lkdGg9IjEwMCIgaGVpZ2h0PSIyMiIgcng9IjEwIi8+PHBhdGggZD0iTTE1MCAxNzIgUTE1MCAyMTAgMjAwIDIxMCBRMjUwIDIxMCAyNTAgMTcyIi8+PC9nPjwvc3ZnPg==",
     "setup_tips": "Hanches fixes, rapprochez le buste des cuisses en expirant."
   },
   {
@@ -466,7 +466,7 @@
     "category": "core",
     "code": "MTX-CORE-02",
     "location": "Zone musculation (étage 2)",
-    "image_url": "https://commons.wikimedia.org/wiki/Special:FilePath/Back-extension-on-stability-ball-1.png?width=480",
+    "image_url": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA0MDAgNDAwIiB3aWR0aD0iNDAwIiBoZWlnaHQ9IjQwMCI+PGRlZnM+PGxpbmVhckdyYWRpZW50IGlkPSJnIiB4MT0iMCIgeTE9IjAiIHgyPSIwIiB5Mj0iMSI+PHN0b3Agb2Zmc2V0PSIwIiBzdG9wLWNvbG9yPSIjMWExYTIyIi8+PHN0b3Agb2Zmc2V0PSIxIiBzdG9wLWNvbG9yPSIjMjYyNjJmIi8+PC9saW5lYXJHcmFkaWVudD48L2RlZnM+PHJlY3Qgd2lkdGg9IjQwMCIgaGVpZ2h0PSI0MDAiIGZpbGw9InVybCgjZykiLz48ZyBmaWxsPSJub25lIiBzdHJva2U9IiNkMTlhNjMiIHN0cm9rZS13aWR0aD0iOCIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIj48cmVjdCB4PSI5MCIgeT0iMTUwIiB3aWR0aD0iMjYiIGhlaWdodD0iMTMwIi8+PHJlY3QgeD0iMjg0IiB5PSIxNTAiIHdpZHRoPSIyNiIgaGVpZ2h0PSIxMzAiLz48cmVjdCB4PSI5MCIgeT0iMjgwIiB3aWR0aD0iMjIwIiBoZWlnaHQ9IjI0IiByeD0iMTAiLz48bGluZSB4MT0iMjAwIiB5MT0iMTUwIiB4Mj0iMjAwIiB5Mj0iODAiLz48cmVjdCB4PSIxNTAiIHk9IjYwIiB3aWR0aD0iMTAwIiBoZWlnaHQ9IjIyIiByeD0iMTAiLz48L2c+PC9zdmc+",
     "setup_tips": "Chevilles calées, descendez en gardant le dos bien droit."
   },
   {
@@ -476,7 +476,7 @@
     "category": "core",
     "code": "HOI-CORE-03",
     "location": "Zone musculation (étage 2)",
-    "image_url": "https://commons.wikimedia.org/wiki/Special:FilePath/Seated-ab-crunch-1.gif?width=480",
+    "image_url": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA0MDAgNDAwIiB3aWR0aD0iNDAwIiBoZWlnaHQ9IjQwMCI+PGRlZnM+PGxpbmVhckdyYWRpZW50IGlkPSJnIiB4MT0iMCIgeTE9IjAiIHgyPSIwIiB5Mj0iMSI+PHN0b3Agb2Zmc2V0PSIwIiBzdG9wLWNvbG9yPSIjMWExYTIyIi8+PHN0b3Agb2Zmc2V0PSIxIiBzdG9wLWNvbG9yPSIjMjYyNjJmIi8+PC9saW5lYXJHcmFkaWVudD48L2RlZnM+PHJlY3Qgd2lkdGg9IjQwMCIgaGVpZ2h0PSI0MDAiIGZpbGw9InVybCgjZykiLz48ZyBmaWxsPSJub25lIiBzdHJva2U9IiNkMTlhNjMiIHN0cm9rZS13aWR0aD0iOCIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIj48cmVjdCB4PSI5MCIgeT0iMTUwIiB3aWR0aD0iMjYiIGhlaWdodD0iMTMwIi8+PHJlY3QgeD0iMjg0IiB5PSIxNTAiIHdpZHRoPSIyNiIgaGVpZ2h0PSIxMzAiLz48cmVjdCB4PSI5MCIgeT0iMjgwIiB3aWR0aD0iMjIwIiBoZWlnaHQ9IjI0IiByeD0iMTAiLz48cmVjdCB4PSIxNTAiIHk9IjE1MCIgd2lkdGg9IjEwMCIgaGVpZ2h0PSIyMiIgcng9IjEwIi8+PC9nPjwvc3ZnPg==",
     "setup_tips": "Hanches fixées, fléchissez uniquement le buste vers le bassin."
   },
   {
@@ -486,7 +486,7 @@
     "category": "core",
     "code": "RGE-CORE-03",
     "location": "Zone musculation (étage 2)",
-    "image_url": "https://commons.wikimedia.org/wiki/Special:FilePath/Glute_ham_raise.jpg?width=480",
+    "image_url": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA0MDAgNDAwIiB3aWR0aD0iNDAwIiBoZWlnaHQ9IjQwMCI+PGRlZnM+PGxpbmVhckdyYWRpZW50IGlkPSJnIiB4MT0iMCIgeTE9IjAiIHgyPSIwIiB5Mj0iMSI+PHN0b3Agb2Zmc2V0PSIwIiBzdG9wLWNvbG9yPSIjMWExYTIyIi8+PHN0b3Agb2Zmc2V0PSIxIiBzdG9wLWNvbG9yPSIjMjYyNjJmIi8+PC9saW5lYXJHcmFkaWVudD48L2RlZnM+PHJlY3Qgd2lkdGg9IjQwMCIgaGVpZ2h0PSI0MDAiIGZpbGw9InVybCgjZykiLz48ZyBmaWxsPSJub25lIiBzdHJva2U9IiNkMTlhNjMiIHN0cm9rZS13aWR0aD0iOCIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIj48dGl0bGU+PC90aXRsZT48cmVjdCB4PSI5MCIgeT0iMTkwIiB3aWR0aD0iODAiIGhlaWdodD0iMjIiIHJ4PSIxMCIvPjxwYXRoIGQ9Ik0xNzAgMjAwIEMyMTAgMjMwIDIxMCAyODAgMjAwIDMwMCIvPjxyZWN0IHg9IjIwMCIgeT0iMzAwIiB3aWR0aD0iMjAiIGhlaWdodD0iMjAiLz48cmVjdCB4PSIxMjAiIHk9IjMwMCIgd2lkdGg9IjE4MCIgaGVpZ2h0PSIxNiIvPjwvZz48L3N2Zz4=",
     "setup_tips": "Cuisse contre l'appui : remontez le buste en gardant le dos gainé."
   },
   {
@@ -496,7 +496,7 @@
     "category": "core",
     "code": "PNT-CORE-04",
     "location": "Zone musculation (étage 2)",
-    "image_url": "",
+    "image_url": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA0MDAgNDAwIiB3aWR0aD0iNDAwIiBoZWlnaHQ9IjQwMCI+PGRlZnM+PGxpbmVhckdyYWRpZW50IGlkPSJnIiB4MT0iMCIgeTE9IjAiIHgyPSIwIiB5Mj0iMSI+PHN0b3Agb2Zmc2V0PSIwIiBzdG9wLWNvbG9yPSIjMWExYTIyIi8+PHN0b3Agb2Zmc2V0PSIxIiBzdG9wLWNvbG9yPSIjMjYyNjJmIi8+PC9saW5lYXJHcmFkaWVudD48L2RlZnM+PHJlY3Qgd2lkdGg9IjQwMCIgaGVpZ2h0PSI0MDAiIGZpbGw9InVybCgjZykiLz48ZyBmaWxsPSJub25lIiBzdHJva2U9IiNkMTlhNjMiIHN0cm9rZS13aWR0aD0iOCIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIj48dGl0bGU+PC90aXRsZT48cmVjdCB4PSIxNjAiIHk9IjEyMCIgd2lkdGg9IjgwIiBoZWlnaHQ9IjIwIiByeD0iMTAiLz48bGluZSB4MT0iMjAwIiB5MT0iMTQwIiB4Mj0iMjAwIiB5Mj0iMzAwIi8+PHJlY3QgeD0iMTgwIiB5PSIzMDAiIHdpZHRoPSI0MCIgaGVpZ2h0PSIxOCIgcng9IjgiLz48cmVjdCB4PSIyMDAiIHk9IjcwIiB3aWR0aD0iMTIiIGhlaWdodD0iNTAiLz48bGluZSB4MT0iMjAwIiB5MT0iNzAiIHgyPSIxNzAiIHkyPSI0NSIvPjxsaW5lIHgxPSIyMDAiIHkxPSI3MCIgeDI9IjIzMCIgeTI9IjQ1Ii8+PC9nPjwvc3ZnPg==",
     "setup_tips": "Tournez le buste de droite à gauche, le bassin bloqué."
   },
   {
@@ -506,7 +506,7 @@
     "category": "core",
     "code": "XFT-CORE-05",
     "location": "Zone étirements (étage 2)",
-    "image_url": "",
+    "image_url": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA0MDAgNDAwIiB3aWR0aD0iNDAwIiBoZWlnaHQ9IjQwMCI+PGRlZnM+PGxpbmVhckdyYWRpZW50IGlkPSJnIiB4MT0iMCIgeTE9IjAiIHgyPSIwIiB5Mj0iMSI+PHN0b3Agb2Zmc2V0PSIwIiBzdG9wLWNvbG9yPSIjMWExYTIyIi8+PHN0b3Agb2Zmc2V0PSIxIiBzdG9wLWNvbG9yPSIjMjYyNjJmIi8+PC9saW5lYXJHcmFkaWVudD48L2RlZnM+PHJlY3Qgd2lkdGg9IjQwMCIgaGVpZ2h0PSI0MDAiIGZpbGw9InVybCgjZykiLz48ZyBmaWxsPSJub25lIiBzdHJva2U9IiNkMTlhNjMiIHN0cm9rZS13aWR0aD0iOCIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIj48dGl0bGU+PC90aXRsZT48cmVjdCB4PSI5MCIgeT0iMTEwIiB3aWR0aD0iMjIwIiBoZWlnaHQ9IjI0IiByeD0iMTAiLz48bGluZSB4MT0iOTAiIHkxPSIxMjIiIHgyPSI5MCIgeTI9IjMwMCIvPjxsaW5lIHgxPSIzMTAiIHkxPSIxMjIiIHgyPSIzMTAiIHkyPSIzMDAiLz48cmVjdCB4PSI5MCIgeT0iMzAwIiB3aWR0aD0iMjIwIiBoZWlnaHQ9IjE4Ii8+PGNpcmNsZSBjeD0iMTQwIiBjeT0iMjAwIiByPSIxMyIvPjxjaXJjbGUgY3g9IjI2MCIgY3k9IjIwMCIgcj0iMTMiLz48L2c+PC9zdmc+",
     "setup_tips": "Barre fixe : tractions classiques, menton au-dessus de la barre."
   },
   {
@@ -516,7 +516,7 @@
     "category": "cardio",
     "code": "TCG-CARD-01",
     "location": "Zone cardio (étage 3)",
-    "image_url": "https://commons.wikimedia.org/wiki/Special:FilePath/Cross_Runner_-_Curved_Treadmill_08.jpg?width=480",
+    "image_url": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA0MDAgNDAwIiB3aWR0aD0iNDAwIiBoZWlnaHQ9IjQwMCI+PGRlZnM+PGxpbmVhckdyYWRpZW50IGlkPSJnIiB4MT0iMCIgeTE9IjAiIHgyPSIwIiB5Mj0iMSI+PHN0b3Agb2Zmc2V0PSIwIiBzdG9wLWNvbG9yPSIjMWExYTIyIi8+PHN0b3Agb2Zmc2V0PSIxIiBzdG9wLWNvbG9yPSIjMjYyNjJmIi8+PC9saW5lYXJHcmFkaWVudD48L2RlZnM+PHJlY3Qgd2lkdGg9IjQwMCIgaGVpZ2h0PSI0MDAiIGZpbGw9InVybCgjZykiLz48ZyBmaWxsPSJub25lIiBzdHJva2U9IiNkMTlhNjMiIHN0cm9rZS13aWR0aD0iOCIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIj48dGl0bGU+PC90aXRsZT48cmVjdCB4PSI5MCIgeT0iMjEwIiB3aWR0aD0iMjIwIiBoZWlnaHQ9IjE4IiByeD0iOCIvPjxyZWN0IHg9IjkwIiB5PSIyMzAiIHdpZHRoPSI2MCIgaGVpZ2h0PSI3MCIgcng9IjEwIi8+PHJlY3QgeD0iMjUwIiB5PSIyMzAiIHdpZHRoPSI2MCIgaGVpZ2h0PSI3MCIgcng9IjEwIi8+PGxpbmUgeDE9IjIwMCIgeTE9IjIxMCIgeDI9IjIwMCIgeTI9IjMwMCIvPjxyZWN0IHg9IjkwIiB5PSIxNDAiIHdpZHRoPSIxMDAiIGhlaWdodD0iMjQiIHJ4PSI4Ii8+PGxpbmUgeDE9IjE5MCIgeTE9IjE1MiIgeDI9IjMxMCIgeTI9IjE1MiIvPjwvZz48L3N2Zz4=",
     "setup_tips": "Buste droit, reglez vitesse puis pente, jamais les deux d'un coup."
   },
   {
@@ -526,7 +526,7 @@
     "category": "cardio",
     "code": "TCG-CARD-02",
     "location": "Zone cardio (étage 3)",
-    "image_url": "https://commons.wikimedia.org/wiki/Special:FilePath/Charity_stationary_bike_in_Kings_Cross_-_geograph.org.uk_-_4060926.jpg?width=480",
+    "image_url": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA0MDAgNDAwIiB3aWR0aD0iNDAwIiBoZWlnaHQ9IjQwMCI+PGRlZnM+PGxpbmVhckdyYWRpZW50IGlkPSJnIiB4MT0iMCIgeTE9IjAiIHgyPSIwIiB5Mj0iMSI+PHN0b3Agb2Zmc2V0PSIwIiBzdG9wLWNvbG9yPSIjMWExYTIyIi8+PHN0b3Agb2Zmc2V0PSIxIiBzdG9wLWNvbG9yPSIjMjYyNjJmIi8+PC9saW5lYXJHcmFkaWVudD48L2RlZnM+PHJlY3Qgd2lkdGg9IjQwMCIgaGVpZ2h0PSI0MDAiIGZpbGw9InVybCgjZykiLz48ZyBmaWxsPSJub25lIiBzdHJva2U9IiNkMTlhNjMiIHN0cm9rZS13aWR0aD0iOCIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIj48dGl0bGU+PC90aXRsZT48Y2lyY2xlIGN4PSIyMDAiIGN5PSIxODAiIHI9IjcwIi8+PGNpcmNsZSBjeD0iMjAwIiBjeT0iMTgwIiByPSIzMCIvPjxyZWN0IHg9IjIwMCIgeT0iMTEwIiB3aWR0aD0iMjIiIGhlaWdodD0iMTkwIi8+PHJlY3QgeD0iMjAwIiB5PSIzMDAiIHdpZHRoPSI4MCIgaGVpZ2h0PSIxOCIgcng9IjgiLz48cmVjdCB4PSIxMjAiIHk9IjEzMCIgd2lkdGg9IjE2IiBoZWlnaHQ9IjQwIiByeD0iNiIvPjxyZWN0IHg9IjI2NCIgeT0iMTMwIiB3aWR0aD0iMTYiIGhlaWdodD0iNDAiIHJ4PSI2Ii8+PC9nPjwvc3ZnPg==",
     "setup_tips": "Selle à hauteur de hanche, genou quasi tendu en bas de pédalage."
   },
   {
@@ -536,7 +536,7 @@
     "category": "cardio",
     "code": "MTX-CARD-03",
     "location": "Zone cardio (étage 3)",
-    "image_url": "https://commons.wikimedia.org/wiki/Special:FilePath/Gjessing_rowing_ergometer.jpg?width=480",
+    "image_url": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA0MDAgNDAwIiB3aWR0aD0iNDAwIiBoZWlnaHQ9IjQwMCI+PGRlZnM+PGxpbmVhckdyYWRpZW50IGlkPSJnIiB4MT0iMCIgeTE9IjAiIHgyPSIwIiB5Mj0iMSI+PHN0b3Agb2Zmc2V0PSIwIiBzdG9wLWNvbG9yPSIjMWExYTIyIi8+PHN0b3Agb2Zmc2V0PSIxIiBzdG9wLWNvbG9yPSIjMjYyNjJmIi8+PC9saW5lYXJHcmFkaWVudD48L2RlZnM+PHJlY3Qgd2lkdGg9IjQwMCIgaGVpZ2h0PSI0MDAiIGZpbGw9InVybCgjZykiLz48ZyBmaWxsPSJub25lIiBzdHJva2U9IiNkMTlhNjMiIHN0cm9rZS13aWR0aD0iOCIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIj48dGl0bGU+PC90aXRsZT48cmVjdCB4PSI5MCIgeT0iMjgwIiB3aWR0aD0iMjIwIiBoZWlnaHQ9IjIwIiByeD0iOCIvPjxyZWN0IHg9IjEyMCIgeT0iMjUwIiB3aWR0aD0iNDAiIGhlaWdodD0iMzAiIHJ4PSI2Ii8+PGxpbmUgeDE9IjE2MCIgeTE9IjI2MCIgeDI9IjI5MCIgeTI9IjIwMCIvPjxyZWN0IHg9IjI4NSIgeT0iMTg1IiB3aWR0aD0iMjYiIGhlaWdodD0iMjYiIHJ4PSI2Ii8+PGxpbmUgeDE9IjkwIiB5MT0iMjkwIiB4Mj0iOTAiIHkyPSIyNTAiLz48bGluZSB4MT0iMzEwIiB5MT0iMjkwIiB4Mj0iMzEwIiB5Mj0iMjUwIi8+PC9nPjwvc3ZnPg==",
     "setup_tips": "Poussez les jambes, penchez le buste, tirez les bras. Ordre inverse au retour."
   },
   {
@@ -546,7 +546,7 @@
     "category": "cardio",
     "code": "C2C-CARD-04",
     "location": "Zone cardio (étage 3)",
-    "image_url": "https://commons.wikimedia.org/wiki/Special:FilePath/Gjessing_rowing_ergometer.jpg?width=480",
+    "image_url": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA0MDAgNDAwIiB3aWR0aD0iNDAwIiBoZWlnaHQ9IjQwMCI+PGRlZnM+PGxpbmVhckdyYWRpZW50IGlkPSJnIiB4MT0iMCIgeTE9IjAiIHgyPSIwIiB5Mj0iMSI+PHN0b3Agb2Zmc2V0PSIwIiBzdG9wLWNvbG9yPSIjMWExYTIyIi8+PHN0b3Agb2Zmc2V0PSIxIiBzdG9wLWNvbG9yPSIjMjYyNjJmIi8+PC9saW5lYXJHcmFkaWVudD48L2RlZnM+PHJlY3Qgd2lkdGg9IjQwMCIgaGVpZ2h0PSI0MDAiIGZpbGw9InVybCgjZykiLz48ZyBmaWxsPSJub25lIiBzdHJva2U9IiNkMTlhNjMiIHN0cm9rZS13aWR0aD0iOCIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIj48dGl0bGU+PC90aXRsZT48cmVjdCB4PSI5MCIgeT0iMjgwIiB3aWR0aD0iMjIwIiBoZWlnaHQ9IjIwIiByeD0iOCIvPjxyZWN0IHg9IjEyMCIgeT0iMjUwIiB3aWR0aD0iNDAiIGhlaWdodD0iMzAiIHJ4PSI2Ii8+PGxpbmUgeDE9IjE2MCIgeTE9IjI2MCIgeDI9IjI5MCIgeTI9IjIwMCIvPjxyZWN0IHg9IjI4NSIgeT0iMTg1IiB3aWR0aD0iMjYiIGhlaWdodD0iMjYiIHJ4PSI2Ii8+PGxpbmUgeDE9IjkwIiB5MT0iMjkwIiB4Mj0iOTAiIHkyPSIyNTAiLz48bGluZSB4MT0iMzEwIiB5MT0iMjkwIiB4Mj0iMzEwIiB5Mj0iMjUwIi8+PC9nPjwvc3ZnPg==",
     "setup_tips": "Réglage entre 3 et 5, gardez un rythme régulier."
   },
   {
@@ -556,7 +556,7 @@
     "category": "cardio",
     "code": "STM-CARD-05",
     "location": "Zone cardio (étage 3)",
-    "image_url": "https://commons.wikimedia.org/wiki/Special:FilePath/STAIR_STEPPER_green-removebg-preview.png?width=480",
+    "image_url": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA0MDAgNDAwIiB3aWR0aD0iNDAwIiBoZWlnaHQ9IjQwMCI+PGRlZnM+PGxpbmVhckdyYWRpZW50IGlkPSJnIiB4MT0iMCIgeTE9IjAiIHgyPSIwIiB5Mj0iMSI+PHN0b3Agb2Zmc2V0PSIwIiBzdG9wLWNvbG9yPSIjMWExYTIyIi8+PHN0b3Agb2Zmc2V0PSIxIiBzdG9wLWNvbG9yPSIjMjYyNjJmIi8+PC9saW5lYXJHcmFkaWVudD48L2RlZnM+PHJlY3Qgd2lkdGg9IjQwMCIgaGVpZ2h0PSI0MDAiIGZpbGw9InVybCgjZykiLz48ZyBmaWxsPSJub25lIiBzdHJva2U9IiNkMTlhNjMiIHN0cm9rZS13aWR0aD0iOCIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIj48dGl0bGU+PC90aXRsZT48cmVjdCB4PSIxNDAiIHk9IjEyMCIgd2lkdGg9IjEyMCIgaGVpZ2h0PSIxODAiIHJ4PSIxMCIvPjxsaW5lIHgxPSIxNDAiIHkxPSIxNTAiIHgyPSIyNjAiIHkyPSIxNTAiLz48bGluZSB4MT0iMTQwIiB5MT0iMTkwIiB4Mj0iMjYwIiB5Mj0iMTkwIi8+PGxpbmUgeDE9IjE0MCIgeTE9IjIzMCIgeDI9IjI2MCIgeTI9IjIzMCIvPjxsaW5lIHgxPSIxNDAiIHkxPSIyNzAiIHgyPSIyNjAiIHkyPSIyNzAiLz48cmVjdCB4PSIxNTUiIHk9IjYwIiB3aWR0aD0iMTYiIGhlaWdodD0iNjAiIHJ4PSI2Ii8+PHJlY3QgeD0iMjI5IiB5PSI2MCIgd2lkdGg9IjE2IiBoZWlnaHQ9IjYwIiByeD0iNiIvPjwvZz48L3N2Zz4=",
     "setup_tips": "Montez à une vitesse où vous pouvez parler, sans vous appuyer."
   },
   {
@@ -566,7 +566,7 @@
     "category": "cardio",
     "code": "RGE-CARD-06",
     "location": "Zone cardio (étage 3)",
-    "image_url": "https://commons.wikimedia.org/wiki/Special:FilePath/Air-Bike_-_Flickr_-_Beige_Alert.jpg?width=480",
+    "image_url": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA0MDAgNDAwIiB3aWR0aD0iNDAwIiBoZWlnaHQ9IjQwMCI+PGRlZnM+PGxpbmVhckdyYWRpZW50IGlkPSJnIiB4MT0iMCIgeTE9IjAiIHgyPSIwIiB5Mj0iMSI+PHN0b3Agb2Zmc2V0PSIwIiBzdG9wLWNvbG9yPSIjMWExYTIyIi8+PHN0b3Agb2Zmc2V0PSIxIiBzdG9wLWNvbG9yPSIjMjYyNjJmIi8+PC9saW5lYXJHcmFkaWVudD48L2RlZnM+PHJlY3Qgd2lkdGg9IjQwMCIgaGVpZ2h0PSI0MDAiIGZpbGw9InVybCgjZykiLz48ZyBmaWxsPSJub25lIiBzdHJva2U9IiNkMTlhNjMiIHN0cm9rZS13aWR0aD0iOCIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIj48dGl0bGU+PC90aXRsZT48Y2lyY2xlIGN4PSIyMDAiIGN5PSIyMDAiIHI9IjUyIi8+PHJlY3QgeD0iMjAwIiB5PSIxMjAiIHdpZHRoPSIyMCIgaGVpZ2h0PSIxMzAiLz48cmVjdCB4PSI5MCIgeT0iMTIwIiB3aWR0aD0iMjQiIGhlaWdodD0iODAiIHJ4PSI4Ii8+PHJlY3QgeD0iMjg2IiB5PSIxMjAiIHdpZHRoPSIyNCIgaGVpZ2h0PSI4MCIgcng9IjgiLz48cmVjdCB4PSIyMDAiIHk9IjI1MCIgd2lkdGg9IjgwIiBoZWlnaHQ9IjYwIiByeD0iOCIvPjxsaW5lIHgxPSI5MCIgeTE9IjEyMCIgeDI9IjEyMCIgeTI9IjYwIi8+PGxpbmUgeDE9IjMxMCIgeTE9IjEyMCIgeDI9IjI4MCIgeTI9IjYwIi8+PC9nPjwvc3ZnPg==",
     "setup_tips": "Plus vous pédalez vite, plus c'est dur (ventilateur). Idéal en HIIT."
   },
   {
@@ -576,7 +576,7 @@
     "category": "cardio",
     "code": "LIF-CARD-07",
     "location": "Zone cardio (étage 3)",
-    "image_url": "https://commons.wikimedia.org/wiki/Special:FilePath/Cross_Runner_-_Curved_Treadmill_08.jpg?width=480",
+    "image_url": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA0MDAgNDAwIiB3aWR0aD0iNDAwIiBoZWlnaHQ9IjQwMCI+PGRlZnM+PGxpbmVhckdyYWRpZW50IGlkPSJnIiB4MT0iMCIgeTE9IjAiIHgyPSIwIiB5Mj0iMSI+PHN0b3Agb2Zmc2V0PSIwIiBzdG9wLWNvbG9yPSIjMWExYTIyIi8+PHN0b3Agb2Zmc2V0PSIxIiBzdG9wLWNvbG9yPSIjMjYyNjJmIi8+PC9saW5lYXJHcmFkaWVudD48L2RlZnM+PHJlY3Qgd2lkdGg9IjQwMCIgaGVpZ2h0PSI0MDAiIGZpbGw9InVybCgjZykiLz48ZyBmaWxsPSJub25lIiBzdHJva2U9IiNkMTlhNjMiIHN0cm9rZS13aWR0aD0iOCIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIj48dGl0bGU+PC90aXRsZT48cmVjdCB4PSI5MCIgeT0iMjEwIiB3aWR0aD0iMjIwIiBoZWlnaHQ9IjE4IiByeD0iOCIvPjxyZWN0IHg9IjkwIiB5PSIyMzAiIHdpZHRoPSI2MCIgaGVpZ2h0PSI3MCIgcng9IjEwIi8+PHJlY3QgeD0iMjUwIiB5PSIyMzAiIHdpZHRoPSI2MCIgaGVpZ2h0PSI3MCIgcng9IjEwIi8+PGxpbmUgeDE9IjIwMCIgeTE9IjIxMCIgeDI9IjIwMCIgeTI9IjMwMCIvPjxyZWN0IHg9IjkwIiB5PSIxNDAiIHdpZHRoPSIxMDAiIGhlaWdodD0iMjQiIHJ4PSI4Ii8+PGxpbmUgeDE9IjE5MCIgeTE9IjE1MiIgeDI9IjMxMCIgeTI9IjE1MiIvPjwvZz48L3N2Zz4=",
     "setup_tips": "Marchez puis courez progressivement, gardez le buste droit."
   },
   {
@@ -586,7 +586,7 @@
     "category": "cardio",
     "code": "MTX-CARD-08",
     "location": "Zone cardio (étage 3)",
-    "image_url": "https://commons.wikimedia.org/wiki/Special:FilePath/EFTA00001128_-_Precor_elliptical_trainer_in_a_home_gym_with_mirrors_reflecting_other_exercise_equipment_and_weights_nearby.jpg?width=480",
+    "image_url": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA0MDAgNDAwIiB3aWR0aD0iNDAwIiBoZWlnaHQ9IjQwMCI+PGRlZnM+PGxpbmVhckdyYWRpZW50IGlkPSJnIiB4MT0iMCIgeTE9IjAiIHgyPSIwIiB5Mj0iMSI+PHN0b3Agb2Zmc2V0PSIwIiBzdG9wLWNvbG9yPSIjMWExYTIyIi8+PHN0b3Agb2Zmc2V0PSIxIiBzdG9wLWNvbG9yPSIjMjYyNjJmIi8+PC9saW5lYXJHcmFkaWVudD48L2RlZnM+PHJlY3Qgd2lkdGg9IjQwMCIgaGVpZ2h0PSI0MDAiIGZpbGw9InVybCgjZykiLz48ZyBmaWxsPSJub25lIiBzdHJva2U9IiNkMTlhNjMiIHN0cm9rZS13aWR0aD0iOCIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIj48dGl0bGU+PC90aXRsZT48cmVjdCB4PSI5MCIgeT0iMjMwIiB3aWR0aD0iMjIwIiBoZWlnaHQ9IjE2IiByeD0iOCIvPjxyZWN0IHg9IjkwIiB5PSIyNDYiIHdpZHRoPSI2MCIgaGVpZ2h0PSI1NCIgcng9IjgiLz48cmVjdCB4PSIyNTAiIHk9IjI0NiIgd2lkdGg9IjYwIiBoZWlnaHQ9IjU0IiByeD0iOCIvPjxjaXJjbGUgY3g9IjExMCIgY3k9IjE3MCIgcj0iMjYiLz48Y2lyY2xlIGN4PSIyOTAiIGN5PSIxNzAiIHI9IjI2Ii8+PGxpbmUgeDE9IjExMCIgeTE9IjI1MCIgeDI9IjI5MCIgeTI9IjI1MCIvPjxyZWN0IHg9IjIwMCIgeT0iMTUwIiB3aWR0aD0iMTAiIGhlaWdodD0iMTAwIi8+PHJlY3QgeD0iMTUwIiB5PSI2MCIgd2lkdGg9IjYwIiBoZWlnaHQ9IjIwIiByeD0iOCIvPjwvZz48L3N2Zz4=",
     "setup_tips": "Jambe et bras opposés avancent en même temps, restez debout."
   },
   {
@@ -596,7 +596,7 @@
     "category": "cardio",
     "code": "PRE-CARD-09",
     "location": "Zone cardio (étage 3)",
-    "image_url": "https://commons.wikimedia.org/wiki/Special:FilePath/EFTA00001128_-_Precor_elliptical_trainer_in_a_home_gym_with_mirrors_reflecting_other_exercise_equipment_and_weights_nearby.jpg?width=480",
+    "image_url": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA0MDAgNDAwIiB3aWR0aD0iNDAwIiBoZWlnaHQ9IjQwMCI+PGRlZnM+PGxpbmVhckdyYWRpZW50IGlkPSJnIiB4MT0iMCIgeTE9IjAiIHgyPSIwIiB5Mj0iMSI+PHN0b3Agb2Zmc2V0PSIwIiBzdG9wLWNvbG9yPSIjMWExYTIyIi8+PHN0b3Agb2Zmc2V0PSIxIiBzdG9wLWNvbG9yPSIjMjYyNjJmIi8+PC9saW5lYXJHcmFkaWVudD48L2RlZnM+PHJlY3Qgd2lkdGg9IjQwMCIgaGVpZ2h0PSI0MDAiIGZpbGw9InVybCgjZykiLz48ZyBmaWxsPSJub25lIiBzdHJva2U9IiNkMTlhNjMiIHN0cm9rZS13aWR0aD0iOCIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIj48dGl0bGU+PC90aXRsZT48cmVjdCB4PSI5MCIgeT0iMjMwIiB3aWR0aD0iMjIwIiBoZWlnaHQ9IjE2IiByeD0iOCIvPjxyZWN0IHg9IjkwIiB5PSIyNDYiIHdpZHRoPSI2MCIgaGVpZ2h0PSI1NCIgcng9IjgiLz48cmVjdCB4PSIyNTAiIHk9IjI0NiIgd2lkdGg9IjYwIiBoZWlnaHQ9IjU0IiByeD0iOCIvPjxjaXJjbGUgY3g9IjExMCIgY3k9IjE3MCIgcj0iMjYiLz48Y2lyY2xlIGN4PSIyOTAiIGN5PSIxNzAiIHI9IjI2Ii8+PGxpbmUgeDE9IjExMCIgeTE9IjI1MCIgeDI9IjI5MCIgeTI9IjI1MCIvPjxyZWN0IHg9IjIwMCIgeT0iMTUwIiB3aWR0aD0iMTAiIGhlaWdodD0iMTAwIi8+PHJlY3QgeD0iMTUwIiB5PSI2MCIgd2lkdGg9IjYwIiBoZWlnaHQ9IjIwIiByeD0iOCIvPjwvZz48L3N2Zz4=",
     "setup_tips": "Mouvement fluide sans impact : bras et jambes en opposition."
   },
   {
@@ -606,7 +606,7 @@
     "category": "cardio",
     "code": "C2C-CARD-10",
     "location": "Zone cardio (étage 3)",
-    "image_url": "https://commons.wikimedia.org/wiki/Special:FilePath/CrossFit_workout_on_SkiErg_DSC1807.jpg?width=480",
+    "image_url": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA0MDAgNDAwIiB3aWR0aD0iNDAwIiBoZWlnaHQ9IjQwMCI+PGRlZnM+PGxpbmVhckdyYWRpZW50IGlkPSJnIiB4MT0iMCIgeTE9IjAiIHgyPSIwIiB5Mj0iMSI+PHN0b3Agb2Zmc2V0PSIwIiBzdG9wLWNvbG9yPSIjMWExYTIyIi8+PHN0b3Agb2Zmc2V0PSIxIiBzdG9wLWNvbG9yPSIjMjYyNjJmIi8+PC9saW5lYXJHcmFkaWVudD48L2RlZnM+PHJlY3Qgd2lkdGg9IjQwMCIgaGVpZ2h0PSI0MDAiIGZpbGw9InVybCgjZykiLz48ZyBmaWxsPSJub25lIiBzdHJva2U9IiNkMTlhNjMiIHN0cm9rZS13aWR0aD0iOCIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIj48dGl0bGU+PC90aXRsZT48cmVjdCB4PSI5MCIgeT0iOTAiIHdpZHRoPSIyMjAiIGhlaWdodD0iMjAiIHJ4PSIxMCIvPjxsaW5lIHgxPSIyMDAiIHkxPSIxMTAiIHgyPSIyMDAiIHkyPSIxNTAiLz48cmVjdCB4PSIxODAiIHk9IjE1MCIgd2lkdGg9IjQwIiBoZWlnaHQ9IjYwIiByeD0iNiIvPjxsaW5lIHgxPSIyMDAiIHkxPSIyMTAiIHgyPSIyMDAiIHkyPSIzMDAiLz48cmVjdCB4PSIxNTAiIHk9IjMwMCIgd2lkdGg9IjEwMCIgaGVpZ2h0PSIxOCIgcng9IjgiLz48L2c+PC9zdmc+",
     "setup_tips": "Tirez les poignées vers les cuisses en fléchissant un peu les genoux."
   },
   {
@@ -616,7 +616,7 @@
     "category": "cardio",
     "code": "CYB-CARD-11",
     "location": "Zone cours collectifs (étage 3)",
-    "image_url": "https://commons.wikimedia.org/wiki/Special:FilePath/Spinning-bike.jpg?width=480",
+    "image_url": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA0MDAgNDAwIiB3aWR0aD0iNDAwIiBoZWlnaHQ9IjQwMCI+PGRlZnM+PGxpbmVhckdyYWRpZW50IGlkPSJnIiB4MT0iMCIgeTE9IjAiIHgyPSIwIiB5Mj0iMSI+PHN0b3Agb2Zmc2V0PSIwIiBzdG9wLWNvbG9yPSIjMWExYTIyIi8+PHN0b3Agb2Zmc2V0PSIxIiBzdG9wLWNvbG9yPSIjMjYyNjJmIi8+PC9saW5lYXJHcmFkaWVudD48L2RlZnM+PHJlY3Qgd2lkdGg9IjQwMCIgaGVpZ2h0PSI0MDAiIGZpbGw9InVybCgjZykiLz48ZyBmaWxsPSJub25lIiBzdHJva2U9IiNkMTlhNjMiIHN0cm9rZS13aWR0aD0iOCIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIj48dGl0bGU+PC90aXRsZT48Y2lyY2xlIGN4PSIyMDAiIGN5PSIxODAiIHI9IjY2Ii8+PGNpcmNsZSBjeD0iMjAwIiBjeT0iMTgwIiByPSIyOCIvPjxyZWN0IHg9IjIwMCIgeT0iMTE0IiB3aWR0aD0iMjIiIGhlaWdodD0iMTg2Ii8+PHJlY3QgeD0iMTUwIiB5PSI2MCIgd2lkdGg9IjEwMCIgaGVpZ2h0PSIyNCIgcng9IjgiLz48bGluZSB4MT0iMjAwIiB5MT0iNjAiIHgyPSIyMDAiIHkyPSIxMTQiLz48L2c+PC9zdmc+",
     "setup_tips": "Vélo de cours : pédalez assis ou debout selon le rythme."
   },
   {
@@ -626,7 +626,7 @@
     "category": "cardio",
     "code": "LIF-CARD-12",
     "location": "Zone cardio (étage 3)",
-    "image_url": "",
+    "image_url": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA0MDAgNDAwIiB3aWR0aD0iNDAwIiBoZWlnaHQ9IjQwMCI+PGRlZnM+PGxpbmVhckdyYWRpZW50IGlkPSJnIiB4MT0iMCIgeTE9IjAiIHgyPSIwIiB5Mj0iMSI+PHN0b3Agb2Zmc2V0PSIwIiBzdG9wLWNvbG9yPSIjMWExYTIyIi8+PHN0b3Agb2Zmc2V0PSIxIiBzdG9wLWNvbG9yPSIjMjYyNjJmIi8+PC9saW5lYXJHcmFkaWVudD48L2RlZnM+PHJlY3Qgd2lkdGg9IjQwMCIgaGVpZ2h0PSI0MDAiIGZpbGw9InVybCgjZykiLz48ZyBmaWxsPSJub25lIiBzdHJva2U9IiNkMTlhNjMiIHN0cm9rZS13aWR0aD0iOCIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIj48dGl0bGU+PC90aXRsZT48Y2lyY2xlIGN4PSIxNTAiIGN5PSIyNDAiIHI9IjU1Ii8+PGNpcmNsZSBjeD0iMTUwIiBjeT0iMjQwIiByPSIyNCIvPjxyZWN0IHg9IjkwIiB5PSIzMDAiIHdpZHRoPSI5MCIgaGVpZ2h0PSIxNiIvPjxyZWN0IHg9IjIxMCIgeT0iMjE1IiB3aWR0aD0iMTEwIiBoZWlnaHQ9IjE2IiByeD0iOCIvPjxsaW5lIHgxPSIyMTAiIHkxPSIyMDAiIHgyPSIzMDAiIHkyPSIyMDAiLz48bGluZSB4MT0iMjEwIiB5MT0iMjQ1IiB4Mj0iMzAwIiB5Mj0iMjQ1Ii8+PHJlY3QgeD0iMTIwIiB5PSI5MCIgd2lkdGg9IjE4IiBoZWlnaHQ9IjQwIiByeD0iNiIvPjxyZWN0IHg9IjI2NCIgeT0iOTAiIHdpZHRoPSIxOCIgaGVpZ2h0PSI0MCIgcng9IjYiLz48L2c+PC9zdmc+",
     "setup_tips": "Position inclinée, plus facile pour le dos. Parfait pour débuter."
   },
   {
@@ -636,7 +636,7 @@
     "category": "cardio",
     "code": "TCG-CARD-13",
     "location": "Zone cardio (étage 3)",
-    "image_url": "",
+    "image_url": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA0MDAgNDAwIiB3aWR0aD0iNDAwIiBoZWlnaHQ9IjQwMCI+PGRlZnM+PGxpbmVhckdyYWRpZW50IGlkPSJnIiB4MT0iMCIgeTE9IjAiIHgyPSIwIiB5Mj0iMSI+PHN0b3Agb2Zmc2V0PSIwIiBzdG9wLWNvbG9yPSIjMWExYTIyIi8+PHN0b3Agb2Zmc2V0PSIxIiBzdG9wLWNvbG9yPSIjMjYyNjJmIi8+PC9saW5lYXJHcmFkaWVudD48L2RlZnM+PHJlY3Qgd2lkdGg9IjQwMCIgaGVpZ2h0PSI0MDAiIGZpbGw9InVybCgjZykiLz48ZyBmaWxsPSJub25lIiBzdHJva2U9IiNkMTlhNjMiIHN0cm9rZS13aWR0aD0iOCIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIj48dGl0bGU+PC90aXRsZT48cmVjdCB4PSI5MCIgeT0iMjgwIiB3aWR0aD0iMjIwIiBoZWlnaHQ9IjIwIiByeD0iOCIvPjxyZWN0IHg9IjEyMCIgeT0iMjUwIiB3aWR0aD0iNDAiIGhlaWdodD0iMzAiIHJ4PSI2Ii8+PGxpbmUgeDE9IjE2MCIgeTE9IjI2MCIgeDI9IjI5MCIgeTI9IjIwMCIvPjxyZWN0IHg9IjI4NSIgeT0iMTg1IiB3aWR0aD0iMjYiIGhlaWdodD0iMjYiIHJ4PSI2Ii8+PGNpcmNsZSBjeD0iMTYwIiBjeT0iMjMwIiByPSIyNiIvPjxsaW5lIHgxPSIxNjAiIHkxPSIyNTYiIHgyPSIxNjAiIHkyPSIyODAiLz48L2c+PC9zdmc+",
     "setup_tips": "Rameur air/magnétique : mouvement complet jambes-buste-bras."
   },
   {
@@ -646,7 +646,7 @@
     "category": "cardio",
     "code": "BDS-CARD-14",
     "location": "Zone cardio (étage 3)",
-    "image_url": "",
+    "image_url": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA0MDAgNDAwIiB3aWR0aD0iNDAwIiBoZWlnaHQ9IjQwMCI+PGRlZnM+PGxpbmVhckdyYWRpZW50IGlkPSJnIiB4MT0iMCIgeTE9IjAiIHgyPSIwIiB5Mj0iMSI+PHN0b3Agb2Zmc2V0PSIwIiBzdG9wLWNvbG9yPSIjMWExYTIyIi8+PHN0b3Agb2Zmc2V0PSIxIiBzdG9wLWNvbG9yPSIjMjYyNjJmIi8+PC9saW5lYXJHcmFkaWVudD48L2RlZnM+PHJlY3Qgd2lkdGg9IjQwMCIgaGVpZ2h0PSI0MDAiIGZpbGw9InVybCgjZykiLz48ZyBmaWxsPSJub25lIiBzdHJva2U9IiNkMTlhNjMiIHN0cm9rZS13aWR0aD0iOCIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIj48dGl0bGU+PC90aXRsZT48cmVjdCB4PSIxMjAiIHk9IjEyMCIgd2lkdGg9IjE2MCIgaGVpZ2h0PSIxODAiLz48bGluZSB4MT0iMTIwIiB5MT0iMTYwIiB4Mj0iMjgwIiB5Mj0iMTYwIi8+PGxpbmUgeDE9IjEyMCIgeTE9IjIwMCIgeDI9IjI4MCIgeTI9IjIwMCIvPjxsaW5lIHgxPSIxMjAiIHkxPSIyNDAiIHgyPSIyODAiIHkyPSIyNDAiLz48bGluZSB4MT0iMTIwIiB5MT0iMjgwIiB4Mj0iMjgwIiB5Mj0iMjgwIi8+PGxpbmUgeDE9IjEyMCIgeTE9IjEyMCIgeDI9IjEyMCIgeTI9IjMwMCIvPjxsaW5lIHgxPSIyODAiIHkxPSIxMjAiIHgyPSIyODAiIHkyPSIzMDAiLz48Y2lyY2xlIGN4PSIxMjAiIGN5PSIxMjAiIHI9IjE0Ii8+PGNpcmNsZSBjeD0iMjgwIiBjeT0iMzAwIiByPSIxNCIvPjwvZz48L3N2Zz4=",
     "setup_tips": "Grimpez un escalier roulant incliné, en tenant les barres."
   },
   {
@@ -656,7 +656,7 @@
     "category": "jambes",
     "code": "RGE-JAMB-16",
     "location": "Zone barres libres (étage 1)",
-    "image_url": "https://commons.wikimedia.org/wiki/Special:FilePath/Power_Rack.JPG?width=480",
+    "image_url": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA0MDAgNDAwIiB3aWR0aD0iNDAwIiBoZWlnaHQ9IjQwMCI+PGRlZnM+PGxpbmVhckdyYWRpZW50IGlkPSJnIiB4MT0iMCIgeTE9IjAiIHgyPSIwIiB5Mj0iMSI+PHN0b3Agb2Zmc2V0PSIwIiBzdG9wLWNvbG9yPSIjMWExYTIyIi8+PHN0b3Agb2Zmc2V0PSIxIiBzdG9wLWNvbG9yPSIjMjYyNjJmIi8+PC9saW5lYXJHcmFkaWVudD48L2RlZnM+PHJlY3Qgd2lkdGg9IjQwMCIgaGVpZ2h0PSI0MDAiIGZpbGw9InVybCgjZykiLz48ZyBmaWxsPSJub25lIiBzdHJva2U9IiNkMTlhNjMiIHN0cm9rZS13aWR0aD0iOCIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIj48dGl0bGU+PC90aXRsZT48cmVjdCB4PSI5MCIgeT0iODAiIHdpZHRoPSIyNiIgaGVpZ2h0PSIyMjAiLz48cmVjdCB4PSIyODQiIHk9IjgwIiB3aWR0aD0iMjYiIGhlaWdodD0iMjIwIi8+PHJlY3QgeD0iOTAiIHk9IjMwMCIgd2lkdGg9IjIyMCIgaGVpZ2h0PSIyMCIvPjxsaW5lIHgxPSIxMDMiIHkxPSIxMjAiIHgyPSIyOTciIHkyPSIxMjAiLz48bGluZSB4MT0iMTAzIiB5MT0iMTYwIiB4Mj0iMjk3IiB5Mj0iMTYwIi8+PGxpbmUgeDE9IjEwMyIgeTE9IjIwMCIgeDI9IjI5NyIgeTI9IjIwMCIvPjwvZz48L3N2Zz4=",
     "setup_tips": "Cage avec barres de sécurité : squats et développés en toute sûreté."
   },
   {
@@ -666,7 +666,7 @@
     "category": "jambes",
     "code": "RGE-JAMB-17",
     "location": "Zone barres libres (étage 1)",
-    "image_url": "https://commons.wikimedia.org/wiki/Special:FilePath/Carlon_Colker_on_Squat_rack.jpg?width=480",
+    "image_url": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA0MDAgNDAwIiB3aWR0aD0iNDAwIiBoZWlnaHQ9IjQwMCI+PGRlZnM+PGxpbmVhckdyYWRpZW50IGlkPSJnIiB4MT0iMCIgeTE9IjAiIHgyPSIwIiB5Mj0iMSI+PHN0b3Agb2Zmc2V0PSIwIiBzdG9wLWNvbG9yPSIjMWExYTIyIi8+PHN0b3Agb2Zmc2V0PSIxIiBzdG9wLWNvbG9yPSIjMjYyNjJmIi8+PC9saW5lYXJHcmFkaWVudD48L2RlZnM+PHJlY3Qgd2lkdGg9IjQwMCIgaGVpZ2h0PSI0MDAiIGZpbGw9InVybCgjZykiLz48ZyBmaWxsPSJub25lIiBzdHJva2U9IiNkMTlhNjMiIHN0cm9rZS13aWR0aD0iOCIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIj48dGl0bGU+PC90aXRsZT48cmVjdCB4PSI5MCIgeT0iOTAiIHdpZHRoPSIyNiIgaGVpZ2h0PSIyMTAiLz48cmVjdCB4PSIyODQiIHk9IjkwIiB3aWR0aD0iMjYiIGhlaWdodD0iMjEwIi8+PHJlY3QgeD0iOTAiIHk9IjMwMCIgd2lkdGg9IjIyMCIgaGVpZ2h0PSIyMCIvPjxsaW5lIHgxPSIxMDMiIHkxPSIxMzAiIHgyPSIyOTciIHkyPSIxMzAiLz48cmVjdCB4PSIxMjAiIHk9IjE5MCIgd2lkdGg9IjE2MCIgaGVpZ2h0PSIxOCIgcng9IjkiLz48L2c+PC9zdmc+",
     "setup_tips": "Support pour poser la barre d'épaules et faire des squats."
   },
   {
@@ -676,7 +676,7 @@
     "category": "bras",
     "code": "ELE-BRAS-07",
     "location": "Zone barres libres (étage 1)",
-    "image_url": "https://commons.wikimedia.org/wiki/Special:FilePath/Olympic_barbell.jpg?width=480",
+    "image_url": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA0MDAgNDAwIiB3aWR0aD0iNDAwIiBoZWlnaHQ9IjQwMCI+PGRlZnM+PGxpbmVhckdyYWRpZW50IGlkPSJnIiB4MT0iMCIgeTE9IjAiIHgyPSIwIiB5Mj0iMSI+PHN0b3Agb2Zmc2V0PSIwIiBzdG9wLWNvbG9yPSIjMWExYTIyIi8+PHN0b3Agb2Zmc2V0PSIxIiBzdG9wLWNvbG9yPSIjMjYyNjJmIi8+PC9saW5lYXJHcmFkaWVudD48L2RlZnM+PHJlY3Qgd2lkdGg9IjQwMCIgaGVpZ2h0PSI0MDAiIGZpbGw9InVybCgjZykiLz48ZyBmaWxsPSJub25lIiBzdHJva2U9IiNkMTlhNjMiIHN0cm9rZS13aWR0aD0iOCIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIj48dGl0bGU+PC90aXRsZT48cmVjdCB4PSI3MCIgeT0iMjAwIiB3aWR0aD0iMjYwIiBoZWlnaHQ9IjE2IiByeD0iOCIvPjxyZWN0IHg9Ijg4IiB5PSIxNjAiIHdpZHRoPSIxOCIgaGVpZ2h0PSI0NCIgcng9IjYiLz48cmVjdCB4PSIyOTQiIHk9IjE2MCIgd2lkdGg9IjE4IiBoZWlnaHQ9IjQ0IiByeD0iNiIvPjxjaXJjbGUgY3g9Ijc4IiBjeT0iMjA4IiByPSIxNCIvPjxjaXJjbGUgY3g9IjMyMiIgY3k9IjIwOCIgcj0iMTQiLz48cmVjdCB4PSI3MCIgeT0iMTMwIiB3aWR0aD0iMjAiIGhlaWdodD0iMzAiIHJ4PSI1Ii8+PHJlY3QgeD0iMzEwIiB5PSIxMzAiIHdpZHRoPSIyMCIgaGVpZ2h0PSIzMCIgcng9IjUiLz48L2c+PC9zdmc+",
     "setup_tips": "Barre de 20 kg pour haltérophilie, avec plaques colorées."
   },
   {
@@ -686,7 +686,7 @@
     "category": "bras",
     "code": "ELE-BRAS-08",
     "location": "Zone barres libres (étage 1)",
-    "image_url": "https://commons.wikimedia.org/wiki/Special:FilePath/Woman_standing_in_front_of_a_dumbbell_rack_doing_bicep_curls.jpg?width=480",
+    "image_url": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA0MDAgNDAwIiB3aWR0aD0iNDAwIiBoZWlnaHQ9IjQwMCI+PGRlZnM+PGxpbmVhckdyYWRpZW50IGlkPSJnIiB4MT0iMCIgeTE9IjAiIHgyPSIwIiB5Mj0iMSI+PHN0b3Agb2Zmc2V0PSIwIiBzdG9wLWNvbG9yPSIjMWExYTIyIi8+PHN0b3Agb2Zmc2V0PSIxIiBzdG9wLWNvbG9yPSIjMjYyNjJmIi8+PC9saW5lYXJHcmFkaWVudD48L2RlZnM+PHJlY3Qgd2lkdGg9IjQwMCIgaGVpZ2h0PSI0MDAiIGZpbGw9InVybCgjZykiLz48ZyBmaWxsPSJub25lIiBzdHJva2U9IiNkMTlhNjMiIHN0cm9rZS13aWR0aD0iOCIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIj48cmVjdCB4PSI5MCIgeT0iNzAiIHdpZHRoPSIyNiIgaGVpZ2h0PSIyMzAiLz48cmVjdCB4PSIyODQiIHk9IjcwIiB3aWR0aD0iMjYiIGhlaWdodD0iMjMwIi8+PHJlY3QgeD0iOTAiIHk9IjMwMCIgd2lkdGg9IjIyMCIgaGVpZ2h0PSIyMiIvPjxsaW5lIHgxPSIxMDMiIHkxPSIxMTAiIHgyPSIyOTciIHkyPSIxMTAiLz48cmVjdCB4PSI5MCIgeT0iMTIwIiB3aWR0aD0iMjIwIiBoZWlnaHQ9IjIwIiByeD0iMTAiLz48cmVjdCB4PSI5MCIgeT0iMTQwIiB3aWR0aD0iMjAiIGhlaWdodD0iMTQwIi8+PHJlY3QgeD0iMjkwIiB5PSIxNDAiIHdpZHRoPSIyMCIgaGVpZ2h0PSIxNDAiLz48cGF0aCBkPSJNMTMwIDEzMCBMMTMwIDIwMCBMMTcwIDIwMCBMMTcwIDEzMCIvPjxwYXRoIGQ9Ik0yMzAgMTMwIEwyMzAgMjAwIEwyNzAgMjAwIEwyNzAgMTMwIi8+PC9nPjwvc3ZnPg==",
     "setup_tips": "Tous les poids d'haltères en accès libre : choisissez le vôtre."
   },
   {
@@ -696,7 +696,7 @@
     "category": "core",
     "code": "RGE-CORE-05",
     "location": "Zone barres libres (étage 1)",
-    "image_url": "https://commons.wikimedia.org/wiki/Special:FilePath/Kettlebell_Bent_Press.jpg?width=480",
+    "image_url": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA0MDAgNDAwIiB3aWR0aD0iNDAwIiBoZWlnaHQ9IjQwMCI+PGRlZnM+PGxpbmVhckdyYWRpZW50IGlkPSJnIiB4MT0iMCIgeTE9IjAiIHgyPSIwIiB5Mj0iMSI+PHN0b3Agb2Zmc2V0PSIwIiBzdG9wLWNvbG9yPSIjMWExYTIyIi8+PHN0b3Agb2Zmc2V0PSIxIiBzdG9wLWNvbG9yPSIjMjYyNjJmIi8+PC9saW5lYXJHcmFkaWVudD48L2RlZnM+PHJlY3Qgd2lkdGg9IjQwMCIgaGVpZ2h0PSI0MDAiIGZpbGw9InVybCgjZykiLz48ZyBmaWxsPSJub25lIiBzdHJva2U9IiNkMTlhNjMiIHN0cm9rZS13aWR0aD0iOCIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIj48dGl0bGU+PC90aXRsZT48cmVjdCB4PSI5MCIgeT0iMjMwIiB3aWR0aD0iMjIwIiBoZWlnaHQ9IjIwIiByeD0iMTAiLz48cGF0aCBkPSJNMTMwIDIzMCBDMTMwIDE3MCAyNzAgMTcwIDI3MCAyMzAgWiIvPjxsaW5lIHgxPSIxMzAiIHkxPSIxODAiIHgyPSIyMDAiIHkyPSIxNjAiLz48cmVjdCB4PSIxOTAiIHk9IjE0MCIgd2lkdGg9IjIwIiBoZWlnaHQ9IjI2IiByeD0iOCIvPjwvZz48L3N2Zz4=",
     "setup_tips": "Boule de fonte : swings, squats, épaulés-guidés."
   }
 ]

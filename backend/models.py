@@ -404,7 +404,7 @@ class Machine(db.Model):
     category = db.Column(db.String(50), default="autre")  # pectoraux, dos, jambes, epaule, bras, core, cardio
     code = db.Column(db.String(20), unique=True, nullable=False)  # code QR (ex: TCG-ART-01)
     location = db.Column(db.String(80), default="")
-    image_url = db.Column(db.String(200), default="")
+    image_url = db.Column(db.Text, default="")
     setup_tips = db.Column(db.Text, default="")  # réglage selon la morphologie
 
     def to_dict(self):
