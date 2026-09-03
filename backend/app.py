@@ -275,23 +275,28 @@ def _ensure_calories_auto():
             _ = cur_schema
             return row is not None
 
+    stmt = "ALTER TABLE public.users ADD COLUMN IF NOT EXISTS calories_auto BOOLEAN DEFAULT TRUE"
     try:
         if column_in_public():
             print("calories_auto column already present.", file=sys.stderr)
             return
-        target = "users" if schemas is None else "public.users"
-        for attempt in range(2):
-            db.session.execute(
-                text(f"ALTER TABLE {target} ADD COLUMN IF NOT EXISTS calories_auto BOOLEAN DEFAULT 1")
-            )
-            db.session.commit()
-            if column_in_public():
-                print(f"calories_auto column added via ALTER TABLE (attempt {attempt + 1}).", file=sys.stderr)
-                return
-            time.sleep(1)
-        print("calories_auto ALTER committed but column not visible yet; will retry next boot.", file=sys.stderr)
+        # Le pooler Supabase (transaction mode) peut échouer à persister du DDL
+        # dans `db.session` : on passe par une connexion brute en AUTOCOMMIT.
+        with db.engine.connect().execution_options(isolation_level="AUTOCOMMIT") as conn:
+            conn.execute(text(stmt))
+            time.sleep(0.5)
+        if column_in_public():
+            print("calories_auto column added via AUTOCOMMIT ALTER.", file=sys.stderr)
+            return
+        # dernier recours : via la session (bases non-pooler, ex. SQLite local)
+        db.session.execute(text(stmt))
+        db.session.commit()
+        if column_in_public():
+            print("calories_auto column added via session ALTER.", file=sys.stderr)
+            return
+        print("calories_auto ALTER done but column not visible yet; will retry next boot.", file=sys.stderr)
     except Exception as e:  # pragma: no cover - sécurité de démarrage
-        print(f"calories_auto migration FAILED: {e}", file=sys.stderr)
+        print(f"calories_auto migration FAILED: {repr(e)}", file=sys.stderr)
         try:
             db.session.rollback()
         except Exception:
