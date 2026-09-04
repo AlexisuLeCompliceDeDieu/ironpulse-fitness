@@ -23,6 +23,10 @@ class Config:
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     SESSION_TYPE = "filesystem"
 
+    # Agent IA Groq (gratuit)
+    GROQ_API_KEY = os.environ.get("GROQ_API_KEY", "")
+    GROQ_MODEL = os.environ.get("GROQ_MODEL", "llama-3.1-8b-instant")
+
     # Pour Supabase (PostgreSQL), on force le schéma de connexion via psycopg2
     # et on impose SSL si demandé (DB_SSL=true en production).
     if SQLALCHEMY_DATABASE_URI.startswith("postgres://"):

@@ -7,3 +7,6 @@ werkzeug==3.1.3
 gunicorn==23.0.0
 # Pour utiliser PostgreSQL en production (remplacer DATABASE_URL) :
 psycopg2-binary==2.9.10
+
+# Agent IA nutrition
+groq==1.7.0

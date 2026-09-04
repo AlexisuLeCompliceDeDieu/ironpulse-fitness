@@ -1,6 +1,7 @@
 from flask import Blueprint, request, jsonify, session
 from models import db, Food, MealPlan, ShoppingList
 from services import meal_generator, nutrition as nutrition_service
+from services import quota_tracker
 
 nutrition_bp = Blueprint("nutrition", __name__)
 
@@ -32,20 +33,53 @@ def generate_plan():
     data = request.get_json(silent=True) or {}
     num_days = int(data.get("num_days", 7))
     num_days = max(1, min(num_days, 90))
+    use_ai = data.get("use_ai", True)
 
     if user.daily_calories and "daily_calories" not in data:
-        pass  # on garde l'objectif actuel
+        pass
+
+    foods = foods_by_name()
+    if not foods:
+        return jsonify({"error": "Base d'aliments vide"}), 500
+
+    if use_ai:
+        from services.ai_meal_agent import generate_ai_meal_plan
+        plan, info = generate_ai_meal_plan(user, num_days, foods)
+    else:
+        plan = meal_generator.generate_meal_plan(user, num_days, foods)
+        info = {"mode": "classic"}
+
+    meal_generator.remove_old_plans(user.id, plan.id)
+
+    return jsonify({
+        "message": "Plan généré",
+        "plan": plan.to_dict(),
+        "generation": info,
+    }), 201
+
+
+@nutrition_bp.route("/plan/generate-classic", methods=["POST"])
+def generate_plan_classic():
+    user = current_user()
+    if not user:
+        return jsonify({"error": "Non authentifié"}), 401
+
+    data = request.get_json(silent=True) or {}
+    num_days = int(data.get("num_days", 7))
+    num_days = max(1, min(num_days, 90))
 
     foods = foods_by_name()
     if not foods:
         return jsonify({"error": "Base d'aliments vide"}), 500
 
     plan = meal_generator.generate_meal_plan(user, num_days, foods)
-
-    # Supprimer les anciens plans sauf celui-ci
     meal_generator.remove_old_plans(user.id, plan.id)
 
-    return jsonify({"message": "Plan généré", "plan": plan.to_dict()}), 201
+    return jsonify({
+        "message": "Plan généré (classique)",
+        "plan": plan.to_dict(),
+        "generation": {"mode": "classic"},
+    }), 201
 
 
 @nutrition_bp.route("/target", methods=["GET"])
@@ -103,3 +137,12 @@ def latest_shopping_list():
     if not sl:
         return jsonify({"message": "Aucune liste"}), 404
     return jsonify({"shopping_list": sl.to_dict()}), 200
+
+
+@nutrition_bp.route("/ai-status", methods=["GET"])
+def ai_status():
+    """Statut de l'agent IA et du quota Groq (accessible à tous les utilisateurs connectés)."""
+    user = current_user()
+    if not user:
+        return jsonify({"error": "Non authentifié"}), 401
+    return jsonify(quota_tracker.get_status()), 200
