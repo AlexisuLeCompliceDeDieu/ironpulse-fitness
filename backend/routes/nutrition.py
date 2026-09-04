@@ -1,7 +1,11 @@
 from flask import Blueprint, request, jsonify, session
 from models import db, Food, MealPlan, ShoppingList
 from services import meal_generator, nutrition as nutrition_service
-from services import quota_tracker
+
+try:
+    from services import quota_tracker
+except Exception:
+    quota_tracker = None
 
 nutrition_bp = Blueprint("nutrition", __name__)
 
@@ -35,26 +39,33 @@ def generate_plan():
     num_days = max(1, min(num_days, 90))
     use_ai = data.get("use_ai", True)
 
-    if user.daily_calories and "daily_calories" not in data:
-        pass
-
     foods = foods_by_name()
     if not foods:
         return jsonify({"error": "Base d'aliments vide"}), 500
 
+    info = {"mode": "classic"}
+    plan = None
+
     if use_ai:
         try:
-            from services.ai_meal_agent import generate_ai_meal_plan
-            plan, info = generate_ai_meal_plan(user, num_days, foods)
+            from services.groq_config import GROQ_ENABLED
+            if GROQ_ENABLED:
+                from services.ai_meal_agent import generate_ai_meal_plan
+                plan, info = generate_ai_meal_plan(user, num_days, foods)
+            else:
+                plan = meal_generator.generate_meal_plan(user, num_days, foods)
         except Exception as e:
             import logging
-            logging.getLogger(__name__).error(f"Agent IA crash: {e}")
-            from services import meal_generator as mg
-            plan = mg.generate_meal_plan(user, num_days, foods)
-            info = {"mode": "classic", "reason": f"crash: {str(e)[:200]}"}
+            logging.getLogger(__name__).error(f"Agent IA error: {e}")
+            plan = meal_generator.generate_meal_plan(user, num_days, foods)
+            info = {"mode": "classic", "reason": f"ai_error: {str(e)[:200]}"}
     else:
         plan = meal_generator.generate_meal_plan(user, num_days, foods)
         info = {"mode": "classic"}
+
+    if plan is None:
+        plan = meal_generator.generate_meal_plan(user, num_days, foods)
+        info = {"mode": "classic", "reason": "fallback_null"}
 
     meal_generator.remove_old_plans(user.id, plan.id)
 
@@ -152,4 +163,6 @@ def ai_status():
     user = current_user()
     if not user:
         return jsonify({"error": "Non authentifié"}), 401
+    if quota_tracker is None:
+        return jsonify({"groq_enabled": False, "error": "quota_tracker unavailable"}), 200
     return jsonify(quota_tracker.get_status()), 200
