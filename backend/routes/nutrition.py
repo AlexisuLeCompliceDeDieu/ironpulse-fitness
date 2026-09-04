@@ -43,8 +43,15 @@ def generate_plan():
         return jsonify({"error": "Base d'aliments vide"}), 500
 
     if use_ai:
-        from services.ai_meal_agent import generate_ai_meal_plan
-        plan, info = generate_ai_meal_plan(user, num_days, foods)
+        try:
+            from services.ai_meal_agent import generate_ai_meal_plan
+            plan, info = generate_ai_meal_plan(user, num_days, foods)
+        except Exception as e:
+            import logging
+            logging.getLogger(__name__).error(f"Agent IA crash: {e}")
+            from services import meal_generator as mg
+            plan = mg.generate_meal_plan(user, num_days, foods)
+            info = {"mode": "classic", "reason": f"crash: {str(e)[:200]}"}
     else:
         plan = meal_generator.generate_meal_plan(user, num_days, foods)
         info = {"mode": "classic"}

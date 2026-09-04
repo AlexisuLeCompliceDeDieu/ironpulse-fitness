@@ -182,9 +182,14 @@ def generate_ai_meal_plan(user, num_days, foods_by_name, recent_meals=None):
         plan = meal_generator.generate_meal_plan(user, num_days, foods_by_name)
         return plan, {"mode": "classic", "reason": f"groq_error: {str(e)[:200]}"}
 
-    # Parse de la réponse (robuste : gère ```json ... ```)
+    # Parse de la réponse (robuste : gère ```json ... ```, <think>...</think>, etc.)
     try:
         raw = content.strip()
+        # Supprimer les balises <think> de Qwen
+        if "<think>" in raw:
+            import re
+            raw = re.sub(r"<think>.*?</think>", "", raw, flags=re.DOTALL).strip()
+        # Supprimer les blocs markdown
         if raw.startswith("```"):
             lines = raw.split("\n")
             lines = [l for l in lines if not l.strip().startswith("```")]
@@ -212,13 +217,36 @@ def generate_ai_meal_plan(user, num_days, foods_by_name, recent_meals=None):
         valid_meals = 0
         skipped = 0
 
+        day_names = {
+            "lundi": 1, "mardi": 2, "mercredi": 3, "jeudi": 4,
+            "vendredi": 5, "samedi": 6, "dimanche": 7,
+            "monday": 1, "tuesday": 2, "wednesday": 3, "thursday": 4,
+            "friday": 5, "saturday": 6, "sunday": 7,
+        }
+
         for meal_data in meals_data:
-            day = int(meal_data.get("day", 1))
+            raw_day = meal_data.get("day", 1)
+            if isinstance(raw_day, str):
+                day = day_names.get(raw_day.lower().strip(), None)
+                if day is None:
+                    import re
+                    nums = re.findall(r"\d+", raw_day)
+                    day = int(nums[0]) if nums else 1
+            else:
+                day = int(raw_day)
             if day < 1 or day > num_days:
                 skipped += 1
                 continue
 
             meal_type = meal_data.get("meal_type", "")
+            # Normaliser les types de repas (français/anglais)
+            meal_type_map = {
+                "breakfast": "Petit-déjeuner", "petit-déjeuner": "Petit-déjeuner", "petit dejeuner": "Petit-déjeuner",
+                "lunch": "Déjeuner", "dejeuner": "Déjeuner", "déjeuner": "Déjeuner",
+                "snack": "Collation", "collation": "Collation",
+                "dinner": "Dîner", "diner": "Dîner", "dîner": "Dîner",
+            }
+            meal_type = meal_type_map.get(meal_type.lower().strip(), meal_type)
             if meal_type not in ("Petit-déjeuner", "Déjeuner", "Collation", "Dîner"):
                 skipped += 1
                 continue
