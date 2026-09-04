@@ -169,7 +169,6 @@ def generate_ai_meal_plan(user, num_days, foods_by_name, recent_meals=None):
             ],
             temperature=0.7,
             max_tokens=4096,
-            response_format={"type": "json_object"},
         )
 
         # Enregistrement de l'usage (APRÈS l'appel réussi)
@@ -183,9 +182,14 @@ def generate_ai_meal_plan(user, num_days, foods_by_name, recent_meals=None):
         plan = meal_generator.generate_meal_plan(user, num_days, foods_by_name)
         return plan, {"mode": "classic", "reason": f"groq_error: {str(e)[:200]}"}
 
-    # Parse de la réponse
+    # Parse de la réponse (robuste : gère ```json ... ```)
     try:
-        data = json.loads(content)
+        raw = content.strip()
+        if raw.startswith("```"):
+            lines = raw.split("\n")
+            lines = [l for l in lines if not l.strip().startswith("```")]
+            raw = "\n".join(lines).strip()
+        data = json.loads(raw)
         meals_data = data.get("meals", [])
         if not meals_data:
             raise ValueError("Réponse IA vide (pas de meals)")
