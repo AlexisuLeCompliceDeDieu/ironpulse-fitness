@@ -46,26 +46,41 @@ def generate_plan():
     info = {"mode": "classic"}
     plan = None
 
+    # Contexte de régénération : repas du plan précédent pour les éviter
+    previous = MealPlan.query.filter_by(user_id=user.id).order_by(MealPlan.id.desc()).first()
+    recent_meals = None
+    avoid_recipes = None
+    if previous is not None:
+        recent_meals = [
+            {"day": m.day, "meal_type": m.meal_type, "name": m.name}
+            for m in previous.meals
+        ]
+        avoid_recipes = {m.name for m in previous.meals}
+
     if use_ai:
         try:
             from services.groq_config import GROQ_ENABLED
             if GROQ_ENABLED:
                 from services.ai_meal_agent import generate_ai_meal_plan
-                plan, info = generate_ai_meal_plan(user, num_days, foods)
+                plan, info = generate_ai_meal_plan(user, num_days, foods, recent_meals=recent_meals)
             else:
-                plan = meal_generator.generate_meal_plan(user, num_days, foods)
+                plan = meal_generator.generate_meal_plan(user, num_days, foods, avoid_recipes=avoid_recipes)
+                info = {"mode": "classic", "reason": "groq_disabled"}
         except Exception as e:
             import logging
             logging.getLogger(__name__).error(f"Agent IA error: {e}")
-            plan = meal_generator.generate_meal_plan(user, num_days, foods)
+            plan = meal_generator.generate_meal_plan(user, num_days, foods, avoid_recipes=avoid_recipes)
             info = {"mode": "classic", "reason": f"ai_error: {str(e)[:200]}"}
     else:
-        plan = meal_generator.generate_meal_plan(user, num_days, foods)
+        plan = meal_generator.generate_meal_plan(user, num_days, foods, avoid_recipes=avoid_recipes)
         info = {"mode": "classic"}
 
     if plan is None:
-        plan = meal_generator.generate_meal_plan(user, num_days, foods)
+        plan = meal_generator.generate_meal_plan(user, num_days, foods, avoid_recipes=avoid_recipes)
         info = {"mode": "classic", "reason": "fallback_null"}
+
+    info["regenerated"] = bool(previous) and bool(avoid_recipes)
+    info["avoided"] = len(recent_meals) if recent_meals else 0
 
     meal_generator.remove_old_plans(user.id, plan.id)
 
@@ -90,7 +105,10 @@ def generate_plan_classic():
     if not foods:
         return jsonify({"error": "Base d'aliments vide"}), 500
 
-    plan = meal_generator.generate_meal_plan(user, num_days, foods)
+    previous = MealPlan.query.filter_by(user_id=user.id).order_by(MealPlan.id.desc()).first()
+    avoid_recipes = {m.name for m in previous.meals} if previous is not None else None
+
+    plan = meal_generator.generate_meal_plan(user, num_days, foods, avoid_recipes=avoid_recipes)
     meal_generator.remove_old_plans(user.id, plan.id)
 
     return jsonify({

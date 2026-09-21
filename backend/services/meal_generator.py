@@ -240,8 +240,12 @@ def _scale_items(items, foods_by_name, target_kcal):
     return scaled
 
 
-def generate_meal_plan(user, num_days, foods_by_name):
-    """Génère un plan alimentaire pour `num_days` jours avec un objectif calorique."""
+def generate_meal_plan(user, num_days, foods_by_name, avoid_recipes=None):
+    """Génère un plan alimentaire pour `num_days` jours avec un objectif calorique.
+
+    `avoid_recipes` : ensemble de noms de recettes à ne pas réutiliser (ex : celles
+    du plan précédent) pour que la régénération produise des menus différents.
+    """
     from models import MealPlan, Meal, MealItem, db
 
     from services.nutrition import current_calories
@@ -270,6 +274,12 @@ def generate_meal_plan(user, num_days, foods_by_name):
             pool = [r for r in RECIPES if _recipe_is_compatible(r, preferences, foods_by_name)]
         if not pool:
             pool = RECIPES
+
+        # Lors d'une régénération, on écarte d'abord les recettes du plan précédent
+        if avoid_recipes:
+            fresh = [r for r in pool if r["name"] not in avoid_recipes]
+            if fresh:
+                pool = fresh
 
         # On privilégie les recettes les moins utilisées pour équilibrer les menus
         pool_sorted = sorted(pool, key=lambda r: used.get(r["name"], 0))
@@ -350,7 +360,18 @@ def build_shopping_list(plan, foods_by_name):
 
 
 def remove_old_plans(user_id, keep_id):
-    """Supprime les anciens plans du même utilisateur sauf celui gardé."""
-    from models import MealPlan, db
-    MealPlan.query.filter(MealPlan.user_id == user_id, MealPlan.id != keep_id).delete()
+    """Supprime les anciens plans du même utilisateur sauf celui gardé.
+
+    Supprime d'abord les listes de courses liées, puis supprime chaque plan
+    via l'ORM (cascade meals/items). Un `delete()` en masse ne déclenche PAS
+    les cascades SQLAlchemy et casse en prod, car `shopping_lists.meal_plan_id`
+    est une vraie clé étrangère (violation FK).
+    """
+    from models import MealPlan, ShoppingList, db
+    old_plans = MealPlan.query.filter(
+        MealPlan.user_id == user_id, MealPlan.id != keep_id
+    ).all()
+    for plan in old_plans:
+        ShoppingList.query.filter_by(meal_plan_id=plan.id).delete()
+        db.session.delete(plan)
     db.session.commit()

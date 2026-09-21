@@ -100,6 +100,36 @@ def test_shopping_list_requires_plan(auth_client):
     assert resp.status_code == 404
 
 
+def test_regenerate_with_shopping_list_ok(auth_client):
+    """La régénération doit supprimer proprement l'ancien plan même avec une
+    liste de courses qui y pointe (bug FK en prod sur Postgres)."""
+    plan = auth_client.post("/api/nutrition/plan/generate", json={"num_days": 3}).get_json()["plan"]
+    auth_client.post("/api/nutrition/shopping-list/generate", json={"meal_plan_id": plan["id"]})
+
+    resp = auth_client.post("/api/nutrition/plan/generate", json={"num_days": 3, "use_ai": False})
+    assert resp.status_code == 201
+    data = resp.get_json()
+    assert data["plan"]["id"] != plan["id"]
+    assert data["generation"]["regenerated"] is True
+    assert data["generation"]["avoided"] > 0
+
+    # La liste de courses de l'ancien plan ne doit plus apparaître comme "latest"
+    sl = auth_client.get("/api/nutrition/shopping-list/latest")
+    assert sl.status_code == 404 or sl.get_json()["shopping_list"]["meal_plan_id"] == data["plan"]["id"]
+
+
+def test_generate_does_not_repeat_previous_plan(auth_client):
+    """En mode classique, les recettes du plan précédent sont évitées."""
+    before = auth_client.post("/api/nutrition/plan/generate", json={"num_days": 3, "use_ai": False}).get_json()["plan"]
+    after = auth_client.post("/api/nutrition/plan/generate", json={"num_days": 3, "use_ai": False}).get_json()["plan"]
+    before_names = {m["name"] for m in before["meals"]}
+    after_names = {m["name"] for m in after["meals"]}
+    overlap = before_names & after_names
+    # Les 4 types de repas × 3 jours = 12 repas ; on tolère un léger recouvrement
+    # si la base de recettes est trop petite, mais il doit être nettement réduit.
+    assert len(overlap) < 12
+
+
 def test_foods_expose_tags(client):
     resp = client.get("/api/nutrition/foods")
     foods = resp.get_json()["foods"]

@@ -56,7 +56,12 @@ export default function Nutrition({ user }) {
       const res = await api.post("/nutrition/plan/generate", { num_days: days, use_ai: useAI });
       setPlan(res.data.plan);
       setGenInfo(res.data.generation);
-      showMessage(res.data.message);
+      if (res.data.generation?.regenerated) {
+        const avoided = res.data.generation.avoided || 0;
+        showMessage(`🔄 Menus régénérés — ${avoided} repas du plan précédent remplacés.`);
+      } else {
+        showMessage(res.data.message);
+      }
     } catch (err) {
       showMessage(err.response?.data?.error || "Erreur de génération", "error");
     } finally {
@@ -168,9 +173,14 @@ export default function Nutrition({ user }) {
                 <span className="badge badge-warn" title={genInfo?.reason ? `Fallback : ${genInfo.reason}` : "Recettes classiques"}>⚙️ Classique</span>
               )}
             </h2>
-            <button className="btn btn-ghost" onClick={generateList} disabled={loading}>
-              {loading ? "..." : "🛒 Générer ma liste de courses"}
-            </button>
+            <div style={{ display: "flex", gap: "0.5rem", flexWrap: "wrap" }}>
+              <button className="btn" onClick={generate} disabled={loading} title="Régénère les menus en évitant de répéter les repas du plan actuel.">
+                {loading ? "⏳ Régénération..." : "🔄 Régénérer les menus"}
+              </button>
+              <button className="btn btn-ghost" onClick={generateList} disabled={loading}>
+                {loading ? "..." : "🛒 Générer ma liste de courses"}
+              </button>
+            </div>
           </div>
 
           <div className="grid grid-2">
