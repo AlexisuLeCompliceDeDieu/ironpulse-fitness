@@ -199,28 +199,61 @@ _MEAL_TYPES_VALID = ("Petit-déjeuner", "Déjeuner", "Collation", "Dîner")
 
 
 def _parse_content(content):
-    """Parse la réponse IA en liste de dicts repas (robuste aux artefacts)."""
-    import re
+    """Parse la réponse IA en liste de dicts repas (robuste aux artefacts).
+
+    Le modèle sort parfois UN objet JSON par jour au lieu d'un seul, ou ajoute
+    du texte autour : on tente d'abord un `json.loads` du cadre {…}, puis on
+    collecte tous les objets JSON présents et on fusionne leurs `meals`.
+    """
+    import re as _re
     raw = content.strip()
     # Supprimer les balises  thinking de Qwen
     if " thinking" in raw:
-        raw = re.sub(r" thinking.*? response", "", raw, flags=re.DOTALL).strip()
+        raw = _re.sub(r" thinking.*? response", "", raw, flags=_re.DOTALL).strip()
     # Supprimer les blocs markdown
     if raw.startswith("```"):
         lines = raw.split("\n")
         lines = [l for l in lines if not l.strip().startswith("```")]
         raw = "\n".join(lines).strip()
-    # Ne garder que la partie JSON encadrée par la première `{` et la dernière `}`
-    # (certains modèles ajoutent du texte avant/après ou une virgule finale).
+    # Réparation légère : virgules parasites avant ] ou }
+    raw = _re.sub(r",\s*([\]}])", r"\1", raw)
+
+    # 1) Tentative rapide : on espère que le cadre {…} est un JSON unique.
     start = raw.find("{")
     end = raw.rfind("}")
     if start != -1 and end != -1 and end > start:
-        raw = raw[start:end + 1]
-    data = json.loads(raw)
-    meals_data = data.get("meals", [])
-    if not meals_data:
-        raise ValueError("Réponse IA vide (pas de meals)")
-    return meals_data
+        candidate = raw[start:end + 1]
+        try:
+            data = json.loads(candidate)
+            meals = data.get("meals", [])
+            if isinstance(meals, list) and meals:
+                return meals
+        except Exception:
+            pass
+
+    # 2) Mode robuste : on collecte tous les objets JSON du texte (le modèle
+    #    sort parfois un objet par jour) et on fusionne leurs champs "meals".
+    meals = []
+    decoder = json.JSONDecoder()
+    i = 0
+    n = len(raw)
+    while i < n:
+        ch = raw[i]
+        if ch in "{[":
+            try:
+                obj, end_i = decoder.raw_decode(raw, i)
+                if isinstance(obj, dict):
+                    m = obj.get("meals")
+                    if isinstance(m, list):
+                        meals.extend(m)
+                i = end_i
+            except json.JSONDecodeError:
+                i += 1  # avance d'un caractère et continue
+        else:
+            i += 1
+    if meals:
+        return meals
+    raise ValueError("Réponse IA sans meals valides")
 
 
 def _normalize_day(raw_day, chunk_days):

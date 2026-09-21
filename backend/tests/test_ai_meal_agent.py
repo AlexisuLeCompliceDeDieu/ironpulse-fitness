@@ -55,6 +55,25 @@ def test_parse_content_clamps_surrounding_text():
     assert meals[0]["name"] == "Test"
 
 
+def test_parse_content_merges_multiple_objects():
+    """Le modèle sort parfois un objet JSON par jour : on les fusionne."""
+    content = (
+        "{\"meals\": [{\"day\": 1, \"meal_type\": \"Déjeuner\", \"name\": \"Jour1\", \"items\": []}]}\n"
+        "{\"meals\": [{\"day\": 2, \"meal_type\": \"Dîner\", \"name\": \"Jour2\", \"items\": []}]}"
+    )
+    meals = ai_meal_agent._parse_content(content)
+    assert len(meals) == 2
+    assert meals[0]["name"] == "Jour1"
+    assert meals[1]["name"] == "Jour2"
+
+
+def test_parse_content_repairs_trailing_commas():
+    content = "{\"meals\": [{\"day\": 1, \"meal_type\": \"Déjeuner\", \"name\": \"Test\", \"items\": [{\"food\": \"riz\", \"quantity\": 100},],}]}"
+    meals = ai_meal_agent._parse_content(content)
+    assert meals[0]["name"] == "Test"
+    assert meals[0]["items"][0]["food"] == "riz"
+
+
 def test_normalize_day_relative():
     assert ai_meal_agent._normalize_day(1, 2) == 1
     assert ai_meal_agent._normalize_day("2", 2) == 2
