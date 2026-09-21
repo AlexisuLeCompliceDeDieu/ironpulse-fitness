@@ -10,6 +10,9 @@ def test_chat_unauthenticated(client):
 
 def test_chat_status_disabled(auth_client, monkeypatch):
     monkeypatch.setenv("GROQ_API_KEY", "")
+    monkeypatch.delenv("GEMINI_API_KEY", raising=False)
+    monkeypatch.delenv("MISTRAL_API_KEY", raising=False)
+    monkeypatch.delenv("OPENROUTER_API_KEY", raising=False)
     resp = auth_client.get("/api/chat/status")
     assert resp.status_code == 200
     data = resp.get_json()
@@ -17,14 +20,15 @@ def test_chat_status_disabled(auth_client, monkeypatch):
 
 
 def test_chat_requires_messages(auth_client, monkeypatch):
-    monkeypatch.setenv("GROQ_API_KEY", "fake-key")
     resp = auth_client.post("/api/chat/", json={"messages": []})
     assert resp.status_code == 400
 
 
-def test_chat_unconfigured_returns_503(auth_client, monkeypatch):
-    monkeypatch.setenv("GROQ_API_KEY", "fake-key")
+def test_chat_unconfigured_returns_429(auth_client, monkeypatch):
+    """Aucun fournisseur ne peut fonctionner : le routeur renvoie 429."""
+    monkeypatch.setenv("GROQ_API_KEY", "")
+    monkeypatch.delenv("GEMINI_API_KEY", raising=False)
+    monkeypatch.delenv("MISTRAL_API_KEY", raising=False)
+    monkeypatch.delenv("OPENROUTER_API_KEY", raising=False)
     resp = auth_client.post("/api/chat/", json={"messages": [{"role": "user", "content": "salut"}]})
-    # clé présente mais "fake" : get_client() tente de créer un client Groq (réussit),
-    # l'appel réseau échouera en 502 — on teste donc le 502 ou le 503 si clé absente.
-    assert resp.status_code in (502, 503)
+    assert resp.status_code == 429

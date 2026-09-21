@@ -1,18 +1,20 @@
-"""Chat IA "IRONPULSE Coach" — assistant conversationnel via Groq (streaming SSE).
+"""Chat IA "IRONPULSE Coach" — assistant conversationnel multi-IA (streaming SSE).
 
 Point d'entrée : POST /api/chat/
   body : {"messages": [{"role": "user", "content": "..."}, ...]}
   réponse : EventSource de tokens (data: {"token": "..."}), terminé par data: [DONE].
+
+Le routeur `ai_providers` choisit le premier fournisseur disponible (Groq,
+Gemini, Mistral, OpenRouter) et bascule automatiquement en cas de limite.
 """
 
 import json
 import logging
 from flask import Blueprint, request, jsonify, session, Response
 
-logger = logging.getLogger(__name__)
+from services import ai_providers
 
-from services.groq_config import get_client, GROQ_MODEL, GROQ_ENABLED
-from services import quota_tracker
+logger = logging.getLogger(__name__)
 
 chat_bp = Blueprint("chat", __name__)
 
@@ -75,16 +77,6 @@ def chat():
     if not messages or not isinstance(messages, list) or len(messages) == 0:
         return jsonify({"error": "messages requis"}), 400
 
-    # Vérification quota AVANT d'ouvrir le stream
-    allowed, quota_info = quota_tracker.check_quota()
-    if not allowed:
-        reason = quota_info.get("reason", "quota")
-        return jsonify({"error": f"Quota IA épuisé (raison : {reason}). Réessayez plus tard.", "quota": quota_info}), 429
-
-    client = get_client()
-    if client is None:
-        return jsonify({"error": "Agent IA non configuré", "groq_enabled": GROQ_ENABLED}), 503
-
     # Historique borné pour rester rapide et sous la limite de contexte
     history = [
         {"role": m.get("role"), "content": (m.get("content") or "")[:4000]}
@@ -92,29 +84,38 @@ def chat():
     ]
     payload = [{"role": "system", "content": _system_prompt(user)}] + history
 
-    try:
-        stream = client.chat.completions.create(
-            model=GROQ_MODEL,
-            messages=payload,
-            temperature=TEMPERATURE,
-            max_tokens=MAX_TOKENS,
-            stream=True,
-        )
-    except Exception as e:  # noqa: BLE001
-        logger.error(f"Chat Groq : échec du démarrage du stream : {e}")
-        return jsonify({"error": f"Erreur d'appel IA : {str(e)[:200]}"}), 502
+    # Vérification QUANTIQUE : un fournisseur est-il disponible ?
+    pid, provider, _ = ai_providers.available_provider()
+    if provider is None:
+        return jsonify({
+            "error": "Aucune IA disponible (tous les fournisseurs ont atteint leur limite).",
+            "quota": quota_status(),
+        }), 429
+
+    stream, info = ai_providers.stream_text(
+        payload, max_tokens=MAX_TOKENS, temperature=TEMPERATURE
+    )
+    if stream is None:
+        return jsonify({
+            "error": "Aucune IA disponible (tous les fournisseurs ont atteint leur limite).",
+            "quota": quota_status(),
+        }), 429
+
+    provider_label = info.get("label") or info.get("provider") or "IA"
 
     def generate():
+        got_any = False
         try:
-            for chunk in stream:
-                delta = chunk.choices[0].delta.content
+            for delta in stream:
                 if delta:
+                    got_any = True
                     yield f"data: {json.dumps({'token': delta}, ensure_ascii=False)}\n\n"
-            # Consommation comptabilisée une seule fois par réponse complète
-            quota_tracker.record_usage()
         except Exception as e:  # noqa: BLE001
-            logger.error(f"Chat Groq : erreur pendant le stream : {e}")
+            logger.error(f"Chat IA : erreur pendant le stream : {e}")
             yield f"data: {json.dumps({'error': 'Erreur pendant la génération'}, ensure_ascii=False)}\n\n"
+        if not got_any:
+            msg = f"Le fournisseur {provider_label} n'a rien renvoyé"
+            yield f"data: {json.dumps({'error': msg}, ensure_ascii=False)}\n\n"
         yield "data: [DONE]\n\n"
 
     return Response(generate(), mimetype="text/event-stream", headers={
@@ -123,14 +124,25 @@ def chat():
     })
 
 
+def quota_status():
+    """Petit résumé du quota pour les messages d'erreur du chat."""
+    try:
+        from services import quota_tracker
+        return quota_tracker.get_status()
+    except Exception:
+        return {}
+
+
 @chat_bp.route("/status", methods=["GET"])
 def status():
     """Statut de l'assistant IA (accessible aux utilisateurs connectés)."""
     user = _current_user()
     if not user:
         return jsonify({"error": "Non authentifié"}), 401
+    active = ai_providers.active_provider_id()
     return jsonify({
-        "groq_enabled": GROQ_ENABLED,
-        "model": GROQ_MODEL if GROQ_ENABLED else None,
-        "quota": quota_tracker.get_status(),
+        "groq_enabled": any(p.configured for p in ai_providers.PROVIDERS.values()),
+        "model": ai_providers.PROVIDERS[active].model if active else None,
+        "provider": active,
+        "quota": quota_status(),
     }), 200

@@ -141,7 +141,7 @@ export default function Nutrition({ user }) {
             type="button"
             className={"chip" + (useAI ? " active" : "")}
             onClick={() => setUseAI(true)}
-            title="L'agent IA Groq compose les repas (gratuit)."
+            title="L'agent IA compose les repas (répartition automatique entre fournisseurs gratuits)."
           >
             🤖 Agent IA
           </button>
@@ -171,7 +171,9 @@ export default function Nutrition({ user }) {
             <h2 className="page-title" style={{ margin: 0, display: "flex", alignItems: "center", gap: "0.6rem" }}>
               Plan alimentaire · 🗓️ {plan.num_days} jours
               {genInfo?.mode === "ai" ? (
-                <span className="badge badge-cyan" title={`Repas composés par ${genInfo.model}`}>🤖 IA</span>
+                <span className="badge badge-cyan" title={`Repas composés par ${genInfo.provider_label || "IA"} (${genInfo.model})`}>
+                  🤖 {genInfo.provider_label || "IA"}
+                </span>
               ) : (
                 <span className="badge badge-warn" title={genInfo?.reason ? `Fallback : ${genInfo.reason}` : "Recettes classiques"}>⚙️ Classique</span>
               )}
@@ -254,11 +256,20 @@ function formatQty(grams) {
 
 function aiFallbackMsg(reason) {
   if (!reason) return "L'agent IA n'a pas pu générer les menus — mode classique utilisé.";
-  if (reason.startsWith("groq_error")) {
-    if (reason.includes("429")) {
-      return "L'IA est momentanément limitée (quota Groq). Menus générés en mode classique — réessaie dans une minute.";
+  if (reason.startsWith("provider_error")) {
+    if (reason.includes("daily_limit")) {
+      return "Quota IA atteint pour aujourd'hui — menus générés en mode classique (retour automatique demain).";
     }
-    return "L'IA a rencontré une erreur. Menus générés en mode classique.";
+    if (reason.includes("none_available")) {
+      return "Aucune IA disponible (tous les fournisseurs ont atteint leur limite) — menus en mode classique.";
+    }
+    if (reason.includes("rate_limit") || reason.includes("per_minute")) {
+      return "Les IAs sont momentanément limitées — menus en mode classique, réessaie dans une minute.";
+    }
+    if (reason.includes("invalid_key")) {
+      return "Clé IA invalide — menus générés en mode classique.";
+    }
+    return "Toutes les IAs ont échoué. Menus générés en mode classique.";
   }
   if (reason.startsWith("parse_error")) {
     return "L'IA a renvoyé un format invalide. Menus générés en mode classique.";
@@ -275,7 +286,7 @@ function aiFallbackMsg(reason) {
   if (reason === "quota_exceeded") {
     return "Quota IA atteint pour aujourd'hui — menus générés en mode classique.";
   }
-  if (reason === "groq_unavailable" || reason === "groq_disabled") {
+  if (reason === "groq_unavailable" || reason === "groq_disabled" || reason === "ai_disabled") {
     return "Agent IA non configuré — menus générés en mode classique.";
   }
   return "Menus générés en mode classique.";

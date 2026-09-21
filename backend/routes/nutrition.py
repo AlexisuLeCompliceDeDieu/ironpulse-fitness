@@ -59,13 +59,13 @@ def generate_plan():
 
     if use_ai:
         try:
-            from services.groq_config import GROQ_ENABLED
-            if GROQ_ENABLED:
+            from services import ai_providers
+            if ai_providers.available_provider()[1] is not None:
                 from services.ai_meal_agent import generate_ai_meal_plan
                 plan, info = generate_ai_meal_plan(user, num_days, foods, recent_meals=recent_meals)
             else:
                 plan = meal_generator.generate_meal_plan(user, num_days, foods, avoid_recipes=avoid_recipes)
-                info = {"mode": "classic", "reason": "groq_disabled"}
+                info = {"mode": "classic", "reason": "ai_disabled"}
         except Exception as e:
             import logging
             logging.getLogger(__name__).error(f"Agent IA error: {e}")

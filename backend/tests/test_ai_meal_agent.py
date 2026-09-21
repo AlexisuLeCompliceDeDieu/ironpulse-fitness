@@ -1,5 +1,4 @@
 import sys
-from unittest.mock import MagicMock
 
 from services import ai_meal_agent
 
@@ -10,44 +9,38 @@ def test_max_tokens_scaled():
     assert ai_meal_agent._max_tokens_for(90) <= 3000
 
 
-def test_create_completion_retries_without_reasoning():
-    """Si l'API refuse reasoning_effort, on rejoue sans ce paramètre."""
-    client = MagicMock()
-    ok = MagicMock()
-    ok.choices[0].message.content = "{\"meals\": []}"
-    client.chat.completions.create.side_effect = [
-        Exception("400 ... reasoning ..."),
-        ok,
-    ]
-    resp = ai_meal_agent._create_completion(client, [{"role": "user", "content": "x"}], 1000)
-    assert resp is ok
-    assert client.chat.completions.create.call_count == 2
-    # le second appel ne doit plus contenir reasoning_effort
-    kwargs = client.chat.completions.create.call_args.kwargs
-    assert "reasoning_effort" not in kwargs
+def test_get_ai_content_using_router():
+    """Le morceau est confié au routeur multi-IA (failover) avec le prompt strict si demandé."""
+    from unittest.mock import patch
+
+    with patch("services.ai_meal_agent.ai_providers.generate_text") as gen:
+        gen.return_value = ("coucou", {"provider": "groq", "label": "Groq", "model": "m1"})
+        content, info = ai_meal_agent._get_ai_content("prompt", 2)
+        assert content == "coucou"
+        assert info["provider"] == "groq"
+        args, kwargs = gen.call_args
+        assert args[0][-1]["role"] == "user"
+        assert kwargs["max_tokens"] == ai_meal_agent._max_tokens_for(2)
+        # pas de consigne strict par défaut
+        sent_messages = args[0]
+        assert "Rappel STRICT" not in sent_messages[-1]["content"]
+
+        gen.return_value = ("coucou2", {"provider": "gemini", "label": "Gemini", "model": "m2"})
+        content, info = ai_meal_agent._get_ai_content("prompt", 7, strict=True)
+        args, kwargs = gen.call_args
+        assert "Rappel STRICT" in args[0][-1]["content"]
+        assert info["provider"] == "gemini"
 
 
-def test_create_completion_passes_reasoning_when_supported():
-    client = MagicMock()
-    ok = MagicMock()
-    ok.choices[0].message.content = "{}"
-    client.chat.completions.create.return_value = ok
-    ai_meal_agent._create_completion(client, [{"role": "user", "content": "x"}], 1000)
-    kwargs = client.chat.completions.create.call_args.kwargs
-    assert kwargs.get("reasoning_effort") == "none"
+def test_get_ai_content_failure_carries_reason():
+    """Si aucun fournisseur n'est dispo, on propage la raison du routeur."""
+    from unittest.mock import patch
 
-
-def test_is_rate_limit():
-    assert ai_meal_agent._is_rate_limit(Exception("429 ... too large OTPM"))
-    assert ai_meal_agent._is_rate_limit(Exception("quota exceeded"))
-    assert not ai_meal_agent._is_rate_limit(Exception("parse error"))
-
-
-def test_is_tpd_limit():
-    assert ai_meal_agent._is_tpd_limit(Exception("429 ... tokens per day (TPD): Limit 200000"))
-    assert ai_meal_agent._is_tpd_limit(Exception("Rate limit ... on tokens per day"))
-    assert not ai_meal_agent._is_tpd_limit(Exception("429 too large OTPM"))
-    assert not ai_meal_agent._is_tpd_limit(Exception("quota exceeded"))
+    with patch("services.ai_meal_agent.ai_providers.generate_text") as gen:
+        gen.return_value = (None, {"reason": "daily_limit", "attempts": []})
+        content, info = ai_meal_agent._get_ai_content("prompt", 2)
+        assert content is None
+        assert info["reason"] == "daily_limit"
 
 
 def test_parse_content_strips_thinking_and_markdown():

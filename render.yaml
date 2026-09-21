@@ -18,3 +18,19 @@ services:
         value: "true"
       - key: PORT
         value: "10000"
+      - key: GROQ_API_KEY
+        sync: false
+      - key: GEMINI_API_KEY
+        sync: false
+      - key: MISTRAL_API_KEY
+        sync: false
+      - key: OPENROUTER_API_KEY
+        sync: false
+      - key: AI_PROVIDER_ORDER
+        value: "groq,gemini,mistral,openrouter"
+      - key: GEMINI_MODEL
+        value: "gemini-2.0-flash"
+      - key: MISTRAL_MODEL
+        value: "open-mistral-nemo"
+      - key: OPENROUTER_MODEL
+        value: "qwen/qwen-2.5-72b-instruct:free"

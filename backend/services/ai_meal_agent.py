@@ -1,72 +1,34 @@
-"""Agent IA pour la génération de plans alimentaires via Groq (LLaMA 3.1).
+"""Agent IA pour la génération de plans alimentaires via un routeur multi-IA.
 
 Fonctionnement :
   1. Construit un prompt avec le profil utilisateur + base d'aliments
-  2. Appelle Groq (LLaMA 3.1 8B instant)
+  2. Appelle le premier fournisseur disponible (Groq, Gemini, Mistral,
+     OpenRouter) via `ai_providers` — failover automatique si limite atteinte
   3. Parse la réponse JSON structurée
   4. Sauvegarde en base (MealPlan, Meal, MealItem)
-  5. Fallback vers le générateur classique si échec
+  5. Fallback vers le générateur classique si tout échoue
 
 Sécurité :
   - Jamais de données personnelles envoyées (seulement préférences nutritionnelles)
-  - Quota tracker vérifie les limites avant chaque appel
+  - Quota tracker vérifie les limites par fournisseur avant chaque appel
   - Fallback automatique si indisponible
 """
 
 import json
 import logging
-import time
-from services.groq_config import get_client, GROQ_MODEL, GROQ_ENABLED
-from services import quota_tracker, meal_generator
+from services import meal_generator
+from services import ai_providers
 
 logger = logging.getLogger(__name__)
 
 
 def _max_tokens_for(num_days):
-    """Plafond de tokens de sortie adapté au nombre de jours.
+    """Plafond de tokens de sortie adapté au nombre de jours (par morceau).
 
-    Le tier gratuit Groq limite les tokens de sortie par minute (OTPM) :
-    demander 4096 tokens d'un coup déclenche une erreur 429 "Request too large".
-    On demande donc juste ce qu'il faut, avec un plancher et un plafond sûrs.
+    Les tiers gratuits limitent les tokens de sortie par minute : des sorties
+    courtes (2 jours / appel) restent largement sous ces limites.
     """
     return max(700, min(3000, int(num_days) * 380))
-
-
-def _create_completion(client, messages, max_tokens):
-    """Appel Groq en désactivant le raisonnement de Qwen (économie d'OTPM).
-
-    `reasoning_effort="none"` n'est pas supporté par tous les modèles : on
-    réessaie sans ce paramètre si le serveur le refuse.
-    """
-    try:
-        return client.chat.completions.create(
-            model=GROQ_MODEL,
-            messages=messages,
-            temperature=0.7,
-            max_tokens=max_tokens,
-            reasoning_effort="none",
-        )
-    except Exception as e:
-        msg = str(e).lower()
-        if "reasoning" in msg or "400" in msg or "invalid" in msg or "unsupported" in msg:
-            return client.chat.completions.create(
-                model=GROQ_MODEL,
-                messages=messages,
-                temperature=0.7,
-                max_tokens=max_tokens,
-            )
-        raise
-
-
-def _is_rate_limit(err):
-    msg = str(err).lower()
-    return "429" in msg or "rate" in msg or "too large" in msg or "quota" in msg
-
-
-def _is_tpd_limit(err):
-    """Limite de tokens PAR JOUR (TPD) : inutile de rejouer, ça ne reviendra pas avant demain."""
-    msg = str(err).lower()
-    return "tokens per day" in msg or "per day" in msg or " tpd" in msg
 
 # ── Prompt système ──────────────────────────────────────────────────
 
@@ -285,13 +247,12 @@ def _normalize_meal_type(raw):
     return mt if mt in _MEAL_TYPES_VALID else None
 
 
-def _get_ai_content(client, prompt, chunk_days, strict=False):
-    """Appelle Groq pour un morceau. Retourne (content, error).
+def _get_ai_content(prompt, chunk_days, strict=False):
+    """Appelle le routeur multi-IA pour un morceau. Retourne (content, provider_info).
 
-    3 tentatives max ; en cas de limite de tokens/minute on attend un peu
-    plus longtemps à chaque essai puis on réessaie le MÊME prompt (jamais de
-    troncature : on ne réduit pas max_tokens). En mode `strict`, on ajoute une
-    consigne de JSON strict (utilisé quand un premier effort était invalide).
+    Le routeur fait lui-même le failover : limites par minute (cooldown), par
+    jour (désactivé jusqu'à minuit), clé invalide, erreur serveur… En mode
+    `strict`, on ajoute une consigne de JSON strict (après un premier essai).
     """
     user_content = prompt
     if strict:
@@ -304,27 +265,12 @@ def _get_ai_content(client, prompt, chunk_days, strict=False):
         {"role": "user", "content": user_content},
     ]
     max_tokens = _max_tokens_for(chunk_days)
-    last_err = None
-    for attempt in range(3):
-        try:
-            logger.info(f"Appel Groq (morceau {chunk_days}j{' strict' if strict else ''}) : {GROQ_MODEL}, max_tokens={max_tokens}")
-            response = _create_completion(client, messages, max_tokens)
-            quota_tracker.record_usage()
-            content = response.choices[0].message.content
-            if content and content.strip():
-                return content, None
-            last_err = Exception("Réponse Groq vide")
-        except Exception as e:
-            last_err = e
-            logger.error(f"Erreur Groq morceau (tentative {attempt + 1}): {e}")
-            # TPD = indisponible jusqu'à demain : ne pas rejouer
-            if _is_tpd_limit(e):
-                break
-            if _is_rate_limit(e):
-                time.sleep(5 + attempt * 7)
-                continue
-            break
-    return None, last_err
+    logger.info(f"Appel IA (morceau {chunk_days}j{' strict' if strict else ''}) : max_tokens={max_tokens}")
+    content, info = ai_providers.generate_text(messages, max_tokens=max_tokens, temperature=0.7)
+    if content is None:
+        reason = info.get("reason", "none_available")
+        return None, {"reason": reason}
+    return content, info
 
 
 def _classic_fallback(user, num_days, foods_by_name, reason, quota_info=None):
@@ -336,29 +282,16 @@ def _classic_fallback(user, num_days, foods_by_name, reason, quota_info=None):
 
 
 def generate_ai_meal_plan(user, num_days, foods_by_name, recent_meals=None):
-    """Génère un plan alimentaire via l'agent IA Groq.
+    """Génère un plan alimentaire via le routeur multi-IA (failover).
 
     Génération PAR MORCEAUX (2 jours / appel) pour rester largement sous les
-    limites de tokens de sortie par minute (OTPM) du tier gratuit : des sorties
-    courtes évitent les erreurs 429 et les JSON tronqués.
+    limites de tokens de sortie par minute des tiers gratuits. Si aucun
+    fournisseur n'est disponible, fallback automatique vers le classique.
 
-    Retourne (plan_db, info). En cas d'échec, fallback automatique vers le
-    générateur classique.
+    Retourne (plan_db, info).
     """
     from models import MealPlan, Meal, MealItem, db
     from services.nutrition import current_calories
-
-    # Vérification quota AVANT l'appel
-    allowed, quota_info = quota_tracker.check_quota()
-    if not allowed:
-        logger.warning(f"Quota Groq dépassé ({quota_info.get('reason')}) — fallback classique")
-        return _classic_fallback(user, num_days, foods_by_name, "quota_exceeded", quota_info)
-
-    # Vérification disponibilité Groq
-    client = get_client()
-    if client is None:
-        logger.info("Groq non configuré — fallback classique")
-        return _classic_fallback(user, num_days, foods_by_name, "groq_unavailable")
 
     # Plafond réaliste : 1 appel / 2 jours, on limite à 30 jours en IA
     if num_days > 30:
@@ -371,34 +304,34 @@ def generate_ai_meal_plan(user, num_days, foods_by_name, recent_meals=None):
     normalized = []  # [ {day, meal_type, name, items:[(food_id, qty)]} ]
     skipped = 0
     CHUNK_DAYS = 2
+    last_provider = None
 
     for offset in range(0, num_days, CHUNK_DAYS):
         nb = min(CHUNK_DAYS, num_days - offset)
         prompt = _build_prompt(context, nb, recent_meals, day_offset=offset)
 
-        content, err = _get_ai_content(client, prompt, nb)
+        content, info = _get_ai_content(prompt, nb)
         if content is None:
-            if _is_tpd_limit(err):
-                # Tokens du jour épuisés : on désactive l'IA jusqu'à demain
-                # pour basculer instantanément en classique (plus d'attente).
-                logger.warning("TPD Groq atteint — IA désactivée jusqu'à demain")
-                quota_tracker.disable_today()
-                return _classic_fallback(user, num_days, foods_by_name, "quota_exceeded", quota_info)
-            return _classic_fallback(user, num_days, foods_by_name, f"groq_error: {str(err)[:200]}")
+            reason = info.get("reason", "none_available")
+            return _classic_fallback(user, num_days, foods_by_name, f"provider_error: {reason[:200]}")
+        last_provider = info
 
         try:
             chunk_meals = _parse_content(content)
         except Exception as e:
             # Re-jeu "strict" une fois avant d'abandonner le plan
             logger.warning(f"Parse invalide (morceau {offset + 1}-{offset + nb}), re-jeu strict: {e}")
-            content2, err2 = _get_ai_content(client, prompt, nb, strict=True)
+            content2, info2 = _get_ai_content(prompt, nb, strict=True)
             if content2 is None:
-                return _classic_fallback(user, num_days, foods_by_name, f"groq_error: {str(err2)[:200]}")
+                reason = info2.get("reason", "none_available")
+                return _classic_fallback(user, num_days, foods_by_name, f"provider_error: {reason[:200]}")
+            last_provider = info2
             try:
                 chunk_meals = _parse_content(content2)
             except Exception as e2:
                 logger.error(f"Parse invalide même en strict: {e2}")
                 return _classic_fallback(user, num_days, foods_by_name, f"parse_error: {str(e2)[:200]}")
+        # Le morceau a été généré : on le retient et on passe au suivant
 
         for meal_data in chunk_meals:
             rel_day = _normalize_day(meal_data.get("day", 1), nb)
@@ -469,10 +402,11 @@ def generate_ai_meal_plan(user, num_days, foods_by_name, recent_meals=None):
 
         info = {
             "mode": "ai",
-            "model": GROQ_MODEL,
+            "provider": (last_provider or {}).get("provider"),
+            "provider_label": (last_provider or {}).get("label"),
+            "model": (last_provider or {}).get("model"),
             "meals_generated": valid_meals,
             "skipped": skipped,
-            "quota": quota_info,
         }
         return plan, info
 

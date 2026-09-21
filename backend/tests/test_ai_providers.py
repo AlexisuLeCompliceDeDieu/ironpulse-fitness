@@ -1,0 +1,198 @@
+"""Tests du routeur multi-IA (failover automatique entre fournisseurs)."""
+
+import pytest
+
+from services import ai_providers, quota_tracker
+
+
+class FakeProvider:
+    def __init__(self, pid, label, model="fake-model", configured=True, fail=None, text="ok"):
+        self.id = pid
+        self.label = label
+        self.model = model
+        self.configured = configured
+        self.fail = fail
+        self.text = text
+
+    def generate(self, messages, max_tokens, temperature):
+        if self.fail:
+            raise self.fail
+        return self.text
+
+    def stream(self, messages, max_tokens, temperature):
+        if self.fail:
+            raise self.fail
+        for piece in _chunks(self.text):
+            yield piece
+
+
+def _chunks(text, size=20):
+    for i in range(0, len(text), size):
+        yield text[i:i + size]
+
+
+@pytest.fixture(autouse=True)
+def clean_quota(monkeypatch, tmp_path):
+    """Isole l'état du quota par test (fichier temporaire, état vierge)."""
+    monkeypatch.setattr(quota_tracker, "_DATA_DIR", str(tmp_path))
+    monkeypatch.setattr(quota_tracker, "_QUOTA_FILE", str(tmp_path / "quota.json"))
+    quota_tracker._save({
+        "rpm_timestamps": [],
+        "rpd_date": "2000-01-01",
+        "rpd_count": 0,
+        "total_all_time": 0,
+        "auto_disabled": False,
+        "last_warning": "",
+    })
+    monkeypatch.delenv("AI_PROVIDER_ORDER", raising=False)
+    return monkeypatch
+
+
+def _providers(*fakes):
+    return {f.id: f for f in fakes}
+
+
+# ── Classification des erreurs ─────────────────────────────────────
+
+def test_failure_reason_mapping():
+    cases = [
+        (ai_providers.ProviderError(429, "429 ... tokens per day (TPD): Limit 200000"), "daily_limit"),
+        (ai_providers.ProviderError(429, "429 ... too large OTPM"), "per_minute"),
+        (ai_providers.ProviderError(401, "invalid api key"), "invalid_key"),
+        (ai_providers.ProviderError(429, "rate limit exceeded"), "rate_limit"),
+        (ai_providers.ProviderError(404, "model not found"), "model_not_found"),
+        (ai_providers.ProviderError(0, "connection refused"), "server_error"),
+        (ai_providers.ProviderError(500, "internal"), "server_error"),
+        (ai_providers.ProviderError(400, "bad request"), "bad_request"),
+    ]
+    for err, expected in cases:
+        assert ai_providers._failure_reason(err) == expected, err.message
+
+
+def test_handle_failure_daily_disable(monkeypatch):
+    calls = []
+    monkeypatch.setattr(quota_tracker, "disable_provider",
+                        lambda pid, reason: calls.append((pid, reason)))
+    quotient = ai_providers._handle_failure(
+        "groq", ai_providers.ProviderError(429, "tokens per day (TPD)"))
+    assert quotient == "daily_limit"
+    assert calls == [("groq", "daily_limit")]
+
+
+def test_handle_failure_per_minute_cooldown(monkeypatch):
+    calls = []
+    monkeypatch.setattr(quota_tracker, "set_provider_cooldown",
+                        lambda pid, seconds: calls.append((pid, seconds)))
+    ai_providers._handle_failure("groq", ai_providers.ProviderError(429, "too large OTPM"))
+    assert calls == [("groq", 75)]
+
+
+# ── Ordre de préférence ────────────────────────────────────────────
+
+def test_provider_order_uses_env_and_appends_configured(monkeypatch):
+    monkeypatch.setenv("AI_PROVIDER_ORDER", "groq,openrouter")
+    monkeypatch.setattr(ai_providers, "PROVIDERS", _providers(
+        FakeProvider("groq", "Groq"),
+        FakeProvider("openrouter", "OpenRouter"),
+        FakeProvider("gemini", "Gemini"),
+    ))
+    order = ai_providers.provider_order()
+    assert order[0] == "groq"
+    assert order[1] == "openrouter"
+    assert order[2] == "gemini"  # ajouté car configuré mais absent de l'env
+
+
+def test_provider_order_drops_unknown(monkeypatch):
+    monkeypatch.setenv("AI_PROVIDER_ORDER", "groq,inexistant")
+    monkeypatch.setattr(ai_providers, "PROVIDERS", _providers(FakeProvider("groq", "Groq")))
+    assert ai_providers.provider_order() == ["groq"]
+
+
+# ── Failover sur generate_text ─────────────────────────────────────
+
+def test_generate_text_fails_over_on_daily_limit(monkeypatch):
+    groq = FakeProvider("groq", "Groq", fail=ai_providers.ProviderError(429, "tokens per day (TPD)"))
+    gemini = FakeProvider("gemini", "Google Gemini", text="réponse gemini")
+    monkeypatch.setattr(ai_providers, "PROVIDERS", _providers(groq, gemini))
+
+    text, info = ai_providers.generate_text([{"role": "user", "content": "x"}])
+    assert text == "réponse gemini"
+    assert info["provider"] == "gemini"
+    # Groq a été désactivé durablement (limite du jour)
+    ok, reason = quota_tracker.can_use_provider("groq")
+    assert not ok
+    assert reason == "daily_limit"
+
+
+def test_generate_text_skips_unconfigured(monkeypatch):
+    gemini = FakeProvider("gemini", "Google Gemini", text="ok")
+    monkeypatch.setattr(ai_providers, "PROVIDERS", _providers(
+        FakeProvider("groq", "Groq", configured=False), gemini))
+
+    text, info = ai_providers.generate_text([{"role": "user", "content": "x"}])
+    assert text == "ok"
+    assert info["provider"] == "gemini"
+
+
+def test_generate_text_none_when_all_fail(monkeypatch):
+    monkeypatch.setattr(ai_providers, "PROVIDERS", _providers(
+        FakeProvider("groq", "Groq", fail=ai_providers.ProviderError(500, "boom")),
+        FakeProvider("gemini", "Google Gemini", fail=ai_providers.ProviderError(429, "rate limit")),
+    ))
+    text, info = ai_providers.generate_text([{"role": "user", "content": "x"}])
+    assert text is None
+    assert info["reason"] == "rate_limit"  # dernière tentative
+
+
+def test_generate_text_bumps_usage(monkeypatch):
+    monkeypatch.setattr(ai_providers, "PROVIDERS", _providers(FakeProvider("groq", "Groq")))
+    ai_providers.generate_text([{"role": "user", "content": "x"}])
+    ok, reason = quota_tracker.can_use_provider("groq")
+    assert ok and reason is None
+    st = quota_tracker.get_providers_status()["groq"]
+    assert st["rpd_used"] == 1
+
+
+# ── Disponibilité et cooldown ──────────────────────────────────────
+
+def test_available_provider_skips_blocked(monkeypatch):
+    monkeypatch.setattr(ai_providers, "PROVIDERS", _providers(
+        FakeProvider("groq", "Groq"),
+        FakeProvider("gemini", "Google Gemini"),
+    ))
+    quota_tracker.set_provider_cooldown("groq", seconds=120)
+    pid, _, _ = ai_providers.available_provider()
+    assert pid == "gemini"
+
+
+def test_available_provider_none(monkeypatch):
+    monkeypatch.setattr(ai_providers, "PROVIDERS", _providers(FakeProvider("groq", "Groq")))
+    quota_tracker.disable_provider("groq", "daily_limit")
+    pid, provider, reason = ai_providers.available_provider()
+    assert pid is None and provider is None
+    assert reason == "none_available"
+
+
+# ── Streaming ──────────────────────────────────────────────────────
+
+def test_stream_text_fails_over(monkeypatch):
+    groq = FakeProvider("groq", "Groq", fail=ai_providers.ProviderError(429, "too large OTPM"))
+    mistral = FakeProvider("mistral", "Mistral AI", text="bonjour le monde")
+    monkeypatch.setattr(ai_providers, "PROVIDERS", _providers(groq, mistral))
+
+    it, info = ai_providers.stream_text([{"role": "user", "content": "x"}])
+    assert info["provider"] == "mistral"
+    assert "".join(it) == "bonjour le monde"
+    # Groq est en cooldown (pas désactivé définitivement)
+    ok, reason = quota_tracker.can_use_provider("groq")
+    assert not ok
+    assert reason == "cooldown"
+
+
+def test_stream_text_none_when_all_fail(monkeypatch):
+    monkeypatch.setattr(ai_providers, "PROVIDERS", _providers(
+        FakeProvider("groq", "Groq", fail=ai_providers.ProviderError(500, "boom")),
+    ))
+    it, info = ai_providers.stream_text([{"role": "user", "content": "x"}])
+    assert it is None
+    assert info["reason"] == "none_available"
