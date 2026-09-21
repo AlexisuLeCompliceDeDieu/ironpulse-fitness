@@ -6,6 +6,7 @@ import Footer from "./components/Footer.jsx";
 import InstallPrompt from "./components/InstallPrompt.jsx";
 import Login from "./pages/Login.jsx";
 import Register from "./pages/Register.jsx";
+import ForgotPassword from "./pages/ForgotPassword.jsx";
 import Dashboard from "./pages/Dashboard.jsx";
 import TrainingProgram from "./pages/TrainingProgram.jsx";
 import SessionLog from "./pages/SessionLog.jsx";
@@ -96,6 +97,7 @@ export default function App() {
         <Routes location={location}>
           <Route path="/login" element={<Login onAuth={setUser} />} />
           <Route path="/register" element={<Register onAuth={setUser} />} />
+          <Route path="/forgot-password" element={<ForgotPassword />} />
           <Route path="*" element={<Navigate to="/login" />} />
         </Routes>
       </Fade>

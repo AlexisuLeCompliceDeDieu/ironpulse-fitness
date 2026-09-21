@@ -116,6 +116,9 @@ export default function Profile({ user, onUpdate }) {
   const [confirm, setConfirm] = useState(null);
   const [caloriesAuto, setCaloriesAuto] = useState(user.calories_auto !== false);
   const [suggestedKcal, setSuggestedKcal] = useState(null);
+  const [pwForm, setPwForm] = useState({ current_password: "", new_password: "" });
+  const [pwMsg, setPwMsg] = useState("");
+  const [pwMsgOk, setPwMsgOk] = useState(true);
 
   useEffect(() => {
     api.get("/nutrition/target")
@@ -208,6 +211,20 @@ export default function Profile({ user, onUpdate }) {
     } catch (err) {
       setWeightMsgOk(false);
       setWeightMsg("Impossible de vérifier le poids de cette date", false);
+    }
+  };
+
+  const changePassword = async () => {
+    setPwMsg("");
+    try {
+      await api.post("/auth/change-password", pwForm);
+      setPwForm({ current_password: "", new_password: "" });
+      setPwMsg("Mot de passe modifié !");
+      setPwMsgOk(true);
+      window.setTimeout(() => setPwMsg(""), 3200);
+    } catch (err) {
+      setPwMsgOk(false);
+      setPwMsg(err.response?.data?.error || "Erreur", false);
     }
   };
 
@@ -378,6 +395,35 @@ export default function Profile({ user, onUpdate }) {
           <button className="btn btn-secondary" onClick={handleAddWeight}>Ajouter</button>
         </div>
         <SaveMessage text={weightMsg} ok={weightMsgOk} />
+      </div>
+
+      <div className="card">
+        <h3 style={{ marginTop: 0 }}>🔑 Changer mon mot de passe</h3>
+        <p className="muted" style={{ fontSize: "0.85rem", margin: "0 0 0.8rem 0" }}>
+          Utilisé aussi après une réinitialisation « mot de passe oublié ».
+        </p>
+        <div className="grid grid-2">
+          <div className="form-group">
+            <label>Mot de passe actuel</label>
+            <input
+              type="password"
+              value={pwForm.current_password}
+              onChange={(e) => setPwForm({ ...pwForm, current_password: e.target.value })}
+              placeholder="••••••••"
+            />
+          </div>
+          <div className="form-group">
+            <label>Nouveau mot de passe</label>
+            <input
+              type="password"
+              value={pwForm.new_password}
+              onChange={(e) => setPwForm({ ...pwForm, new_password: e.target.value })}
+              placeholder="8 caractères minimum"
+            />
+          </div>
+        </div>
+        <button className="btn btn-secondary" onClick={changePassword}>💾 Changer</button>
+        <SaveMessage text={pwMsg} ok={pwMsgOk} />
       </div>
 
       <div className="card">

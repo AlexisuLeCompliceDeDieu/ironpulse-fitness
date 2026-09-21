@@ -67,6 +67,11 @@ export default function Login({ onAuth }) {
           <button className="btn" type="submit" style={{ width: "100%" }}>
             Connexion
           </button>
+          <p className="muted" style={{ textAlign: "center", margin: "0.6rem 0 0 0" }}>
+            <Link to="/forgot-password" style={{ color: "var(--muted)", fontSize: "0.9rem" }}>
+              Mot de passe oublié ?
+            </Link>
+          </p>
           <p className="muted" style={{ textAlign: "center", marginBottom: 0 }}>
             Pas de compte ? <Link to="/register" style={{ color: "var(--primary)", fontWeight: 700 }}>S'inscrire</Link>
           </p>
