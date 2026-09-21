@@ -210,6 +210,12 @@ def _parse_content(content):
         lines = raw.split("\n")
         lines = [l for l in lines if not l.strip().startswith("```")]
         raw = "\n".join(lines).strip()
+    # Ne garder que la partie JSON encadrée par la première `{` et la dernière `}`
+    # (certains modèles ajoutent du texte avant/après ou une virgule finale).
+    start = raw.find("{")
+    end = raw.rfind("}")
+    if start != -1 and end != -1 and end > start:
+        raw = raw[start:end + 1]
     data = json.loads(raw)
     meals_data = data.get("meals", [])
     if not meals_data:
@@ -240,22 +246,29 @@ def _normalize_meal_type(raw):
     return mt if mt in _MEAL_TYPES_VALID else None
 
 
-def _get_ai_content(client, prompt, chunk_days):
+def _get_ai_content(client, prompt, chunk_days, strict=False):
     """Appelle Groq pour un morceau. Retourne (content, error).
 
     3 tentatives max ; en cas de limite de tokens/minute on attend un peu
     plus longtemps à chaque essai puis on réessaie le MÊME prompt (jamais de
-    troncature : on ne réduit pas max_tokens).
+    troncature : on ne réduit pas max_tokens). En mode `strict`, on ajoute une
+    consigne de JSON strict (utilisé quand un premier effort était invalide).
     """
+    user_content = prompt
+    if strict:
+        user_content += (
+            "\n\nRappel STRICT : renvoie UNIQUEMENT un objet JSON valide."
+            " Toutes les clés entre guillemets doubles, pas de texte avant ou après le JSON."
+        )
     messages = [
         {"role": "system", "content": SYSTEM_PROMPT},
-        {"role": "user", "content": prompt},
+        {"role": "user", "content": user_content},
     ]
     max_tokens = _max_tokens_for(chunk_days)
     last_err = None
     for attempt in range(3):
         try:
-            logger.info(f"Appel Groq (morceau {chunk_days}j) : {GROQ_MODEL}, max_tokens={max_tokens}")
+            logger.info(f"Appel Groq (morceau {chunk_days}j{' strict' if strict else ''}) : {GROQ_MODEL}, max_tokens={max_tokens}")
             response = _create_completion(client, messages, max_tokens)
             quota_tracker.record_usage()
             content = response.choices[0].message.content
@@ -320,6 +333,7 @@ def generate_ai_meal_plan(user, num_days, foods_by_name, recent_meals=None):
     for offset in range(0, num_days, CHUNK_DAYS):
         nb = min(CHUNK_DAYS, num_days - offset)
         prompt = _build_prompt(context, nb, recent_meals, day_offset=offset)
+
         content, err = _get_ai_content(client, prompt, nb)
         if content is None:
             return _classic_fallback(user, num_days, foods_by_name, f"groq_error: {str(err)[:200]}")
@@ -327,8 +341,16 @@ def generate_ai_meal_plan(user, num_days, foods_by_name, recent_meals=None):
         try:
             chunk_meals = _parse_content(content)
         except Exception as e:
-            logger.error(f"Parse réponse IA morceau {offset + 1}-{offset + nb}: {e}")
-            return _classic_fallback(user, num_days, foods_by_name, f"parse_error: {str(e)[:200]}")
+            # Re-jeu "strict" une fois avant d'abandonner le plan
+            logger.warning(f"Parse invalide (morceau {offset + 1}-{offset + nb}), re-jeu strict: {e}")
+            content2, err2 = _get_ai_content(client, prompt, nb, strict=True)
+            if content2 is None:
+                return _classic_fallback(user, num_days, foods_by_name, f"groq_error: {str(err2)[:200]}")
+            try:
+                chunk_meals = _parse_content(content2)
+            except Exception as e2:
+                logger.error(f"Parse invalide même en strict: {e2}")
+                return _classic_fallback(user, num_days, foods_by_name, f"parse_error: {str(e2)[:200]}")
 
         for meal_data in chunk_meals:
             rel_day = _normalize_day(meal_data.get("day", 1), nb)

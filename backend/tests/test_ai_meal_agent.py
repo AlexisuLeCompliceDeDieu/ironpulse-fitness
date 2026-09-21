@@ -49,6 +49,12 @@ def test_parse_content_strips_thinking_and_markdown():
     assert meals[0]["name"] == "Test"
 
 
+def test_parse_content_clamps_surrounding_text():
+    content = "Voici le plan :\n{\"meals\": [{\"day\": 1, \"meal_type\": \"Déjeuner\", \"name\": \"Test\", \"items\": []}]}\nFin du plan."
+    meals = ai_meal_agent._parse_content(content)
+    assert meals[0]["name"] == "Test"
+
+
 def test_normalize_day_relative():
     assert ai_meal_agent._normalize_day(1, 2) == 1
     assert ai_meal_agent._normalize_day("2", 2) == 2
