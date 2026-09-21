@@ -7,7 +7,7 @@ Couvre les exigences du cahier des charges :
   - la gestion d'erreurs (tool en échec, quota, max_tours).
 """
 
-from unittest.mock import MagicMock
+import json
 
 import pytest
 
@@ -24,36 +24,18 @@ def app_ctx(app):
         yield
 
 
-# ── Fabrication d'une réponse LLM simulée ───────────────────────────
+# ── Fabrication d'une réponse LLM simulée (format routeur : dicts) ──
 
-class _Func:
-    def __init__(self, name, arguments=None):
-        self.name = name
-        self.arguments = arguments or {}
-
-
-class _Call:
-    def __init__(self, name, arguments=None):
-        self.id = "call_1"
-        self.function = _Func(name, arguments)
+def _call_dict(name, arguments=None):
+    return {
+        "id": "call_1",
+        "type": "function",
+        "function": {"name": name, "arguments": json.dumps(arguments or {}, ensure_ascii=False)},
+    }
 
 
-class _Msg:
-    def __init__(self, content, tool_calls=None):
-        self.content = content
-        self.tool_calls = tool_calls or []
-
-
-class _Resp:
-    def __init__(self, msg):
-        self.choices = [type("C", (), {"message": msg})()]
-
-
-def fake_client(script):
-    """Client Groq simulé qui renvoie les réponses du script dans l'ordre."""
-    client = MagicMock()
-    client.chat.completions.create.side_effect = script
-    return client
+def _msg_dict(content, tool_calls=None):
+    return {"role": "assistant", "content": content, "tool_calls": tool_calls or []}
 
 
 def seed_user():
@@ -64,11 +46,18 @@ def seed_user():
 
 
 def patch_llm(monkeypatch, script):
-    client = fake_client(script)
-    monkeypatch.setattr(agent_runner, "_get_client", lambda: client)
-    monkeypatch.setattr(agent_runner.quota_tracker, "check_quota", lambda: (True, {}))
-    monkeypatch.setattr(agent_runner.quota_tracker, "record_usage", lambda: None)
-    return client
+    """Simule le routeur multi-IA : openai_chat renvoie les messages du script.
+
+    `None` dans le script = aucun fournisseur disponible (AgentIAIndisponible).
+    PROVIDERS est bouché pour que le garde-fou « configuré » passe.
+    """
+    class _FakeProv:
+        configured = True
+        model = "fake-model"
+
+    monkeypatch.setattr(agent_runner.ai_providers, "PROVIDERS", {"groq": _FakeProv()})
+    monkeypatch.setattr(agent_runner.ai_providers, "openai_chat",
+                        lambda *args, **kw: (script.pop(0) if script else None, {}))
 
 
 # ── Route : garde-fous de base ──────────────────────────────────────
@@ -95,7 +84,7 @@ def test_agent_confirmation_tool_inconnu(auth_client):
 
 def test_executer_reponse_directe(app_ctx, monkeypatch):
     """Cas nominal : le LLM répond sans tool -> réponse + trace en base."""
-    patch_llm(monkeypatch, [_Resp(_Msg("Salut !", []))])
+    patch_llm(monkeypatch, [_msg_dict("Salut !")])
     utilisateur = seed_user()
 
     resultat = agent_runner.executer(utilisateur, "Dis moi bonjour")
@@ -112,10 +101,10 @@ def test_executer_reponse_directe(app_ctx, monkeypatch):
 
 def test_executer_appelle_tool_puis_repond(app_ctx, monkeypatch):
     """Niveau 2 : le LLM choisit calculer_macros, observe, puis conclut."""
-    call = _Call("calculer_macros", {"calories": 3000, "objectif": "prise_masse"})
+    call = _call_dict("calculer_macros", {"calories": 3000, "objectif": "prise_masse"})
     patch_llm(monkeypatch, [
-        _Resp(_Msg("", [call])),
-        _Resp(_Msg("Voici ta répartition : 225 g de protéines", [])),
+        _msg_dict("", [call]),
+        _msg_dict("Voici ta répartition : 225 g de protéines"),
     ])
     utilisateur = seed_user()
 
@@ -135,8 +124,8 @@ def test_executer_appelle_tool_puis_repond(app_ctx, monkeypatch):
 
 def test_executer_max_tours(app_ctx, monkeypatch):
     """Garde-fou anti-boucle : le LLM qui boucle indéfiniment est stoppé."""
-    call = _Call("calculer_macros", {"calories": 2000})
-    patch_llm(monkeypatch, [_Resp(_Msg("", [call])) for _ in range(agent_runner.MAX_TOURS)])
+    call = _call_dict("calculer_macros", {"calories": 2000})
+    patch_llm(monkeypatch, [_msg_dict("", [call]) for _ in range(agent_runner.MAX_TOURS)])
 
     utilisateur = seed_user()
     resultat = agent_runner.executer(utilisateur, "boucle")
@@ -146,9 +135,8 @@ def test_executer_max_tours(app_ctx, monkeypatch):
 
 
 def test_executer_quota_epuise(app_ctx, monkeypatch):
-    """Quota IA atteint -> la boucle s'arrête proprement."""
-    patch_llm(monkeypatch, [_Resp(_Msg("", []))])
-    monkeypatch.setattr(agent_runner.quota_tracker, "check_quota", lambda: (False, {"reason": "rpm_limit"}))
+    """Tous les fournisseurs IA indisponibles -> la boucle s'arrête proprement."""
+    patch_llm(monkeypatch, [None])
 
     utilisateur = seed_user()
     resultat = agent_runner.executer(utilisateur, "dis bonjour")
@@ -167,8 +155,8 @@ def test_tool_en_echec_renvoie_message(app_ctx):
 
 def test_tool_ecriture_demande_confirmation(app_ctx, monkeypatch):
     """enregistrer_seance est SENSIBLE : sans validation, l'action est en pause."""
-    call = _Call("enregistrer_seance", {"date": "2026-09-20", "ressenti": 4})
-    patch_llm(monkeypatch, [_Resp(_Msg("", [call]))])
+    call = _call_dict("enregistrer_seance", {"date": "2026-09-20", "ressenti": 4})
+    patch_llm(monkeypatch, [_msg_dict("", [call])])
     utilisateur = seed_user()
 
     resultat = agent_runner.executer(utilisateur, "Enregistre ma séance d'hier")
@@ -181,7 +169,7 @@ def test_tool_ecriture_demande_confirmation(app_ctx, monkeypatch):
 
 def test_executer_avec_confirmation_execute(app_ctx, monkeypatch):
     """Après validation, l'action d'écriture est exécutée puis la boucle conclut."""
-    patch_llm(monkeypatch, [_Resp(_Msg("Séance enregistrée, ressenti 4/5.", []))])
+    patch_llm(monkeypatch, [_msg_dict("Séance enregistrée, ressenti 4/5.")])
     utilisateur = seed_user()
 
     resultat = agent_runner.executer(
@@ -223,7 +211,7 @@ def test_calculer_macros_pure(app_ctx):
 # ── Route : historique (mémoire / audit) ────────────────────────────
 
 def test_historique_agent(auth_client, monkeypatch):
-    patch_llm(monkeypatch, [_Resp(_Msg("Réponse tracée", []))])
+    patch_llm(monkeypatch, [_msg_dict("Réponse tracée")])
     resp = auth_client.post("/api/agent/", json={"demande": "ma première demande"})
     assert resp.status_code == 200
     assert resp.get_json()["statut"] == "reponse"

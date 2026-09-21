@@ -13,6 +13,10 @@ class FakeProvider:
         self.configured = configured
         self.fail = fail
         self.text = text
+        self.openai_url = f"https://fake/{pid}/chat/completions"
+
+    def openai_headers(self):
+        return {"Authorization": "Bearer x", "Content-Type": "application/json"}
 
     def generate(self, messages, max_tokens, temperature):
         if self.fail:
@@ -196,3 +200,60 @@ def test_stream_text_none_when_all_fail(monkeypatch):
     it, info = ai_providers.stream_text([{"role": "user", "content": "x"}])
     assert it is None
     assert info["reason"] == "none_available"
+
+
+# ── Function calling (OpenAI-compatible) ────────────────────────────
+
+def test_openai_chat_fails_over_and_returns_message(monkeypatch):
+    """openai_chat route le function calling : TPD Groq -> bascule Mistral."""
+    groq = FakeProvider("groq", "Groq", fail=ai_providers.ProviderError(429, "tokens per day (TPD)"))
+    mistral = FakeProvider("mistral", "Mistral AI")
+
+    capteur = {}
+
+    def fake_http_json(url, headers, payload):
+        if url == groq.openai_url:
+            raise ai_providers.ProviderError(429, "tokens per day (TPD)")
+        capteur["tools_envoyes"] = bool(payload.get("tools"))
+        capteur["reasoning_envoye"] = "reasoning_effort" in payload
+        return {"choices": [{"message": {
+            "role": "assistant", "content": None,
+            "tool_calls": [{"id": "c1", "type": "function",
+                            "function": {"name": "calculer_macros", "arguments": "{}"}}],
+        }}]}
+
+    monkeypatch.setattr(ai_providers, "PROVIDERS", _providers(groq, mistral))
+    monkeypatch.setattr(ai_providers, "_http_json", fake_http_json)
+
+    msg, info = ai_providers.openai_chat(
+        [{"role": "user", "content": "x"}],
+        max_tokens=500,
+        temperature=0.3,
+        tools=[{"type": "function", "function": {"name": "calculer_macros"}}],
+    )
+
+    assert info["provider"] == "mistral"
+    assert msg["tool_calls"][0]["function"]["name"] == "calculer_macros"
+    assert capteur["tools_envoyes"] is True
+    assert capteur["reasoning_envoye"] is False  # reasoning_effort réservé à Groq
+    ok, reason = quota_tracker.can_use_provider("groq")
+    assert not ok
+    assert reason == "daily_limit"
+
+
+def test_openai_chat_sends_reasoning_effort_on_groq(monkeypatch):
+    """Sur Groq, reasoning_effort=none est transmis (économie d'OTPM)."""
+    groq = FakeProvider("groq", "Groq")
+    capteur = {}
+
+    def fake_http_json(url, headers, payload):
+        capteur["reasoning_envoye"] = payload.get("reasoning_effort")
+        return {"choices": [{"message": {"role": "assistant", "content": "ok"}}]}
+
+    monkeypatch.setattr(ai_providers, "PROVIDERS", _providers(groq))
+    monkeypatch.setattr(ai_providers, "_http_json", fake_http_json)
+
+    msg, info = ai_providers.openai_chat([{"role": "user", "content": "x"}])
+    assert info["provider"] == "groq"
+    assert capteur["reasoning_envoye"] == "none"
+    assert msg["content"] == "ok"

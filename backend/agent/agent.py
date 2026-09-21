@@ -9,9 +9,14 @@ C'est ici que vit la boucle du cahier des charges (diapos 3 et 9) :
   [4] Observation    le résultat est renvoyé au LLM (role: "tool")
   [5] Décision       objectif atteint ? sinon → nouveau tour de boucle
 
+Le LLM est appelé via le routeur multi-IA `ai_providers.openai_chat`
+(function calling sur l'endpoint OpenAI-compatible de chaque fournisseur) :
+Groq, Gemini, Mistral ou OpenRouter selon la disponibilité, avec failover
+automatique quand un fournisseur atteint ses limites.
+
 Garde-fous :
   - max_tours limite le nombre de tours (anti-boucle infinie, diapo 9) ;
-  - quota_tracker borne la consommation Groq (diapo 18 : contrôle des coûts) ;
+  - quota_tracker borne la consommation par fournisseur (diapo 18 : coûts) ;
   - actions sensibles (écriture en base) soumises à validation humaine (diapo 18).
 
 Toute demande et chaque étape de la boucle sont tracées en base (tables
@@ -21,18 +26,22 @@ demandes / resultats, `outil_utilise` rend le raisonnement auditable).
 import inspect
 import json
 import logging
+import os
 
 from models import db, Demande, Resultat
 
-from services.groq_config import get_client, GROQ_MODEL
-from services import quota_tracker
+from services import ai_providers
 
 from agent.tools import TOOLS_IMPL, TOOL_SCHEMAS, SENSITIVE_TOOLS
 
 logger = logging.getLogger(__name__)
 
-MAX_TOURS = int(__import__("os").environ.get("AGENT_MAX_TOURS", "5"))
+MAX_TOURS = int(os.environ.get("AGENT_MAX_TOURS", "5"))
 TEMPERATURE = 0.4
+
+
+class AgentIAIndisponible(Exception):
+    """Aucun fournisseur IA ne peut traiter la demande (quota/limite)."""
 
 
 SYSTEM_PROMPT = """Tu es « IRONPULSE Coach », un coach sportif et nutritionniste.
@@ -50,35 +59,23 @@ RÈGLES STRICTES :
 9. Cite brièvement les données réelles que tu as obtenues par les outils (poids, volume, ressenti...) pour montrer que ta réponse s'appuie sur la base."""
 
 
-def _get_client():
-    """Retourne le client Groq (factorisé pour être facilement mocké en test)."""
-    return get_client()
+def _create_completion(messages, max_tokens=900):
+    """Appel LLM (function calling) via le routeur multi-IA avec failover.
 
-
-def _create_completion(client, messages, max_tokens=900):
-    """Appel LLM avec tools ; réessaie sans `reasoning_effort` si le modèle le refuse."""
-    try:
-        return client.chat.completions.create(
-            model=GROQ_MODEL,
-            messages=messages,
-            tools=TOOL_SCHEMAS,
-            tool_choice="auto",
-            temperature=TEMPERATURE,
-            max_tokens=max_tokens,
-            reasoning_effort="none",
-        )
-    except Exception as e:  # noqa: BLE001
-        msg = str(e).lower()
-        if "reasoning" in msg or "400" in msg or "invalid" in msg or "unsupported" in msg:
-            return client.chat.completions.create(
-                model=GROQ_MODEL,
-                messages=messages,
-                tools=TOOL_SCHEMAS,
-                tool_choice="auto",
-                temperature=TEMPERATURE,
-                max_tokens=max_tokens,
-            )
-        raise
+    Retourne le message assistant (dict) :
+      {"role", "content"|None, "tool_calls": [{"id","function":{"name","arguments"}}]}
+    Lève AgentIAIndisponible si aucun fournisseur ne peut répondre.
+    """
+    message, info = ai_providers.openai_chat(
+        messages,
+        max_tokens=max_tokens,
+        temperature=TEMPERATURE,
+        tools=TOOL_SCHEMAS,
+        tool_choice="auto",
+    )
+    if message is None:
+        raise AgentIAIndisponible(info.get("reason", "none_available"))
+    return message
 
 
 def _save_resultat(demande_id, etape, outil, arguments, reponse):
@@ -174,8 +171,7 @@ def executer(utilisateur, demande, confirmation=None, demande_id=None):
         etape += 1
 
     etapes = []
-    client = _get_client()
-    if client is None:
+    if not any(p.configured for p in ai_providers.PROVIDERS.values()):
         if confirmation:
             db.session.commit()   # l'action validée a été exécutée et tracée : on garde
         else:
@@ -183,35 +179,32 @@ def executer(utilisateur, demande, confirmation=None, demande_id=None):
         return {"statut": "erreur", "reponse": "Agent non configuré (clé API manquante).", "etapes": []}
 
     for tour in range(MAX_TOURS):
-        # Garde-fou coûts : quota avant chaque appel LLM
-        allowed, quota_info = quota_tracker.check_quota()
-        if not allowed:
+        try:
+            message = _create_completion(messages)
+        except AgentIAIndisponible as e:
             _save_resultat(demande_row.id, etape, None, None, "Quota IA épuisé, réponse interrompue.")
             db.session.commit()
-            return {"statut": "quota", "reponse": "Quota IA temporairement épuisé. Réessaye un peu plus tard.", "etapes": etapes, "quota": quota_info}
-
-        try:
-            reponse_llm = _create_completion(client, messages)
-            quota_tracker.record_usage()
+            return {"statut": "quota",
+                    "reponse": "Toutes les IAs ont atteint leur limite. Réessaye un peu plus tard.",
+                    "etapes": etapes, "quota": {"reason": str(e)}}
         except Exception as e:  # noqa: BLE001
             logger.error(f"Appel LLM de l'agent en échec : {e}")
             db.session.commit()
             return {"statut": "erreur", "reponse": f"Erreur d'appel IA : {str(e)[:200]}", "etapes": etapes}
 
-        message = reponse_llm.choices[0].message
         messages.append(message)
 
-        appels = getattr(message, "tool_calls", None) or []
+        appels = message.get("tool_calls") or []
         if not appels:
             # Décision : objectif atteint, on répond
-            conclusion = (message.content or "").strip() or "Terminé."
+            conclusion = (message.get("content") or "").strip() or "Terminé."
             _save_resultat(demande_row.id, etape, None, None, conclusion)
             db.session.commit()
             return {"statut": "reponse", "reponse": conclusion, "etapes": etapes, "demande_id": demande_row.id}
 
         for appel in appels:
-            nom = (appel.function.name or "").strip()
-            raw_args = appel.function.arguments or "{}"
+            nom = ((appel.get("function") or {}).get("name") or "").strip()
+            raw_args = (appel.get("function") or {}).get("arguments") or "{}"
             if isinstance(raw_args, str):
                 try:
                     args = json.loads(raw_args)
@@ -243,7 +236,7 @@ def executer(utilisateur, demande, confirmation=None, demande_id=None):
 
             messages.append({
                 "role": "tool",
-                "tool_call_id": getattr(appel, "id", None) or f"call_{tour}_{nom}",
+                "tool_call_id": appel.get("id") or f"call_{tour}_{nom}",
                 "name": nom,
                 "content": observation,
             })

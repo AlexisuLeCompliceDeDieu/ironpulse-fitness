@@ -113,6 +113,7 @@ class _BaseProvider:
     label = ""
     key_env = ""
     default_model = ""
+    openai_url = ""   # endpoint "OpenAI-compatible" (chat completions) du fournisseur
 
     @property
     def configured(self):
@@ -121,6 +122,11 @@ class _BaseProvider:
     @property
     def model(self):
         return os.environ.get(f"{self.id.upper()}_MODEL", self.default_model)
+
+    def openai_headers(self):
+        """En-têtes pour l'endpoint OpenAI-compatible (Bearer par défaut)."""
+        key = os.environ.get(self.key_env, "")
+        return {"Authorization": f"Bearer {key}", "Content-Type": "application/json"}
 
     def generate(self, messages, max_tokens, temperature):  # pragma: no cover - interface
         raise NotImplementedError
@@ -134,6 +140,7 @@ class GroqProvider(_BaseProvider):
     label = "Groq"
     key_env = "GROQ_API_KEY"
     default_model = "qwen/qwen3.8-27b"
+    openai_url = "https://api.groq.com/openai/v1/chat/completions"
 
     def generate(self, messages, max_tokens, temperature):
         url = "https://api.groq.com/openai/v1/chat/completions"
@@ -166,6 +173,13 @@ class GeminiProvider(_BaseProvider):
     label = "Google Gemini"
     key_env = "GEMINI_API_KEY"
     default_model = "gemini-2.0-flash"
+    # Gemini expose aussi une API "OpenAI-compatible" (recommandée pour le function calling)
+    openai_url = "https://generativelanguage.googleapis.com/v1beta/openai/chat/completions"
+
+    def openai_headers(self):
+        headers = super().openai_headers()
+        headers["x-goog-api-key"] = os.environ.get("GEMINI_API_KEY", "")
+        return headers
 
     @staticmethod
     def _to_gemini(messages):
@@ -206,6 +220,7 @@ class OpenRouterProvider(_BaseProvider):
     label = "OpenRouter"
     key_env = "OPENROUTER_API_KEY"
     default_model = "qwen/qwen-2.5-72b-instruct:free"
+    openai_url = "https://openrouter.ai/api/v1/chat/completions"
 
     def _headers(self):
         return {"Authorization": f"Bearer {os.environ.get('OPENROUTER_API_KEY', '')}",
@@ -227,6 +242,7 @@ class MistralProvider(_BaseProvider):
     label = "Mistral AI"
     key_env = "MISTRAL_API_KEY"
     default_model = "open-mistral-nemo"
+    openai_url = "https://api.mistral.ai/v1/chat/completions"
 
     def generate(self, messages, max_tokens, temperature):
         url = "https://api.mistral.ai/v1/chat/completions"
@@ -383,6 +399,62 @@ def stream_text(messages, max_tokens=2048, temperature=0.7):
             quota_tracker.set_provider_cooldown(pid, 30)
             continue
     return None, {"reason": "none_available"}
+
+
+def openai_chat(messages, max_tokens=900, temperature=0.4, tools=None, tool_choice="auto"):
+    """Appel "OpenAI-compatible" avec FUNCTION CALLING, routé avec failover.
+
+    Chaque fournisseur expose un endpoint chat/completions compatible OpenAI
+    (Groq, Mistral, OpenRouter — et Gemini via son pont v1beta/openai), donc un
+    seul payload, seules l'URL et la clé changent. Les `tools` (schémas de
+    function calling) sont transmis tels quels.
+
+    Retourne (message_dict, info) ou (None, info). message_dict :
+      {"role", "content"|None, "tool_calls": [{"id","type","function":
+      {"name","arguments"}}]}
+    """
+    payload = {
+        "messages": messages,
+        "temperature": temperature,
+        "max_tokens": max_tokens,
+    }
+    if tools:
+        payload["tools"] = tools
+        payload["tool_choice"] = tool_choice
+    last_reason = None
+    for pid in provider_order():
+        p = PROVIDERS[pid]
+        if not p.configured:
+            continue
+        ok, reason = quota_tracker.can_use_provider(pid)
+        if not ok:
+            continue
+        body = dict(payload)
+        body["model"] = p.model
+        headers = p.openai_headers()
+        if pid == "groq":
+            body["reasoning_effort"] = "none"
+        try:
+            data = _http_json(p.openai_url, headers, body)
+        except ProviderError as e:
+            low = e.message.lower()
+            if pid == "groq" and (e.status == 400 or "reasoning" in low or "invalid" in low):
+                body.pop("reasoning_effort", None)  # modèle sans reasoning_effort
+                try:
+                    data = _http_json(p.openai_url, headers, body)
+                except ProviderError as e2:
+                    last_reason = _handle_failure(pid, e2)
+                    continue
+            else:
+                last_reason = _handle_failure(pid, e)
+                continue
+        message = (data.get("choices") or [{}])[0].get("message")
+        if message is None:
+            last_reason = _handle_failure(pid, ProviderError(200, "Réponse sans message"))
+            continue
+        quota_tracker.record_provider_usage(pid)
+        return message, {"provider": pid, "label": p.label, "model": p.model}
+    return None, {"reason": last_reason or "none_available"}
 
 
 def active_provider_id():
