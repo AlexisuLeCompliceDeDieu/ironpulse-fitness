@@ -1737,10 +1737,166 @@ td {
   color: #fff;
 }
 
+/* --- Panneaux repliables : outils de l'agent + historique --- */
+.agent-panel {
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--card);
+  margin-bottom: 0.8rem;
+  overflow: hidden;
+}
+
+.agent-panel-head {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.6rem 0.9rem;
+  background: transparent;
+  border: none;
+  color: inherit;
+  cursor: pointer;
+  font-weight: 800;
+  font-size: 0.92rem;
+  text-align: left;
+}
+
+.agent-panel-head:hover {
+  background: var(--card-2);
+}
+
+.agent-panel-count {
+  background: var(--primary);
+  color: #fff;
+  border-radius: 999px;
+  padding: 0 0.5rem;
+  font-size: 0.75rem;
+  font-weight: 800;
+}
+
+.agent-panel-head .chev {
+  margin-left: auto;
+  opacity: 0.7;
+}
+
+.agent-tools-list {
+  display: flex;
+  flex-direction: column;
+}
+
+.agent-tool {
+  display: flex;
+  gap: 0.6rem;
+  padding: 0.55rem 0.9rem;
+  border-top: 1px solid var(--border);
+}
+
+.agent-tool-ico {
+  font-size: 1.2rem;
+  line-height: 1.4;
+}
+
+.agent-tool-body {
+  flex: 1;
+  min-width: 0;
+}
+
+.agent-tool-name {
+  font-weight: 800;
+  font-size: 0.86rem;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.agent-tool-name code {
+  font-weight: 600;
+  opacity: 0.8;
+  font-size: 0.78rem;
+}
+
+.agent-tool-desc {
+  font-size: 0.78rem;
+  color: var(--muted);
+  margin-top: 0.15rem;
+}
+
+.badge-write {
+  background: rgba(245, 158, 11, 0.15);
+  color: #f59e0b;
+  border: 1px solid #f59e0b;
+  border-radius: 999px;
+  padding: 0 0.45rem;
+  font-size: 0.68rem;
+  font-weight: 800;
+}
+
+.badge-cat {
+  background: var(--card-2);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  padding: 0 0.45rem;
+  font-size: 0.68rem;
+  opacity: 0.8;
+}
+
+.agent-history {
+  display: flex;
+  flex-direction: column;
+  padding: 0.5rem 0.9rem 0.7rem;
+  gap: 0.5rem;
+  border-top: 1px solid var(--border);
+}
+
+.agent-hist-item {
+  border-left: 3px solid var(--primary);
+  padding-left: 0.6rem;
+}
+
+.agent-hist-q {
+  font-size: 0.85rem;
+  font-weight: 700;
+}
+
+.agent-hist-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  align-items: center;
+  font-size: 0.72rem;
+  color: var(--muted);
+  margin-top: 0.15rem;
+}
+
+.agent-hist-tools {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.3rem;
+}
+
+.tool-badge {
+  background: var(--card-2);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  padding: 0 0.45rem;
+  font-size: 0.7rem;
+  font-weight: 700;
+}
+
+/* --- Timeline des étapes de la boucle (dans la bulle) --- */
+.agent-tour {
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--primary);
+  margin-bottom: 0.25rem;
+  opacity: 0.9;
+}
+
 .agent-steps {
   display: flex;
   flex-direction: column;
-  gap: 0.35rem;
+  gap: 0.5rem;
   margin-top: 0.6rem;
   border-top: 1px dashed var(--border);
   padding-top: 0.6rem;
@@ -1748,31 +1904,100 @@ td {
 
 .agent-step {
   display: flex;
-  flex-wrap: wrap;
-  align-items: baseline;
-  gap: 0.4rem;
-  font-size: 0.78rem;
+  gap: 0.5rem;
+  background: var(--card-2);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 0.45rem 0.6rem;
 }
 
-.agent-step-n {
-  opacity: 0.7;
-  font-weight: 700;
+.agent-step.en-cours {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 1px var(--primary) inset;
+}
+
+.agent-step-ico {
+  font-size: 1.05rem;
+  line-height: 1.3;
+}
+
+.agent-step-main {
+  flex: 1;
+  min-width: 0;
+}
+
+.agent-step-top {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.4rem;
 }
 
 .agent-step-name {
   font-weight: 800;
-  color: var(--primary);
+  font-size: 0.85rem;
 }
 
-.agent-step-out {
-  max-width: 100%;
-  overflow-x: auto;
-  background: var(--card-2);
+.agent-step-code {
+  font-size: 0.72rem;
+  opacity: 0.7;
+}
+
+.agent-step-status {
+  font-size: 0.7rem;
+  font-weight: 800;
+  margin-left: auto;
+}
+
+.agent-step-status.running {
+  color: var(--primary);
+  animation: blink 1s infinite;
+}
+
+.agent-step-status.ok {
+  color: #22c55e;
+}
+
+.agent-step-args {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.3rem;
+  margin-top: 0.25rem;
+}
+
+.arg-chip {
+  background: var(--card);
   border: 1px solid var(--border);
   border-radius: 6px;
-  padding: 0.15rem 0.4rem;
+  padding: 0 0.4rem;
+  font-size: 0.72rem;
+}
+
+.agent-step-resume {
+  font-size: 0.82rem;
+  margin-top: 0.3rem;
+  font-weight: 600;
+}
+
+.agent-step-raw {
+  margin-top: 0.3rem;
+}
+
+.agent-step-raw summary {
+  cursor: pointer;
+  font-size: 0.72rem;
   color: var(--muted);
-  white-space: nowrap;
+}
+
+.agent-step-raw pre {
+  max-height: 220px;
+  overflow: auto;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 0.5rem;
+  font-size: 0.72rem;
+  margin: 0.3rem 0 0;
 }
 
 .confirm-card {

@@ -9,6 +9,8 @@ Couvre les exigences du cahier des charges :
 
 from unittest.mock import MagicMock
 
+import json
+
 import pytest
 
 from models import db, User, Session, Demande
@@ -233,3 +235,87 @@ def test_historique_agent(auth_client, monkeypatch):
     demandes = hist.get_json()["demandes"]
     assert demandes[0]["texte"] == "ma première demande"
     assert demandes[0]["resultats"][0]["reponse"] == "Réponse tracée"
+
+
+# ── Catalogue des outils (affichage UI) ─────────────────────────────
+
+def test_catalogue_outils(auth_client):
+    resp = auth_client.get("/api/agent/outils")
+    assert resp.status_code == 200
+    outils = resp.get_json()["outils"]
+    noms = {o["nom"] for o in outils}
+    assert noms == {
+        "consulter_profil", "consulter_progression", "calculer_macros",
+        "proposer_seance", "enregistrer_seance",
+    }
+    for o in outils:
+        assert o["libelle"] and o["icone"] and o["description"]
+    sensible = [o for o in outils if o["sensible"]]
+    assert [o["nom"] for o in sensible] == ["enregistrer_seance"]
+
+
+def test_catalogue_outils_unauthenticated(client):
+    assert client.get("/api/agent/outils").status_code == 401
+
+
+# ── Flux SSE : les étapes de la boucle en direct ────────────────────
+
+def _lire_events(resp):
+    """Décode une réponse SSE de l'agent en liste d'événements."""
+    evenements = []
+    for bloc in resp.data.decode("utf-8").split("\n\n"):
+        ligne = bloc.strip()
+        if not ligne.startswith("data:"):
+            continue
+        payload = ligne[5:].strip()
+        if payload == "[DONE]":
+            continue
+        evenements.append(json.loads(payload))
+    return evenements
+
+
+def test_stream_unauthenticated(client):
+    resp = client.post("/api/agent/stream", json={"demande": "bonjour"})
+    assert resp.status_code == 401
+
+
+def test_stream_events_boucle_complete(auth_client, monkeypatch):
+    call = _Call("calculer_macros", {"calories": 3000, "objectif": "prise_masse"})
+    patch_llm(monkeypatch, [
+        _Resp(_Msg("", [call])),
+        _Resp(_Msg("Ta répartition est prête.", [])),
+    ])
+
+    resp = auth_client.post("/api/agent/stream", json={"demande": "Répartis mes 3000 kcal"})
+    assert resp.status_code == 200
+    assert resp.mimetype == "text/event-stream"
+
+    types = [e["type"] for e in _lire_events(resp)]
+    assert types[0] == "debut"
+    assert "tour" in types
+    assert "tool_debut" in types
+    assert "tool_fin" in types
+    assert types[-1] == "reponse"
+
+    fin = next(e for e in _lire_events(resp) if e["type"] == "tool_fin")
+    assert fin["outil"] == "calculer_macros"
+    assert fin["icone"] == "🧮"
+    assert "protéines" in fin["resume"]
+    assert isinstance(fin["duree_ms"], int)
+
+
+def test_stream_confirmation_met_en_pause(auth_client, app_ctx, monkeypatch):
+    call = _Call("enregistrer_seance", {"date": "2026-09-20", "ressenti": 4})
+    patch_llm(monkeypatch, [_Resp(_Msg("", [call]))])
+
+    resp = auth_client.post("/api/agent/stream", json={"demande": "Enregistre ma séance"})
+    events = _lire_events(resp)
+    types = [e["type"] for e in events]
+
+    assert "confirmation" in types
+    assert types[-1] == "confirmation"
+    conf = next(e for e in events if e["type"] == "confirmation")
+    assert conf["confirmation"]["tool"] == "enregistrer_seance"
+    assert conf["icone"] == "✅"
+    # l'action d'écriture n'a PAS été exécutée avant validation
+    assert Session.query.count() == 0

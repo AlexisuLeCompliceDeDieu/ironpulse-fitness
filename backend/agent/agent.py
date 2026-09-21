@@ -16,18 +16,24 @@ Garde-fous :
 
 Toute demande et chaque étape de la boucle sont tracées en base (tables
 demandes / resultats, `outil_utilise` rend le raisonnement auditable).
+
+`executer_iter` est un GÉNÉRATEUR : il yield un événement à chaque étape de la
+boucle (tour, appel de tool, observation, confirmation, réponse finale). C'est
+ce qui permet à l'interface de montrer les tools en direct. `executer` est le
+même parcours en version synchrone (utilisée par les tests et l'API classique).
 """
 
 import inspect
 import json
 import logging
+import time
 
 from models import db, Demande, Resultat
 
 from services.groq_config import get_client, GROQ_MODEL
 from services import quota_tracker
 
-from agent.tools import TOOLS_IMPL, TOOL_SCHEMAS, SENSITIVE_TOOLS
+from agent.tools import TOOLS_IMPL, TOOL_SCHEMAS, SENSITIVE_TOOLS, meta_tool
 
 logger = logging.getLogger(__name__)
 
@@ -123,22 +129,28 @@ def _questions_sensibles(utilisateur, nom, arguments):
     return f"Confirmer l'exécution de l'action « {nom} » ?"
 
 
-def executer(utilisateur, demande, confirmation=None, demande_id=None):
-    """Lance (ou poursuit) la boucle agent pour une demande utilisateur.
+def _args_affichage(args):
+    """Arguments sans l'identifiant technique (injecté par le code, pas par le LLM)."""
+    return {k: v for k, v in args.items() if k != "utilisateur_id"}
 
-    Retourne un dict :
-      statut  : "reponse" | "confirmation_requise" | "limite" | "quota" | "erreur"
-      reponse : texte final (si statut = reponse)
-      etapes  : liste des étapes exécutées {etape, outil, arguments, resultat}
+
+def executer_iter(utilisateur, demande, confirmation=None, demande_id=None):
+    """Générateur de la boucle agent : yield un événement à chaque étape.
+
+    Événements : debut, tour, tool_debut, tool_fin, confirmation, reponse,
+    limite, quota, erreur. La valeur de retour (StopIteration.value) est le
+    même dict que `executer` : {statut, reponse, etapes, ...}.
     """
     demande = (demande or "").strip()
     if not demande:
+        yield {"type": "erreur", "reponse": "Demande vide."}
         return {"statut": "erreur", "reponse": "Demande vide.", "etapes": []}
 
     # ── Demande de trace : on réutilise la ligne existante si continuation ──
     if demande_id:
         demande_row = db.session.get(Demande, demande_id)
         if not demande_row or demande_row.utilisateur_id != utilisateur.id:
+            yield {"type": "erreur", "reponse": "Demande de trace introuvable."}
             return {"statut": "erreur", "reponse": "Demande de trace introuvable.", "etapes": []}
     else:
         demande_row = Demande(utilisateur_id=utilisateur.id, texte=demande)
@@ -153,6 +165,7 @@ def executer(utilisateur, demande, confirmation=None, demande_id=None):
         {"role": "system", "content": SYSTEM_PROMPT},
         {"role": "user", "content": demande},
     ]
+    etapes = []
 
     # Tool d'écriture déjà validé par l'utilisateur (continuation de boucle)
     deja_valide = None
@@ -160,9 +173,20 @@ def executer(utilisateur, demande, confirmation=None, demande_id=None):
         nom_c = confirmation.get("tool")
         args_c = dict(confirmation.get("arguments") or {})
         args_c.setdefault("utilisateur_id", utilisateur.id)
+        meta = meta_tool(nom_c)
+
+        yield {"type": "tool_debut", "etape": etape, "outil": nom_c,
+               "arguments": _args_affichage(args_c), **meta}
+        t0 = time.perf_counter()
         resultat_c = _execute_tool(nom_c, args_c)
-        observation = json.dumps(resultat_c, ensure_ascii=False, default=str)
+        duree_ms = int((time.perf_counter() - t0) * 1000)
         _save_resultat(demande_row.id, etape, nom_c, args_c, resultat_c)
+        etapes.append({"etape": etape, "outil": nom_c, "arguments": _args_affichage(args_c),
+                       "resultat": resultat_c, "resume": resultat_c.get("resume"), "duree_ms": duree_ms, **meta})
+        yield {"type": "tool_fin", "etape": etape, "outil": nom_c, "resultat": resultat_c,
+               "resume": resultat_c.get("resume"), "duree_ms": duree_ms, **meta}
+
+        observation = json.dumps(resultat_c, ensure_ascii=False, default=str)
         messages.append({
             "role": "user",
             "content": (
@@ -170,17 +194,20 @@ def executer(utilisateur, demande, confirmation=None, demande_id=None):
                 f"Résultat obtenu : {observation}. Tu peux conclure ta réponse."
             ),
         })
-        deja_valide = (nom_c, json.dumps({k: v for k, v in args_c.items() if k != "utilisateur_id"}, sort_keys=True))
+        deja_valide = (nom_c, json.dumps(_args_affichage(args_c), sort_keys=True))
         etape += 1
 
-    etapes = []
     client = _get_client()
     if client is None:
         if confirmation:
             db.session.commit()   # l'action validée a été exécutée et tracée : on garde
         else:
             db.session.rollback()  # rien d'utile à garder, on abandonne la trace vide
-        return {"statut": "erreur", "reponse": "Agent non configuré (clé API manquante).", "etapes": []}
+        res = {"statut": "erreur", "reponse": "Agent non configuré (clé API manquante).", "etapes": etapes}
+        yield {"type": "erreur", "reponse": res["reponse"]}
+        return res
+
+    yield {"type": "debut", "demande_id": demande_row.id, "max_tours": MAX_TOURS}
 
     for tour in range(MAX_TOURS):
         # Garde-fou coûts : quota avant chaque appel LLM
@@ -188,7 +215,13 @@ def executer(utilisateur, demande, confirmation=None, demande_id=None):
         if not allowed:
             _save_resultat(demande_row.id, etape, None, None, "Quota IA épuisé, réponse interrompue.")
             db.session.commit()
-            return {"statut": "quota", "reponse": "Quota IA temporairement épuisé. Réessaye un peu plus tard.", "etapes": etapes, "quota": quota_info}
+            res = {"statut": "quota", "reponse": "Quota IA temporairement épuisé. Réessaye un peu plus tard.",
+                   "etapes": etapes, "quota": quota_info, "demande_id": demande_row.id}
+            yield {"type": "quota", "reponse": res["reponse"], "etapes": etapes,
+                   "quota": quota_info, "demande_id": demande_row.id}
+            return res
+
+        yield {"type": "tour", "tour": tour + 1, "max_tours": MAX_TOURS}
 
         try:
             reponse_llm = _create_completion(client, messages)
@@ -196,7 +229,9 @@ def executer(utilisateur, demande, confirmation=None, demande_id=None):
         except Exception as e:  # noqa: BLE001
             logger.error(f"Appel LLM de l'agent en échec : {e}")
             db.session.commit()
-            return {"statut": "erreur", "reponse": f"Erreur d'appel IA : {str(e)[:200]}", "etapes": etapes}
+            res = {"statut": "erreur", "reponse": f"Erreur d'appel IA : {str(e)[:200]}", "etapes": etapes}
+            yield {"type": "erreur", "reponse": res["reponse"]}
+            return res
 
         message = reponse_llm.choices[0].message
         messages.append(message)
@@ -207,7 +242,9 @@ def executer(utilisateur, demande, confirmation=None, demande_id=None):
             conclusion = (message.content or "").strip() or "Terminé."
             _save_resultat(demande_row.id, etape, None, None, conclusion)
             db.session.commit()
-            return {"statut": "reponse", "reponse": conclusion, "etapes": etapes, "demande_id": demande_row.id}
+            res = {"statut": "reponse", "reponse": conclusion, "etapes": etapes, "demande_id": demande_row.id}
+            yield {"type": "reponse", "reponse": conclusion, "etapes": etapes, "demande_id": demande_row.id}
+            return res
 
         for appel in appels:
             nom = (appel.function.name or "").strip()
@@ -222,23 +259,30 @@ def executer(utilisateur, demande, confirmation=None, demande_id=None):
             if not isinstance(args, dict):
                 args = {}
             args.setdefault("utilisateur_id", utilisateur.id)
+            meta = meta_tool(nom)
 
             # Action sensible sans validation préalable → pause, on demande confirmation
-            if nom in SENSITIVE_TOOLS and (nom, json.dumps({k: v for k, v in args.items() if k != "utilisateur_id"}, sort_keys=True)) != deja_valide:
+            if nom in SENSITIVE_TOOLS and (nom, json.dumps(_args_affichage(args), sort_keys=True)) != deja_valide:
                 db.session.commit()
-                return {
-                    "statut": "confirmation_requise",
-                    "reponse": _questions_sensibles(utilisateur, nom, args),
-                    "confirmation": {"tool": nom, "arguments": {k: v for k, v in args.items() if k != "utilisateur_id"}},
-                    "demande_id": demande_row.id,
-                    "etapes": etapes,
-                }
+                confirmation_data = {"tool": nom, "arguments": _args_affichage(args)}
+                question = _questions_sensibles(utilisateur, nom, args)
+                res = {"statut": "confirmation_requise", "reponse": question,
+                       "confirmation": confirmation_data, "demande_id": demande_row.id, "etapes": etapes}
+                yield {"type": "confirmation", "reponse": question, "confirmation": confirmation_data,
+                       "demande_id": demande_row.id, "etapes": etapes, **meta}
+                return res
 
-            etapes.append({"etape": len(etapes) + 1, "outil": nom, "arguments": args, "resultat": None})
+            yield {"type": "tool_debut", "etape": etape, "outil": nom,
+                   "arguments": _args_affichage(args), **meta}
+            t0 = time.perf_counter()
             resultat = _execute_tool(nom, args)
+            duree_ms = int((time.perf_counter() - t0) * 1000)
             observation = json.dumps(resultat, ensure_ascii=False, default=str)
-            etapes[-1]["resultat"] = resultat
             _save_resultat(demande_row.id, etape, nom, args, resultat)
+            etapes.append({"etape": etape, "outil": nom, "arguments": _args_affichage(args),
+                           "resultat": resultat, "resume": resultat.get("resume"), "duree_ms": duree_ms, **meta})
+            yield {"type": "tool_fin", "etape": etape, "outil": nom, "resultat": resultat,
+                   "resume": resultat.get("resume"), "duree_ms": duree_ms, **meta}
             etape += 1
 
             messages.append({
@@ -252,4 +296,23 @@ def executer(utilisateur, demande, confirmation=None, demande_id=None):
 
     _save_resultat(demande_row.id, etape, None, None, "Nombre maximal d'étapes atteint.")
     db.session.commit()
-    return {"statut": "limite", "reponse": "Je n'ai pas abouti dans le nombre d'étapes autorisé (garde-fou anti-boucle).", "etapes": etapes, "demande_id": demande_row.id}
+    res = {"statut": "limite", "reponse": "Je n'ai pas abouti dans le nombre d'étapes autorisé (garde-fou anti-boucle).",
+           "etapes": etapes, "demande_id": demande_row.id}
+    yield {"type": "limite", "reponse": res["reponse"], "etapes": etapes, "demande_id": demande_row.id}
+    return res
+
+
+def executer(utilisateur, demande, confirmation=None, demande_id=None):
+    """Version synchrone de la boucle : consomme `executer_iter` et renvoie le résultat.
+
+    Retourne un dict :
+      statut  : "reponse" | "confirmation_requise" | "limite" | "quota" | "erreur"
+      reponse : texte final (si statut = reponse)
+      etapes  : liste des étapes exécutées {etape, outil, arguments, resultat, resume}
+    """
+    generateur = executer_iter(utilisateur, demande, confirmation=confirmation, demande_id=demande_id)
+    try:
+        while True:
+            next(generateur)
+    except StopIteration as stop:
+        return stop.value
