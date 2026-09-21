@@ -55,6 +55,7 @@ meal_type doit être UNIQUEMENT : "Petit-déjeuner", "Déjeuner", "Collation", "
 def _build_user_context(user, foods_by_name):
     """Construit le contexte utilisateur pour le prompt."""
     preferences = user.preferences_list() if hasattr(user, "preferences_list") else []
+    from services.nutrition import current_calories
 
     restrictions_map = {
         "vegetarien": "PAS de viande ni poisson",
@@ -82,7 +83,7 @@ def _build_user_context(user, foods_by_name):
         })
 
     return {
-        "calories": user.daily_calories or 2500,
+        "calories": current_calories(user),
         "goal": user.goal or "prise_masse",
         "weight": user.weight or 70,
         "restrictions": restrictions,

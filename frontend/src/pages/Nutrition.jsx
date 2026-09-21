@@ -24,6 +24,9 @@ export default function Nutrition({ user }) {
   const [message, setMessage] = useState("");
   const [messageType, setMessageType] = useState("success");
   const [targetKcal, setTargetKcal] = useState(user.daily_calories);
+  const [useAI, setUseAI] = useState(true);
+  const [aiStatus, setAiStatus] = useState(null);
+  const [genInfo, setGenInfo] = useState(null);
 
   useEffect(() => {
     api.get("/nutrition/target")
@@ -35,6 +38,9 @@ export default function Nutrition({ user }) {
     api.get("/nutrition/shopping-list/latest")
       .then((res) => setShoppingList(res.data.shopping_list))
       .catch(() => setShoppingList(null));
+    api.get("/nutrition/ai-status")
+      .then((res) => setAiStatus(res.data))
+      .catch(() => setAiStatus({ groq_enabled: false }));
   }, []);
 
   const showMessage = (msg, type = "success") => {
@@ -45,9 +51,11 @@ export default function Nutrition({ user }) {
   const generate = async () => {
     setLoading(true);
     setMessage("");
+    setGenInfo(null);
     try {
-      const res = await api.post("/nutrition/plan/generate", { num_days: days });
+      const res = await api.post("/nutrition/plan/generate", { num_days: days, use_ai: useAI });
       setPlan(res.data.plan);
+      setGenInfo(res.data.generation);
       showMessage(res.data.message);
     } catch (err) {
       showMessage(err.response?.data?.error || "Erreur de génération", "error");
@@ -103,7 +111,7 @@ export default function Nutrition({ user }) {
               kcal / jour
             </p>
           </div>
-          <div style={{ display: "flex", gap: "0.5rem", alignItems: "end" }}>
+          <div style={{ display: "flex", gap: "0.5rem", alignItems: "end", flexWrap: "wrap" }}>
             <div className="form-group" style={{ margin: 0 }}>
               <label>Jours</label>
               <input type="number" min="1" max="90" value={days} onChange={(e) => setDays(Number(e.target.value))} style={{ width: "90px" }} />
@@ -118,12 +126,48 @@ export default function Nutrition({ user }) {
             </div>
           </div>
         </div>
+
+        <div style={{ display: "flex", alignItems: "center", gap: "0.8rem", flexWrap: "wrap", marginTop: "1rem" }}>
+          <span className="muted" style={{ fontSize: "0.85rem" }}>Mode de génération :</span>
+          <button
+            type="button"
+            className={"chip" + (useAI ? " active" : "")}
+            onClick={() => setUseAI(true)}
+            title="L'agent IA Groq compose les repas (gratuit)."
+          >
+            🤖 Agent IA
+          </button>
+          <button
+            type="button"
+            className={"chip" + (!useAI ? " active" : "")}
+            onClick={() => setUseAI(false)}
+            title="Algorithme classique avec recettes fixes."
+          >
+            ⚙️ Classique
+          </button>
+          {!aiStatus?.groq_enabled && (
+            <span className="muted" style={{ fontSize: "0.82rem" }}>ℹ️ L'agent IA n'est pas configuré (fallback classique).</span>
+          )}
+        </div>
+
+        {quotaWarning(aiStatus) && (
+          <div className="error" style={{ marginTop: "0.6rem" }}>
+            {quotaWarning(aiStatus)}
+          </div>
+        )}
       </div>
 
       {plan && (
         <div>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "0.5rem", margin: "0.5rem 0 1rem" }}>
-            <h2 className="page-title" style={{ margin: 0 }}>Plan alimentaire · 🗓️ {plan.num_days} jours</h2>
+            <h2 className="page-title" style={{ margin: 0, display: "flex", alignItems: "center", gap: "0.6rem" }}>
+              Plan alimentaire · 🗓️ {plan.num_days} jours
+              {genInfo?.mode === "ai" ? (
+                <span className="badge badge-cyan" title={`Repas composés par ${genInfo.model}`}>🤖 IA</span>
+              ) : (
+                <span className="badge badge-warn" title={genInfo?.reason ? `Fallback : ${genInfo.reason}` : "Recettes classiques"}>⚙️ Classique</span>
+              )}
+            </h2>
             <button className="btn btn-ghost" onClick={generateList} disabled={loading}>
               {loading ? "..." : "🛒 Générer ma liste de courses"}
             </button>
@@ -193,4 +237,16 @@ export default function Nutrition({ user }) {
 function formatQty(grams) {
   if (grams >= 1000) return `${(grams / 1000).toFixed(2).replace(/\.?0+$/, "")} kg`;
   return `${Math.round(grams)} g`;
+}
+
+function quotaWarning(aiStatus) {
+  if (!aiStatus?.groq_enabled) return "";
+  if (aiStatus.groq_auto_disabled) {
+    return "🚫 Quota IA atteint pour aujourd'hui — les repas sont générés en mode classique.";
+  }
+  const rpdPct = Number(aiStatus.groq_rpd_pct || 0);
+  const rpmPct = Number(aiStatus.groq_rpm_pct || 0);
+  if (rpdPct >= 85) return `⚠️ Quota IA presque épuisé (${rpdPct.toFixed(0)} % du quota journalier).`;
+  if (rpmPct >= 80) return `⚠️ Nombreux appels IA ce moment — ralentissez un peu.`;
+  return "";
 }
