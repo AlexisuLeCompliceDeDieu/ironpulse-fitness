@@ -13,4 +13,6 @@ COPY . .
 EXPOSE 8000
 
 # En production, définir DATABASE_URL (ex: postgresql://...) et CORS_ORIGINS.
-CMD ["gunicorn", "--bind", "0.0.0.0:8000", "app:create_app()"]
+# gunicorn en mode gthread (threads) : indispensable pour le streaming du chat IA
+# sans bloquer les autres requêtes.
+CMD ["gunicorn", "--bind", "0.0.0.0:8000", "--threads", "8", "--timeout", "120", "app:create_app()"]

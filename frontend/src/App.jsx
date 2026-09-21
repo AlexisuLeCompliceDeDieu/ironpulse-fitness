@@ -16,6 +16,7 @@ import Profile from "./pages/Profile.jsx";
 import Machines from "./pages/Machines.jsx";
 import Social from "./pages/Social.jsx";
 import Friends from "./pages/Friends.jsx";
+import Assistant from "./pages/Assistant.jsx";
 import TourGuide, { isTourDone } from "./components/TourGuide.jsx";
 
 function Fade({ location, children }) {
@@ -76,6 +77,7 @@ export default function App() {
           <Route path="/social" element={<Social user={user} />} />
           <Route path="/progress" element={<Progress user={user} />} />
           <Route path="/profile" element={<Profile user={user} onUpdate={setUser} />} />
+          <Route path="/assistant" element={<Assistant user={user} />} />
           <Route path="*" element={<Navigate to="/" />} />
         </Routes>
       </Fade>

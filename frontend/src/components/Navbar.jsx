@@ -6,6 +6,7 @@ const TAB_ITEMS = [
   { to: "/training", end: false, icon: "🗓️", label: "Programme" },
   { to: "/session", end: false, icon: "📋", label: "Séance" },
   { to: "/nutrition", end: false, icon: "🥗", label: "Nutrition" },
+  { to: "/assistant", end: false, icon: "🤖", label: "Assistant" },
   { to: "/machines", end: false, icon: "🏋️", label: "Machines" },
   { to: "/social", end: false, icon: "🏆", label: "Classement" },
   { to: "/progress", end: false, icon: "📈", label: "Progression" },
@@ -90,6 +91,15 @@ export default function Navbar({ user, onLogout }) {
               className={({ isActive }) => "nav-link" + (isActive ? " active" : "")}
             >
               <span>🏋️</span> Machines
+            </NavLink>
+          </div>
+
+          <div className="nav-item">
+            <NavLink
+              to="/assistant"
+              className={({ isActive }) => "nav-link" + (isActive ? " active" : "")}
+            >
+              <span>🤖</span> Assistant
             </NavLink>
           </div>
 
