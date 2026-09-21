@@ -43,6 +43,13 @@ def test_is_rate_limit():
     assert not ai_meal_agent._is_rate_limit(Exception("parse error"))
 
 
+def test_is_tpd_limit():
+    assert ai_meal_agent._is_tpd_limit(Exception("429 ... tokens per day (TPD): Limit 200000"))
+    assert ai_meal_agent._is_tpd_limit(Exception("Rate limit ... on tokens per day"))
+    assert not ai_meal_agent._is_tpd_limit(Exception("429 too large OTPM"))
+    assert not ai_meal_agent._is_tpd_limit(Exception("quota exceeded"))
+
+
 def test_parse_content_strips_thinking_and_markdown():
     content = "```json\n{\"meals\": [{\"day\": 1, \"meal_type\": \"Déjeuner\", \"name\": \"Test\", \"items\": []}]}\n```"
     meals = ai_meal_agent._parse_content(content)

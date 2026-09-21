@@ -62,6 +62,12 @@ def _is_rate_limit(err):
     msg = str(err).lower()
     return "429" in msg or "rate" in msg or "too large" in msg or "quota" in msg
 
+
+def _is_tpd_limit(err):
+    """Limite de tokens PAR JOUR (TPD) : inutile de rejouer, ça ne reviendra pas avant demain."""
+    msg = str(err).lower()
+    return "tokens per day" in msg or "per day" in msg or " tpd" in msg
+
 # ── Prompt système ──────────────────────────────────────────────────
 
 SYSTEM_PROMPT = """Tu es un nutritionniste sportif expert. Tu génères des plans alimentaires personnalisés pour des athlètes.
@@ -311,6 +317,9 @@ def _get_ai_content(client, prompt, chunk_days, strict=False):
         except Exception as e:
             last_err = e
             logger.error(f"Erreur Groq morceau (tentative {attempt + 1}): {e}")
+            # TPD = indisponible jusqu'à demain : ne pas rejouer
+            if _is_tpd_limit(e):
+                break
             if _is_rate_limit(e):
                 time.sleep(5 + attempt * 7)
                 continue
@@ -369,6 +378,12 @@ def generate_ai_meal_plan(user, num_days, foods_by_name, recent_meals=None):
 
         content, err = _get_ai_content(client, prompt, nb)
         if content is None:
+            if _is_tpd_limit(err):
+                # Tokens du jour épuisés : on désactive l'IA jusqu'à demain
+                # pour basculer instantanément en classique (plus d'attente).
+                logger.warning("TPD Groq atteint — IA désactivée jusqu'à demain")
+                quota_tracker.disable_today()
+                return _classic_fallback(user, num_days, foods_by_name, "quota_exceeded", quota_info)
             return _classic_fallback(user, num_days, foods_by_name, f"groq_error: {str(err)[:200]}")
 
         try:

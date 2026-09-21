@@ -65,10 +65,11 @@ def check_quota():
     now = time.time()
     today = str(date.today())
 
-    # Reset quotidien
+    # Reset quotidien (le compteur ET la désactivation automatique)
     if data["rpd_date"] != today:
         data["rpd_date"] = today
         data["rpd_count"] = 0
+        data["auto_disabled"] = False
 
     # RPM
     data["rpm_timestamps"] = _clean_rpm(data.get("rpm_timestamps", []))
@@ -167,6 +168,18 @@ def get_status():
         "groq_total_all_time": data.get("total_all_time", 0),
         "groq_enabled": bool(os.environ.get("GROQ_API_KEY")),
     }
+
+
+def disable_today():
+    """Désactive l'agent IA jusqu'à demain (ex : limites de tokens par jour atteintes).
+
+    La désactivation se lève automatiquement au changement de date
+    (voir le reset quotidien dans `check_quota`).
+    """
+    data = _load()
+    data["auto_disabled"] = True
+    _save(data)
+    logger.warning("Agent IA désactivé automatiquement pour aujourd'hui")
 
 
 def reset_quota():
