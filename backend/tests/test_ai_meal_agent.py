@@ -41,3 +41,31 @@ def test_is_rate_limit():
     assert ai_meal_agent._is_rate_limit(Exception("429 ... too large OTPM"))
     assert ai_meal_agent._is_rate_limit(Exception("quota exceeded"))
     assert not ai_meal_agent._is_rate_limit(Exception("parse error"))
+
+
+def test_parse_content_strips_thinking_and_markdown():
+    content = "```json\n{\"meals\": [{\"day\": 1, \"meal_type\": \"Déjeuner\", \"name\": \"Test\", \"items\": []}]}\n```"
+    meals = ai_meal_agent._parse_content(content)
+    assert meals[0]["name"] == "Test"
+
+
+def test_normalize_day_relative():
+    assert ai_meal_agent._normalize_day(1, 2) == 1
+    assert ai_meal_agent._normalize_day("2", 2) == 2
+    assert ai_meal_agent._normalize_day("lundi", 2) == 1
+    assert ai_meal_agent._normalize_day(3, 2) is None  # hors du morceau
+    assert ai_meal_agent._normalize_day("", 2) is None
+
+
+def test_normalize_meal_type():
+    assert ai_meal_agent._normalize_meal_type("breakfast") == "Petit-déjeuner"
+    assert ai_meal_agent._normalize_meal_type("dîner") == "Dîner"
+    assert ai_meal_agent._normalize_meal_type("snack") == "Collation"
+    assert ai_meal_agent._normalize_meal_type("apéritif") is None
+
+
+def test_build_prompt_has_day_offset():
+    ctx = {"goal": "prise_masse", "weight": 70, "calories": 3000, "restrictions": [], "foods": [{"name": "riz"}]}
+    prompt = ai_meal_agent._build_prompt(ctx, 2, None, day_offset=3)
+    assert "JOURS 4 à 5" in prompt
+    assert "day 1 = jour 4" in prompt

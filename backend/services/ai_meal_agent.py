@@ -133,8 +133,12 @@ def _build_user_context(user, foods_by_name):
     }
 
 
-def _build_prompt(context, num_days, recent_meals=None):
-    """Construit le prompt utilisateur complet."""
+def _build_prompt(context, num_days, recent_meals=None, day_offset=0):
+    """Construit le prompt pour un morceau de `num_days` jours du plan.
+
+    `day_offset` : nombre de jours déjà générés avant ce morceau (le champ
+    `day` de l'IA est relatif au morceau : 1 = jour suivant le offset).
+    """
     goal_labels = {
         "prise_masse": "prise de masse (muscle)",
         "perte_poids": "perte de poids (sèche)",
@@ -155,8 +159,10 @@ def _build_prompt(context, num_days, recent_meals=None):
         )
 
     foods_text = json.dumps(context["foods"], ensure_ascii=False, indent=None)
+    abs_first = day_offset + 1
+    abs_last = day_offset + num_days
 
-    return f"""Génère un plan alimentaire pour {num_days} jour(s).
+    return f"""Génère un plan alimentaire pour {num_days} jour(s) : les JOURS {abs_first} à {abs_last} du plan global.
 
 CONTEXTE UTILISATEUR :
 - Objectif : {goal_label}
@@ -167,18 +173,122 @@ CONTEXTE UTILISATEUR :
 ALIMENTS DISPONIBLES (avec valeurs nutritionnelles pour 100g) :
 {foods_text}{recent_text}
 
+IMPORTANT : Le champ "day" de chaque repas est relatif à CE morceau :
+day 1 = jour {abs_first}, day 2 = jour {abs_first + 1}, etc. (donc de 1 à {num_days}).
+
 Pour chaque jour, génère 4 repas : Petit-déjeuner, Déjeuner, Collation, Dîner.
 Respecte les calories cibles et les restrictions.
 Variété : ne répète JAMAIS le même nom de repas 2 jours d'affilée pour un même type de repas."""
 
 
+# ── Normalisation des réponses IA ───────────────────────────────────
+
+_DAY_NAMES = {
+    "lundi": 1, "mardi": 2, "mercredi": 3, "jeudi": 4,
+    "vendredi": 5, "samedi": 6, "dimanche": 7,
+    "monday": 1, "tuesday": 2, "wednesday": 3, "thursday": 4,
+    "friday": 5, "saturday": 6, "sunday": 7,
+}
+_MEAL_TYPE_MAP = {
+    "breakfast": "Petit-déjeuner", "petit-déjeuner": "Petit-déjeuner", "petit dejeuner": "Petit-déjeuner",
+    "lunch": "Déjeuner", "dejeuner": "Déjeuner", "déjeuner": "Déjeuner",
+    "snack": "Collation", "collation": "Collation",
+    "dinner": "Dîner", "diner": "Dîner", "dîner": "Dîner",
+}
+_MEAL_TYPES_VALID = ("Petit-déjeuner", "Déjeuner", "Collation", "Dîner")
+
+
+def _parse_content(content):
+    """Parse la réponse IA en liste de dicts repas (robuste aux artefacts)."""
+    import re
+    raw = content.strip()
+    # Supprimer les balises  thinking de Qwen
+    if " thinking" in raw:
+        raw = re.sub(r" thinking.*? response", "", raw, flags=re.DOTALL).strip()
+    # Supprimer les blocs markdown
+    if raw.startswith("```"):
+        lines = raw.split("\n")
+        lines = [l for l in lines if not l.strip().startswith("```")]
+        raw = "\n".join(lines).strip()
+    data = json.loads(raw)
+    meals_data = data.get("meals", [])
+    if not meals_data:
+        raise ValueError("Réponse IA vide (pas de meals)")
+    return meals_data
+
+
+def _normalize_day(raw_day, chunk_days):
+    """Convertit le champ day (relatif au morceau) en entier 1..chunk_days."""
+    if isinstance(raw_day, str):
+        day = _DAY_NAMES.get(raw_day.lower().strip())
+        if day is None:
+            import re
+            nums = re.findall(r"\d+", raw_day)
+            day = int(nums[0]) if nums else None
+    else:
+        try:
+            day = int(raw_day)
+        except (TypeError, ValueError):
+            day = None
+    if day is None or day < 1 or day > chunk_days:
+        return None
+    return day
+
+
+def _normalize_meal_type(raw):
+    mt = _MEAL_TYPE_MAP.get(str(raw).lower().strip(), str(raw).strip())
+    return mt if mt in _MEAL_TYPES_VALID else None
+
+
+def _get_ai_content(client, prompt, chunk_days):
+    """Appelle Groq pour un morceau. Retourne (content, error).
+
+    3 tentatives max ; en cas de limite de tokens/minute on attend un peu
+    plus longtemps à chaque essai puis on réessaie le MÊME prompt (jamais de
+    troncature : on ne réduit pas max_tokens).
+    """
+    messages = [
+        {"role": "system", "content": SYSTEM_PROMPT},
+        {"role": "user", "content": prompt},
+    ]
+    max_tokens = _max_tokens_for(chunk_days)
+    last_err = None
+    for attempt in range(3):
+        try:
+            logger.info(f"Appel Groq (morceau {chunk_days}j) : {GROQ_MODEL}, max_tokens={max_tokens}")
+            response = _create_completion(client, messages, max_tokens)
+            quota_tracker.record_usage()
+            content = response.choices[0].message.content
+            if content and content.strip():
+                return content, None
+            last_err = Exception("Réponse Groq vide")
+        except Exception as e:
+            last_err = e
+            logger.error(f"Erreur Groq morceau (tentative {attempt + 1}): {e}")
+            if _is_rate_limit(e):
+                time.sleep(5 + attempt * 7)
+                continue
+            break
+    return None, last_err
+
+
+def _classic_fallback(user, num_days, foods_by_name, reason, quota_info=None):
+    plan = meal_generator.generate_meal_plan(user, num_days, foods_by_name)
+    info = {"mode": "classic", "reason": reason}
+    if quota_info:
+        info["quota"] = quota_info
+    return plan, info
+
+
 def generate_ai_meal_plan(user, num_days, foods_by_name, recent_meals=None):
     """Génère un plan alimentaire via l'agent IA Groq.
 
-    Retourne (plan_db, info) où plan_db est un MealPlan en base
-    et info contient des métadonnées (mode, quota, etc.).
+    Génération PAR MORCEAUX (2 jours / appel) pour rester largement sous les
+    limites de tokens de sortie par minute (OTPM) du tier gratuit : des sorties
+    courtes évitent les erreurs 429 et les JSON tronqués.
 
-    En cas d'échec, fallback automatique vers le générateur classique.
+    Retourne (plan_db, info). En cas d'échec, fallback automatique vers le
+    générateur classique.
     """
     from models import MealPlan, Meal, MealItem, db
     from services.nutrition import current_calories
@@ -187,73 +297,79 @@ def generate_ai_meal_plan(user, num_days, foods_by_name, recent_meals=None):
     allowed, quota_info = quota_tracker.check_quota()
     if not allowed:
         logger.warning(f"Quota Groq dépassé ({quota_info.get('reason')}) — fallback classique")
-        plan = meal_generator.generate_meal_plan(user, num_days, foods_by_name)
-        return plan, {"mode": "classic", "reason": "quota_exceeded", "quota": quota_info}
+        return _classic_fallback(user, num_days, foods_by_name, "quota_exceeded", quota_info)
 
     # Vérification disponibilité Groq
     client = get_client()
     if client is None:
         logger.info("Groq non configuré — fallback classique")
-        plan = meal_generator.generate_meal_plan(user, num_days, foods_by_name)
-        return plan, {"mode": "classic", "reason": "groq_unavailable"}
+        return _classic_fallback(user, num_days, foods_by_name, "groq_unavailable")
 
-    # Construction du prompt
+    # Plafond réaliste : 1 appel / 2 jours, on limite à 30 jours en IA
+    if num_days > 30:
+        logger.info("Plan > 30 jours : génération IA non pertinente, classique utilisé")
+        return _classic_fallback(user, num_days, foods_by_name, "too_many_days")
+
     context = _build_user_context(user, foods_by_name)
-    prompt = _build_prompt(context, num_days, recent_meals)
 
-    # Appel IA (avec repli si limite de tokens par minute atteinte)
-    messages = [
-        {"role": "system", "content": SYSTEM_PROMPT},
-        {"role": "user", "content": prompt},
-    ]
-    max_tokens = _max_tokens_for(num_days)
-    content = None
-    last_err = None
-    for attempt, mt in enumerate((max_tokens, max(512, max_tokens // 2))):
+    # ── Génération par morceaux ─────────────────────────────────────
+    normalized = []  # [ {day, meal_type, name, items:[(food_id, qty)]} ]
+    skipped = 0
+    CHUNK_DAYS = 2
+
+    for offset in range(0, num_days, CHUNK_DAYS):
+        nb = min(CHUNK_DAYS, num_days - offset)
+        prompt = _build_prompt(context, nb, recent_meals, day_offset=offset)
+        content, err = _get_ai_content(client, prompt, nb)
+        if content is None:
+            return _classic_fallback(user, num_days, foods_by_name, f"groq_error: {str(err)[:200]}")
+
         try:
-            logger.info(
-                f"Appel Groq : {GROQ_MODEL}, {num_days} jour(s), "
-                f"{len(foods_by_name)} aliments, max_tokens={mt}"
-            )
-            response = _create_completion(client, messages, mt)
-            quota_tracker.record_usage()
-            content = response.choices[0].message.content
-            logger.info(f"Réponse Groq reçue ({len(content)} chars)")
-            break
+            chunk_meals = _parse_content(content)
         except Exception as e:
-            last_err = e
-            logger.error(f"Erreur Groq (tentative {attempt + 1}): {e}")
-            if attempt == 0 and _is_rate_limit(e):
-                time.sleep(6)
+            logger.error(f"Parse réponse IA morceau {offset + 1}-{offset + nb}: {e}")
+            return _classic_fallback(user, num_days, foods_by_name, f"parse_error: {str(e)[:200]}")
+
+        for meal_data in chunk_meals:
+            rel_day = _normalize_day(meal_data.get("day", 1), nb)
+            if rel_day is None:
+                skipped += 1
                 continue
-            break
+            meal_type = _normalize_meal_type(meal_data.get("meal_type", ""))
+            if meal_type is None:
+                skipped += 1
+                continue
 
-    if content is None:
-        plan = meal_generator.generate_meal_plan(user, num_days, foods_by_name)
-        return plan, {"mode": "classic", "reason": f"groq_error: {str(last_err)[:200]}"}
+            items = []
+            for item_data in meal_data.get("items", []):
+                food_name = item_data.get("food", "")
+                food = foods_by_name.get(food_name)
+                if food is None:
+                    for fn, fobj in foods_by_name.items():
+                        if fn.lower() == food_name.lower():
+                            food = fobj
+                            break
+                if food is None:
+                    skipped += 1
+                    continue
+                qty = max(10, min(float(item_data.get("quantity", 100)), 2000))
+                items.append((food.id, qty))
 
-    # Parse de la réponse (robuste : gère ```json ... ```, <think>...</think>, etc.)
-    try:
-        raw = content.strip()
-        # Supprimer les balises <think> de Qwen
-        if "<think>" in raw:
-            import re
-            raw = re.sub(r"<think>.*?</think>", "", raw, flags=re.DOTALL).strip()
-        # Supprimer les blocs markdown
-        if raw.startswith("```"):
-            lines = raw.split("\n")
-            lines = [l for l in lines if not l.strip().startswith("```")]
-            raw = "\n".join(lines).strip()
-        data = json.loads(raw)
-        meals_data = data.get("meals", [])
-        if not meals_data:
-            raise ValueError("Réponse IA vide (pas de meals)")
-    except (json.JSONDecodeError, ValueError) as e:
-        logger.error(f"Parse réponse IA échoué: {e} — fallback classique")
-        plan = meal_generator.generate_meal_plan(user, num_days, foods_by_name)
-        return plan, {"mode": "classic", "reason": f"parse_error: {str(e)[:200]}"}
+            if not items:
+                skipped += 1
+                continue
 
-    # Sauvegarde en base
+            normalized.append({
+                "day": offset + rel_day,
+                "meal_type": meal_type,
+                "name": str(meal_data.get("name", "Repas"))[:150],
+                "items": items,
+            })
+
+    if not normalized:
+        return _classic_fallback(user, num_days, foods_by_name, "parse_error: no meals")
+
+    # ── Sauvegarde en base ──────────────────────────────────────────
     try:
         target_calories = current_calories(user)
         plan = MealPlan(
@@ -265,73 +381,21 @@ def generate_ai_meal_plan(user, num_days, foods_by_name, recent_meals=None):
         db.session.flush()
 
         valid_meals = 0
-        skipped = 0
-
-        day_names = {
-            "lundi": 1, "mardi": 2, "mercredi": 3, "jeudi": 4,
-            "vendredi": 5, "samedi": 6, "dimanche": 7,
-            "monday": 1, "tuesday": 2, "wednesday": 3, "thursday": 4,
-            "friday": 5, "saturday": 6, "sunday": 7,
-        }
-
-        for meal_data in meals_data:
-            raw_day = meal_data.get("day", 1)
-            if isinstance(raw_day, str):
-                day = day_names.get(raw_day.lower().strip(), None)
-                if day is None:
-                    import re
-                    nums = re.findall(r"\d+", raw_day)
-                    day = int(nums[0]) if nums else 1
-            else:
-                day = int(raw_day)
-            if day < 1 or day > num_days:
-                skipped += 1
-                continue
-
-            meal_type = meal_data.get("meal_type", "")
-            # Normaliser les types de repas (français/anglais)
-            meal_type_map = {
-                "breakfast": "Petit-déjeuner", "petit-déjeuner": "Petit-déjeuner", "petit dejeuner": "Petit-déjeuner",
-                "lunch": "Déjeuner", "dejeuner": "Déjeuner", "déjeuner": "Déjeuner",
-                "snack": "Collation", "collation": "Collation",
-                "dinner": "Dîner", "diner": "Dîner", "dîner": "Dîner",
-            }
-            meal_type = meal_type_map.get(meal_type.lower().strip(), meal_type)
-            if meal_type not in ("Petit-déjeuner", "Déjeuner", "Collation", "Dîner"):
-                skipped += 1
-                continue
-
-            meal_name = str(meal_data.get("name", "Repas"))[:150]
-
+        for m in normalized:
             meal = Meal(
                 meal_plan_id=plan.id,
-                day=day,
-                meal_type=meal_type,
-                name=meal_name,
+                day=m["day"],
+                meal_type=m["meal_type"],
+                name=m["name"],
             )
             db.session.add(meal)
             db.session.flush()
-
-            for item_data in meal_data.get("items", []):
-                food_name = item_data.get("food", "")
-                food = foods_by_name.get(food_name)
-                if food is None:
-                    # Recherche floue
-                    for fn, fobj in foods_by_name.items():
-                        if fn.lower() == food_name.lower():
-                            food = fobj
-                            break
-                if food is None:
-                    skipped += 1
-                    continue
-
-                qty = float(item_data.get("quantity", 100))
-                qty = max(10, min(qty, 2000))  # bornes raisonnables
-                db.session.add(MealItem(meal_id=meal.id, food_id=food.id, quantity=qty))
+            for food_id, qty in m["items"]:
+                db.session.add(MealItem(meal_id=meal.id, food_id=food_id, quantity=qty))
                 valid_meals += 1
 
         db.session.commit()
-        logger.info(f"Plan IA sauvegardé: {valid_meals} items, {skipped} skippés")
+        logger.info(f"Plan IA sauvegardé: {len(normalized)} repas, {valid_meals} items, {skipped} skippés")
 
         info = {
             "mode": "ai",
@@ -345,5 +409,4 @@ def generate_ai_meal_plan(user, num_days, foods_by_name, recent_meals=None):
     except Exception as e:
         db.session.rollback()
         logger.error(f"Erreur sauvegarde plan IA: {e} — fallback classique")
-        plan = meal_generator.generate_meal_plan(user, num_days, foods_by_name)
-        return plan, {"mode": "classic", "reason": f"db_error: {str(e)[:200]}"}
+        return _classic_fallback(user, num_days, foods_by_name, f"db_error: {str(e)[:200]}")

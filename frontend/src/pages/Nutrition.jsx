@@ -269,6 +269,9 @@ function aiFallbackMsg(reason) {
   if (reason.startsWith("ai_error")) {
     return "Erreur de l'agent IA. Menus générés en mode classique.";
   }
+  if (reason === "too_many_days") {
+    return "Plan trop long pour l'agent IA (maximum 30 jours) — menus générés en mode classique.";
+  }
   if (reason === "quota_exceeded") {
     return "Quota IA atteint pour aujourd'hui — menus générés en mode classique.";
   }
