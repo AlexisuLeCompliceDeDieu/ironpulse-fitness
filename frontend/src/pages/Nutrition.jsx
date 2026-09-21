@@ -55,10 +55,13 @@ export default function Nutrition({ user }) {
     try {
       const res = await api.post("/nutrition/plan/generate", { num_days: days, use_ai: useAI });
       setPlan(res.data.plan);
-      setGenInfo(res.data.generation);
-      if (res.data.generation?.regenerated) {
-        const avoided = res.data.generation.avoided || 0;
-        showMessage(`🔄 Menus régénérés — ${avoided} repas du plan précédent remplacés.`);
+      const g = res.data.generation || {};
+      setGenInfo(g);
+      if (useAI && g.mode !== "ai") {
+        const extra = g.regenerated ? " Menus régénérés (sans répétition)." : "";
+        showMessage("⚠️ " + aiFallbackMsg(g.reason) + extra, "error");
+      } else if (g.regenerated) {
+        showMessage(`🔄 Menus régénérés — ${g.avoided || 0} repas du plan précédent remplacés.`);
       } else {
         showMessage(res.data.message);
       }
@@ -122,7 +125,7 @@ export default function Nutrition({ user }) {
               <input type="number" min="1" max="90" value={days} onChange={(e) => setDays(Number(e.target.value))} style={{ width: "90px" }} />
             </div>
             <button className="btn" onClick={generate} disabled={loading}>
-              {loading ? "⏳ Génération..." : "⚡ Générer les menus"}
+              {loading ? "⏳ Génération..." : plan ? "🔄 Régénérer les menus" : "⚡ Générer les menus"}
             </button>
             <div style={{ display: "flex", gap: "0.3rem" }}>
               <button className="btn btn-ghost" onClick={() => setDays(7)}>[7j]</button>
@@ -247,6 +250,32 @@ export default function Nutrition({ user }) {
 function formatQty(grams) {
   if (grams >= 1000) return `${(grams / 1000).toFixed(2).replace(/\.?0+$/, "")} kg`;
   return `${Math.round(grams)} g`;
+}
+
+function aiFallbackMsg(reason) {
+  if (!reason) return "L'agent IA n'a pas pu générer les menus — mode classique utilisé.";
+  if (reason.startsWith("groq_error")) {
+    if (reason.includes("429")) {
+      return "L'IA est momentanément limitée (quota Groq). Menus générés en mode classique — réessaie dans une minute.";
+    }
+    return "L'IA a rencontré une erreur. Menus générés en mode classique.";
+  }
+  if (reason.startsWith("parse_error")) {
+    return "L'IA a renvoyé un format invalide. Menus générés en mode classique.";
+  }
+  if (reason.startsWith("db_error")) {
+    return "Erreur d'enregistrement côté IA. Menus générés en mode classique.";
+  }
+  if (reason.startsWith("ai_error")) {
+    return "Erreur de l'agent IA. Menus générés en mode classique.";
+  }
+  if (reason === "quota_exceeded") {
+    return "Quota IA atteint pour aujourd'hui — menus générés en mode classique.";
+  }
+  if (reason === "groq_unavailable" || reason === "groq_disabled") {
+    return "Agent IA non configuré — menus générés en mode classique.";
+  }
+  return "Menus générés en mode classique.";
 }
 
 function quotaWarning(aiStatus) {

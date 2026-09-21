@@ -15,10 +15,52 @@ Sécurité :
 
 import json
 import logging
+import time
 from services.groq_config import get_client, GROQ_MODEL, GROQ_ENABLED
 from services import quota_tracker, meal_generator
 
 logger = logging.getLogger(__name__)
+
+
+def _max_tokens_for(num_days):
+    """Plafond de tokens de sortie adapté au nombre de jours.
+
+    Le tier gratuit Groq limite les tokens de sortie par minute (OTPM) :
+    demander 4096 tokens d'un coup déclenche une erreur 429 "Request too large".
+    On demande donc juste ce qu'il faut, avec un plancher et un plafond sûrs.
+    """
+    return max(700, min(3000, int(num_days) * 380))
+
+
+def _create_completion(client, messages, max_tokens):
+    """Appel Groq en désactivant le raisonnement de Qwen (économie d'OTPM).
+
+    `reasoning_effort="none"` n'est pas supporté par tous les modèles : on
+    réessaie sans ce paramètre si le serveur le refuse.
+    """
+    try:
+        return client.chat.completions.create(
+            model=GROQ_MODEL,
+            messages=messages,
+            temperature=0.7,
+            max_tokens=max_tokens,
+            reasoning_effort="none",
+        )
+    except Exception as e:
+        msg = str(e).lower()
+        if "reasoning" in msg or "400" in msg or "invalid" in msg or "unsupported" in msg:
+            return client.chat.completions.create(
+                model=GROQ_MODEL,
+                messages=messages,
+                temperature=0.7,
+                max_tokens=max_tokens,
+            )
+        raise
+
+
+def _is_rate_limit(err):
+    msg = str(err).lower()
+    return "429" in msg or "rate" in msg or "too large" in msg or "quota" in msg
 
 # ── Prompt système ──────────────────────────────────────────────────
 
@@ -159,29 +201,36 @@ def generate_ai_meal_plan(user, num_days, foods_by_name, recent_meals=None):
     context = _build_user_context(user, foods_by_name)
     prompt = _build_prompt(context, num_days, recent_meals)
 
-    # Appel IA
-    try:
-        logger.info(f"Appel Groq : {GROQ_MODEL}, {num_days} jour(s), {len(foods_by_name)} aliments")
-        response = client.chat.completions.create(
-            model=GROQ_MODEL,
-            messages=[
-                {"role": "system", "content": SYSTEM_PROMPT},
-                {"role": "user", "content": prompt},
-            ],
-            temperature=0.7,
-            max_tokens=4096,
-        )
+    # Appel IA (avec repli si limite de tokens par minute atteinte)
+    messages = [
+        {"role": "system", "content": SYSTEM_PROMPT},
+        {"role": "user", "content": prompt},
+    ]
+    max_tokens = _max_tokens_for(num_days)
+    content = None
+    last_err = None
+    for attempt, mt in enumerate((max_tokens, max(512, max_tokens // 2))):
+        try:
+            logger.info(
+                f"Appel Groq : {GROQ_MODEL}, {num_days} jour(s), "
+                f"{len(foods_by_name)} aliments, max_tokens={mt}"
+            )
+            response = _create_completion(client, messages, mt)
+            quota_tracker.record_usage()
+            content = response.choices[0].message.content
+            logger.info(f"Réponse Groq reçue ({len(content)} chars)")
+            break
+        except Exception as e:
+            last_err = e
+            logger.error(f"Erreur Groq (tentative {attempt + 1}): {e}")
+            if attempt == 0 and _is_rate_limit(e):
+                time.sleep(6)
+                continue
+            break
 
-        # Enregistrement de l'usage (APRÈS l'appel réussi)
-        quota_tracker.record_usage()
-
-        content = response.choices[0].message.content
-        logger.info(f"Réponse Groq reçue ({len(content)} chars)")
-
-    except Exception as e:
-        logger.error(f"Erreur Groq: {e} — fallback classique")
+    if content is None:
         plan = meal_generator.generate_meal_plan(user, num_days, foods_by_name)
-        return plan, {"mode": "classic", "reason": f"groq_error: {str(e)[:200]}"}
+        return plan, {"mode": "classic", "reason": f"groq_error: {str(last_err)[:200]}"}
 
     # Parse de la réponse (robuste : gère ```json ... ```, <think>...</think>, etc.)
     try:

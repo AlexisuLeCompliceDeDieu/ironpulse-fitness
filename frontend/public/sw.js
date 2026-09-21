@@ -1,5 +1,5 @@
-const CACHE = "ironpulse-v1";
-const CORE = ["/", "/manifest.webmanifest", "/icons/icon-192.png", "/icons/icon-512.png"];
+const CACHE = "ironpulse-v2";
+const CORE = ["/manifest.webmanifest", "/icons/icon-192.png", "/icons/icon-512.png"];
 
 self.addEventListener("install", (event) => {
   event.waitUntil(
@@ -15,26 +15,60 @@ self.addEventListener("activate", (event) => {
   );
 });
 
+self.addEventListener("message", (event) => {
+  if (event.data && event.data.type === "SKIP_WAITING") self.skipWaiting();
+});
+
 self.addEventListener("fetch", (event) => {
   const { request } = event;
   if (request.method !== "GET") return;
   const url = new URL(request.url);
 
-  // Ne jamais intercepter les appels API (toujours réseau)
+  // Uniquement notre origine, et jamais les appels API (toujours réseau)
+  if (url.origin !== self.location.origin) return;
   if (url.pathname.startsWith("/api/")) return;
 
-  event.respondWith(
-    caches.match(request).then((cached) => {
-      const fetched = fetch(request)
+  // Navigations / HTML : réseau d'abord → l'utilisateur reçoit TOUJOURS la
+  // dernière version de l'app après un déploiement. Cache seulement hors-ligne.
+  if (request.mode === "navigate") {
+    event.respondWith(
+      fetch(request)
         .then((response) => {
-          if (response && response.status === 200 && response.type === "basic") {
-            const copy = response.clone();
-            caches.open(CACHE).then((cache) => cache.put(request, copy));
-          }
+          const copy = response.clone();
+          caches.open(CACHE).then((cache) => cache.put(request, copy));
           return response;
         })
-        .catch(() => cached);
-      return cached || fetched;
-    })
+        .catch(() => caches.match(request).then((c) => c || caches.match("/")))
+    );
+    return;
+  }
+
+  // Assets hashés par Vite (immutables) : cache d'abord pour la rapidité
+  if (url.pathname.startsWith("/assets/")) {
+    event.respondWith(
+      caches.match(request).then(
+        (cached) =>
+          cached ||
+          fetch(request).then((response) => {
+            const copy = response.clone();
+            caches.open(CACHE).then((cache) => cache.put(request, copy));
+            return response;
+          })
+      )
+    );
+    return;
+  }
+
+  // Reste (icônes, etc.) : réseau d'abord, cache en secours
+  event.respondWith(
+    fetch(request)
+      .then((response) => {
+        if (response && response.status === 200 && response.type === "basic") {
+          const copy = response.clone();
+          caches.open(CACHE).then((cache) => cache.put(request, copy));
+        }
+        return response;
+      })
+      .catch(() => caches.match(request))
   );
 });
