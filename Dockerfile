@@ -28,5 +28,6 @@ COPY --from=frontend-build /build/dist ./frontend/dist
 # Port exposé
 EXPOSE 10000
 
-# Démarrage gunicorn sur le port fourni par l'environnement (Render injecte PORT)
-CMD gunicorn --chdir /app/backend wsgi:app --bind 0.0.0.0:${PORT} --workers 2 --timeout 120
+# Démarrage gunicorn en mode gthread (threads) : indispensable pour le streaming
+# du chat IA sans bloquer toutes les requêtes.
+CMD gunicorn --chdir /app/backend wsgi:app --bind 0.0.0.0:${PORT} --workers 2 --threads 8 --timeout 120
