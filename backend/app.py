@@ -29,6 +29,7 @@ def create_app():
         from routes.social import social_bp
         from routes.machines import machines_bp
         from routes.chat import chat_bp
+        from routes.agent import agent_bp
 
         app.register_blueprint(auth_bp, url_prefix="/api/auth")
         app.register_blueprint(profile_bp, url_prefix="/api/profile")
@@ -40,6 +41,7 @@ def create_app():
         app.register_blueprint(social_bp, url_prefix="/api/social")
         app.register_blueprint(machines_bp, url_prefix="/api/machines")
         app.register_blueprint(chat_bp, url_prefix="/api/chat")
+        app.register_blueprint(agent_bp, url_prefix="/api/agent")
 
         db.create_all()
         _migrate_columns()

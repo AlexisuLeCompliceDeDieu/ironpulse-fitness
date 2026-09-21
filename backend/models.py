@@ -401,7 +401,7 @@ class Machine(db.Model):
     name = db.Column(db.String(120), nullable=False)
     brand = db.Column(db.String(60), default="")          # Technogym, Matrix, Hammer...
     model = db.Column(db.String(80), default="")
-    category = db.Column(db.String(50), default="autre")  # pectoraux, dos, jambes, epaule, bras, core, cardio
+    category = db.Column(db.String(50), default="autre")  # pectoraux, dos, jambes, epaule, bras, core
     code = db.Column(db.String(20), unique=True, nullable=False)  # code QR (ex: TCG-ART-01)
     location = db.Column(db.String(80), default="")
     image_url = db.Column(db.Text, default="")
@@ -418,4 +418,63 @@ class Machine(db.Model):
             "location": self.location,
             "image_url": self.image_url,
             "setup_tips": self.setup_tips,
+        }
+
+
+class Demande(db.Model):
+    """Demande formulée par l'utilisateur à l'agent (mémoire / audit).
+
+    Chaque phrase adressée à l'agent est conservée ici, avec la trace
+    complète des étapes (table resultats) qui ont conduit à la réponse.
+    """
+
+    __tablename__ = "demandes"
+
+    id = db.Column(db.Integer, primary_key=True)
+    utilisateur_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=False)
+    texte = db.Column(db.Text, nullable=False)
+    date_creation = db.Column(db.DateTime, default=datetime.utcnow)
+
+    resultats = db.relationship(
+        "Resultat", backref="demande", lazy=True,
+        cascade="all, delete-orphan", order_by="Resultat.etape",
+    )
+
+    def to_dict(self):
+        return {
+            "id": self.id,
+            "utilisateur_id": self.utilisateur_id,
+            "texte": self.texte,
+            "date_creation": self.date_creation.isoformat() if self.date_creation else None,
+            "resultats": [r.to_dict() for r in self.resultats],
+        }
+
+
+class Resultat(db.Model):
+    """Une étape de la boucle de l'agent, rattachée à une demande.
+
+    `outil_utilise` contient le nom du tool appelé à cette étape (ou None
+    si l'agent a répondu directement) : c'est lui qui rend le raisonnement
+    de l'agent auditable après coup et qui le distingue d'un simple chatbot.
+    """
+
+    __tablename__ = "resultats"
+
+    id = db.Column(db.Integer, primary_key=True)
+    demande_id = db.Column(db.Integer, db.ForeignKey("demandes.id"), nullable=False)
+    etape = db.Column(db.Integer, default=1)   # n° de tour de boucle
+    outil_utilise = db.Column(db.String(80))   # nom du tool, None = réponse directe
+    arguments = db.Column(db.Text, default="")  # arguments JSON passés au tool
+    reponse = db.Column(db.Text, default="")    # résultat du tool / réponse finale
+    date_creation = db.Column(db.DateTime, default=datetime.utcnow)
+
+    def to_dict(self):
+        return {
+            "id": self.id,
+            "demande_id": self.demande_id,
+            "etape": self.etape,
+            "outil_utilise": self.outil_utilise,
+            "arguments": self.arguments,
+            "reponse": self.reponse,
+            "date_creation": self.date_creation.isoformat() if self.date_creation else None,
         }
