@@ -7,7 +7,39 @@ Algorithme:
 """
 
 import json
+import math
 import random
+
+# Répartition calorique moyenne entre les repas de la journée
+MEAL_CALORIE_SHARE = {
+    "Petit-déjeuner": 0.25,
+    "Déjeuner": 0.35,
+    "Collation": 0.15,
+    "Dîner": 0.25,
+}
+
+# Formats de vente des produits au magasin (en grammes) pour arrondir la liste de courses.
+STORE_PACKAGES_G = {
+    "Œufs": 300,                # boîte de 6 œufs (~50 g l'unité)
+    "Blanc de poulet": 400,     # barquette
+    "Escalope de dinde": 400,
+    "Bœuf haché 5%": 500,
+    "Saumon": 300,
+    "Thon": 150,                # boîte
+    "Crevettes": 200,
+    "Tofu": 250,
+    "Fromage blanc": 500,       # gros pot
+    "Cottage cheese": 300,
+    "Yaourt grec": 500,         # pot famille
+    "Édam": 200,                # portion
+    "Avoine": 500,
+    "Beurre de cacahuète": 340,
+    "Graines de chia": 200,
+    "Amandes": 200,
+    "Noix de cajou": 200,
+    "Cacahuètes": 250,
+    "Pain complet": 400,
+}
 
 # Recettes: nom -> liste (food_name, quantite_grammes)
 # Basées sur les aliments présents dans foods.json.
@@ -117,6 +149,36 @@ RECIPES = [
     {"name": "Cottage cheese et fraises", "meal_type": "Collation", "items": [["Cottage cheese", 180], ["Fraise", 80], ["Graines de chia", 10]]},
     {"name": "Shake whey aux amandes", "meal_type": "Collation", "items": [["Protéine en poudre (whey)", 35], ["Amandes", 20], ["Pomme", 100]]},
     {"name": "Fromage blanc, myrtilles et avoine", "meal_type": "Collation", "items": [["Fromage blanc", 200], ["Myrtilles", 60], ["Avoine", 25]]},
+    # ------- Recettes élaborées (burgers, wraps, bowls) -------
+    {"name": "Pancakes protéinés avoine-whey", "meal_type": "Petit-déjeuner", "items": [["Avoine", 70], ["Protéine en poudre (whey)", 30], ["Œufs", 110], ["Banane", 80]]},
+    {"name": "Bowl yaourt grec, chia et fraises", "meal_type": "Petit-déjeuner", "items": [["Yaourt grec", 220], ["Graines de chia", 15], ["Fraise", 80], ["Banane", 50]]},
+    {"name": "Porridge protéiné à la whey", "meal_type": "Petit-déjeuner", "items": [["Avoine", 70], ["Protéine en poudre (whey)", 30], ["Banane", 80], ["Myrtilles", 40]]},
+    {"name": "Wrap de bœuf haché aux légumes", "meal_type": "Déjeuner", "items": [["Pain complet", 100], ["Bœuf haché 5%", 180], ["Poivron rouge", 60], ["Oignon", 40], ["Salade verte", 40]]},
+    {"name": "Wrap poulet-avocat", "meal_type": "Déjeuner", "items": [["Pain complet", 100], ["Blanc de poulet", 190], ["Avocat", 60], ["Tomates", 60], ["Salade verte", 40]]},
+    {"name": "Wrap dinde, carottes et oignon", "meal_type": "Déjeuner", "items": [["Pain complet", 100], ["Escalope de dinde", 180], ["Carottes", 70], ["Oignon", 40], ["Salade verte", 40]]},
+    {"name": "Quesadilla poulet et épinards", "meal_type": "Déjeuner", "items": [["Pain complet", 110], ["Blanc de poulet", 170], ["Épinards", 90], ["Édam", 40], ["Poivron rouge", 50]]},
+    {"name": "Quesadilla dinde et poivrons", "meal_type": "Déjeuner", "items": [["Pain complet", 110], ["Escalope de dinde", 170], ["Poivron rouge", 60], ["Édam", 40], ["Oignon", 30]]},
+    {"name": "Buddha bowl saumon et avocat", "meal_type": "Déjeuner", "items": [["Saumon", 170], ["Quinoa cuit", 180], ["Avocat", 60], ["Épinards", 70], ["Tomates", 50]]},
+    {"name": "Buddha bowl bœuf et avocat", "meal_type": "Déjeuner", "items": [["Bœuf haché 5%", 180], ["Riz basmati cuit", 200], ["Avocat", 50], ["Carottes", 60], ["Épinards", 50]]},
+    {"name": "Chili con carne au bœuf", "meal_type": "Déjeuner", "items": [["Bœuf haché 5%", 180], ["Haricots rouges", 160], ["Riz complet cuit", 180], ["Oignon", 50], ["Tomates", 60]]},
+    {"name": "Curry de lentilles aux épinards", "meal_type": "Déjeuner", "items": [["Lentilles", 180], ["Riz basmati cuit", 180], ["Épinards", 90], ["Oignon", 50]]},
+    {"name": "Salade de thon et avocat", "meal_type": "Déjeuner", "items": [["Thon", 160], ["Salade verte", 80], ["Avocat", 60], ["Tomates", 60], ["Oignon", 30]]},
+    {"name": "Bo bun poulet et légumes", "meal_type": "Déjeuner", "items": [["Blanc de poulet", 180], ["Riz basmati cuit", 180], ["Carottes", 70], ["Salade verte", 50], ["Oignon", 30]]},
+    {"name": "Burger de thon et avocat", "meal_type": "Dîner", "items": [["Thon", 170], ["Pain complet", 100], ["Avocat", 50], ["Tomates", 60], ["Salade verte", 40]]},
+    {"name": "Burger de dinde et fromage", "meal_type": "Dîner", "items": [["Escalope de dinde", 180], ["Pain complet", 100], ["Édam", 45], ["Tomates", 60], ["Salade verte", 40]]},
+    {"name": "Burger de bœuf maison", "meal_type": "Dîner", "items": [["Bœuf haché 5%", 190], ["Pain complet", 100], ["Édam", 45], ["Tomates", 60], ["Oignon", 40]]},
+    {"name": "Wrap poulet et épinards", "meal_type": "Dîner", "items": [["Pain complet", 100], ["Blanc de poulet", 180], ["Épinards", 90], ["Tomates", 60]]},
+    {"name": "Buddha bowl tofu et légumes", "meal_type": "Dîner", "items": [["Tofu", 180], ["Quinoa cuit", 180], ["Poivron rouge", 60], ["Carottes", 60], ["Épinards", 60]]},
+    {"name": "Velouté de patate douce et carottes", "meal_type": "Dîner", "items": [["Patates douces", 280], ["Carottes", 120], ["Oignon", 60]]},
+    {"name": "Wok de crevettes aux légumes", "meal_type": "Dîner", "items": [["Crevettes", 180], ["Courgettes", 120], ["Poivron rouge", 70], ["Carottes", 60]]},
+    {"name": "Omelette espagnole aux légumes", "meal_type": "Dîner", "items": [["Œufs", 180], ["Patates douces", 200], ["Poivron rouge", 60], ["Oignon", 40]]},
+    {"name": "Saumon grillé, riz et avocat", "meal_type": "Dîner", "items": [["Saumon", 180], ["Riz basmati cuit", 200], ["Avocat", 50], ["Courgettes", 80]]},
+    {"name": "Pancake whey et banane", "meal_type": "Collation", "items": [["Avoine", 40], ["Protéine en poudre (whey)", 30], ["Banane", 100], ["Beurre de cacahuète", 15]]},
+    {"name": "Smoothie protéiné fraise-banane", "meal_type": "Collation", "items": [["Protéine en poudre (whey)", 35], ["Fraise", 90], ["Banane", 100], ["Avoine", 25]]},
+    {"name": "Yaourt grec, amandes et pomme", "meal_type": "Collation", "items": [["Yaourt grec", 200], ["Amandes", 20], ["Pomme", 100]]},
+    {"name": "Cottage cheese, banane et cajou", "meal_type": "Collation", "items": [["Cottage cheese", 180], ["Banane", 100], ["Noix de cajou", 20]]},
+    {"name": "Bowl avoine, whey et myrtilles", "meal_type": "Collation", "items": [["Avoine", 50], ["Protéine en poudre (whey)", 30], ["Myrtilles", 60], ["Amandes", 15]]},
+    {"name": "Tartine edam-avocat", "meal_type": "Collation", "items": [["Pain complet", 70], ["Édam", 45], ["Avocat", 50], ["Tomates", 40]]},
 ]
 
 MEAL_TYPES_PER_DAY = ["Petit-déjeuner", "Déjeuner", "Collation", "Dîner"]
@@ -144,6 +206,38 @@ def _recipe_is_compatible(recipe, user_preferences, foods_by_name):
         if excluded & set(food_tags):
             return False
     return True
+
+
+def _meal_kcal(items, foods_by_name):
+    """Calories totales d'un repas (kcal pour 100 g)."""
+    total = 0.0
+    for food_name, qty in items:
+        food = foods_by_name.get(food_name)
+        if food is not None:
+            total += (qty / 100.0) * food.kcal
+    return total
+
+
+def _scale_items(items, foods_by_name, target_kcal):
+    """Met les portions d'une recette à l'échelle pour approcher `target_kcal`."""
+    if target_kcal <= 0:
+        return items
+    current = _meal_kcal(items, foods_by_name)
+    if current <= 0:
+        return items
+    factor = target_kcal / current
+    factor = max(0.3, min(2.5, factor))
+    if abs(factor - 1.0) < 0.1:
+        return items
+    scaled = []
+    for food_name, qty in items:
+        food = foods_by_name.get(food_name)
+        if food is None:
+            scaled.append([food_name, qty])
+            continue
+        new_qty = max(5, min(1500, round(qty * factor / 5.0) * 5))
+        scaled.append([food_name, new_qty])
+    return scaled
 
 
 def generate_meal_plan(user, num_days, foods_by_name):
@@ -196,6 +290,8 @@ def generate_meal_plan(user, num_days, foods_by_name):
     for day in range(1, num_days + 1):
         for type_ in MEAL_TYPES_PER_DAY:
             recipe = pick_for(type_)
+            target_meal_kcal = target_calories * MEAL_CALORIE_SHARE.get(type_, 0.25)
+            items = _scale_items(recipe["items"], foods_by_name, target_meal_kcal)
             meal = Meal(
                 meal_plan_id=plan.id,
                 day=day,
@@ -204,7 +300,7 @@ def generate_meal_plan(user, num_days, foods_by_name):
             )
             db.session.add(meal)
             db.session.flush()
-            for food_name, qty in recipe["items"]:
+            for food_name, qty in items:
                 food = foods_by_name.get(food_name)
                 if food is None:
                     continue
@@ -215,7 +311,11 @@ def generate_meal_plan(user, num_days, foods_by_name):
 
 
 def build_shopping_list(plan, foods_by_name):
-    """Agrège tous les ingrédients du plan en une liste de courses (grammes)."""
+    """Agrège tous les ingrédients du plan en une liste de courses.
+
+    Les quantités sont arrondies aux formats de vente du magasin
+    (barquettes de 500 g de bœuf, pots de fromage blanc, etc.).
+    """
     from models import ShoppingList, db
 
     aggregate = {}
@@ -223,7 +323,26 @@ def build_shopping_list(plan, foods_by_name):
         for item in meal.items:
             aggregate[item.food.name] = aggregate.get(item.food.name, 0) + item.quantity
 
-    items = [{"name": name, "qty_grams": round(qty, 1)} for name, qty in aggregate.items()]
+    items = []
+    for name, qty in aggregate.items():
+        pack = STORE_PACKAGES_G.get(name)
+        if pack:
+            n_packs = max(1, int(math.ceil(qty / pack)))
+            rounded = n_packs * pack
+            pack_note = f"{n_packs} × {pack}g" if n_packs > 1 else None
+        else:
+            n_packs = None
+            rounded = int(math.ceil(qty / 50.0)) * 50
+            pack_note = None
+        items.append({
+            "name": name,
+            "qty_grams": rounded,
+            "needed_grams": round(qty, 1),
+            "pack_size": pack,
+            "pack_count": n_packs,
+            "pack_note": pack_note,
+        })
+
     list_obj = ShoppingList(user_id=plan.user_id, meal_plan_id=plan.id, items=json.dumps(items))
     db.session.add(list_obj)
     db.session.commit()

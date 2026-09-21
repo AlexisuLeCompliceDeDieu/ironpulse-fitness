@@ -28,8 +28,13 @@ def generate():
         return jsonify({"error": "Non authentifié"}), 401
 
     data = request.get_json(silent=True) or {}
+    explicit_goal = bool(data.get("goal"))
     goal = data.get("goal") or user.goal
     split_type = data.get("split_type")
+    # Un split "par objectif" choisi en page : on applique le split par défaut
+    # de l'objectif, sans laisser le split du profil l'écraser.
+    if not split_type and explicit_goal:
+        split_type = goal
     days_per_week = data.get("days_per_week")
     if days_per_week:
         days_per_week = int(days_per_week)

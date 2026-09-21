@@ -48,14 +48,15 @@ export default function TrainingProgram({ user }) {
       .catch(() => setProgram(null));
   }, []);
 
-  // Pré-sélection automatique depuis le profil (split choisi OU objectif),
-  // pour éviter de re-rentrer les choses à la main.
+  // Pré-sélection automatique depuis le profil : uniquement si un split explicite
+  // a été choisi (jamais un split par objectif, pour éviter un PPL surprise).
   useEffect(() => {
     if (presets.length === 0 || selectedSplit) return;
-    const fromProfileSplit = presets.find((p) => p.split_type && p.split_type === user.split_type);
-    const fromGoal = presets.find((p) => p.goal === user.goal);
-    setSelectedSplit(fromProfileSplit || fromGoal || null);
-  }, [presets, user.split_type, user.goal]);
+    const fromProfileSplit = presets.find(
+      (p) => p.kind === "split" && p.split_type && p.split_type === user.split_type
+    );
+    setSelectedSplit(fromProfileSplit || null);
+  }, [presets, user.split_type]);
 
   const splitOptions = presets.filter((p) => p.kind === "split");
   const goalOptions = presets.filter((p) => p.kind === "goal");
@@ -65,8 +66,12 @@ export default function TrainingProgram({ user }) {
     setLoading(true);
     setMessage("");
     try {
+      const isSplit = selectedSplit.kind === "split";
       const res = await api.post("/training/program/generate", {
-        split_type: selectedSplit.split_type,
+        // Un split nommé est envoyé en split_type ; un split par objectif en goal.
+        // Sans cela, le split du profil peut écraser le choix du jour.
+        split_type: isSplit ? selectedSplit.split_type : undefined,
+        goal: isSplit ? undefined : selectedSplit.goal,
         days_per_week: daysPerWeek,
       });
       setMessage(res.data.message);
@@ -91,8 +96,11 @@ export default function TrainingProgram({ user }) {
 
         <div className="card" style={{ marginTop: "1rem" }}>
           <p style={{ margin: 0, fontSize: "0.95rem" }}>
-            ✅ <strong>Le split et le nombre de séances sont pré-remplis depuis votre profil.</strong>{" "}
-            Cliquez simplement sur « ⚡ Générer mon programme » en bas pour obtenir un plan adapté, ou ajustez ci-dessous.
+            {user.split_type ? (
+              <>✅ <strong>Le split est pré-rempli depuis votre profil.</strong> Cliquez simplement sur « ⚡ Générer mon programme » en bas, ou changez de type de séance ci-dessous.</>
+            ) : (
+              <>👆 <strong>Choisissez votre type de séance ci-dessous</strong> : un split précis (Upper/Lower, PPL…) ou un split automatique selon votre objectif.</>
+            )}
           </p>
         </div>
 

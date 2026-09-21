@@ -71,7 +71,7 @@ function ConfirmModal({ open, onConfirm, onCancel, message }) {
   return (
     <div className="modal-overlay" onClick={onCancel}>
       <div className="modal-card confirm-modal" onClick={(e) => e.stopPropagation()}>
-        <h3 style={{ marginTop: 0 }}>⚖️ Changer le poids du jour ?</h3>
+        <h3 style={{ marginTop: 0 }}>⚖️ Remplacer le poids ?</h3>
         <p className="muted" style={{ marginTop: 0 }}>{message}</p>
         <div style={{ display: "flex", gap: "0.6rem", justifyContent: "flex-end", flexWrap: "wrap" }}>
           <button className="btn btn-secondary" onClick={onCancel}>Annuler</button>
@@ -80,6 +80,13 @@ function ConfirmModal({ open, onConfirm, onCancel, message }) {
       </div>
     </div>
   );
+}
+
+function localDate() {
+  const d = new Date();
+  const m = String(d.getMonth() + 1).padStart(2, "0");
+  const day = String(d.getDate()).padStart(2, "0");
+  return `${d.getFullYear()}-${m}-${day}`;
 }
 
 export default function Profile({ user, onUpdate }) {
@@ -97,6 +104,7 @@ export default function Profile({ user, onUpdate }) {
     dietary_preferences: user.dietary_preferences || [],
   });
   const [weightEntry, setWeightEntry] = useState("");
+  const [weightDate, setWeightDate] = useState(localDate());
   const [objMsg, setObjMsg] = useState("");
   const [objOk, setObjOk] = useState(true);
   const [eqMsg, setEqMsg] = useState("");
@@ -167,13 +175,13 @@ export default function Profile({ user, onUpdate }) {
   const doAddWeight = async (replacing) => {
     setConfirm(null);
     try {
-      const res = await api.post("/profile/weight", { weight: Number(weightEntry) });
+      const res = await api.post("/profile/weight", { weight: Number(weightEntry), date: weightDate });
       setWeightEntry("");
       const action = res.data?.action;
       if (action === "replaced") {
-        setWeightMsg("Poids du jour mis à jour (valeur précédente remplacée)", true);
+        setWeightMsg(`Poids du ${weightDate} mis à jour (valeur précédente remplacée)`, true);
       } else {
-        setWeightMsg("Poids du jour enregistré !", true);
+        setWeightMsg(`Poids du ${weightDate} enregistré !`, true);
       }
       setWeightMsgOk(true);
       window.setTimeout(() => setWeightMsg(""), 3200);
@@ -187,20 +195,19 @@ export default function Profile({ user, onUpdate }) {
     if (!weightEntry) return;
     setWeightMsg("");
     try {
-      // Vérifier s'il existe déjà un poids aujourd'hui
+      // Vérifier s'il existe déjà un poids pour la date choisie
       const res = await api.get("/profile/weight");
-      const today = new Date().toISOString().slice(0, 10);
       const existing = (res.data.entries || []).find(
-        (e) => e.date && e.date.slice(0, 10) === today
+        (e) => e.date && e.date.slice(0, 10) === weightDate
       );
       if (existing) {
-        setConfirm(`Vous avez déjà enregistré ${existing.weight} kg aujourd'hui. Souhaitez-vous le remplacer par ${weightEntry} kg ?`);
+        setConfirm(`Vous avez déjà enregistré ${existing.weight} kg le ${weightDate}. Souhaitez-vous le remplacer par ${weightEntry} kg ?`);
         return;
       }
       await doAddWeight(false);
     } catch (err) {
       setWeightMsgOk(false);
-      setWeightMsg("Impossible de vérifier le poids du jour", false);
+      setWeightMsg("Impossible de vérifier le poids de cette date", false);
     }
   };
 
@@ -361,12 +368,13 @@ export default function Profile({ user, onUpdate }) {
       </div>
 
       <div className="card soft-card" data-tour="weight">
-        <h3 style={{ marginTop: 0 }}>⚖️ Enregistrer mon poids du jour</h3>
+        <h3 style={{ marginTop: 0 }}>⚖️ Enregistrer mon poids</h3>
         <p className="muted" style={{ fontSize: "0.85rem", margin: "0 0 0.8rem 0" }}>
-          Un seul poids par jour : si vous vous êtes trompé, entrez la nouvelle valeur et elle remplacera la précédente.
+          Un seul poids par date : choisissez la date (par défaut aujourd'hui) et entrez votre valeur. Saisir une valeur sur une date existante remplace la précédente.
         </p>
-        <div style={{ display: "flex", gap: "0.5rem" }}>
-          <input type="number" placeholder="Poids (kg)" value={weightEntry} onChange={(e) => setWeightEntry(e.target.value)} />
+        <div style={{ display: "flex", gap: "0.5rem", flexWrap: "wrap", alignItems: "center" }}>
+          <input type="date" value={weightDate} max={localDate()} onChange={(e) => setWeightDate(e.target.value)} style={{ maxWidth: "180px", flex: "1 1 130px" }} />
+          <input type="number" placeholder="Poids (kg)" value={weightEntry} onChange={(e) => setWeightEntry(e.target.value)} style={{ flex: "1 1 100px" }} />
           <button className="btn btn-secondary" onClick={handleAddWeight}>Ajouter</button>
         </div>
         <SaveMessage text={weightMsg} ok={weightMsgOk} />

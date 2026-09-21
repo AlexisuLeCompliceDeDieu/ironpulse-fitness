@@ -177,11 +177,10 @@ export default function Nutrition({ user }) {
                   style={{ width: "20px", height: "20px", margin: 0, accentColor: "var(--primary)" }}
                 />
                 <span style={{ flex: 1 }}>{item.name}</span>
-                <span className="badge badge-warn">
-                  {item.qty_grams >= 1000
-                    ? `${(item.qty_grams / 1000).toFixed(2).replace(/\.?0+$/, "")} kg`
-                    : `${Math.round(item.qty_grams)} g`}
-                </span>
+                {item.pack_note ? (
+                  <span className="badge badge-cyan">{item.pack_note}</span>
+                ) : null}
+                <span className="badge badge-warn">{formatQty(item.qty_grams)}</span>
               </label>
             ))}
           </div>
@@ -189,4 +188,9 @@ export default function Nutrition({ user }) {
       )}
     </div>
   );
+}
+
+function formatQty(grams) {
+  if (grams >= 1000) return `${(grams / 1000).toFixed(2).replace(/\.?0+$/, "")} kg`;
+  return `${Math.round(grams)} g`;
 }
