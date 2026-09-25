@@ -236,7 +236,7 @@ def enregistrer_seance(utilisateur_id: int, date: str = None, ressenti: int = 3,
 
 
 def generer_programme(utilisateur_id: int, consigne: str = "", seances_par_semaine: int = None,
-                      split: str = "", regeneration: bool = False) -> dict:
+                      split: str = "", regeneration: bool = False, provider: str = "") -> dict:
     """Génère (ou régénère) le programme d'entraînement via l'IA.
 
     Tool d'écriture SENSIBLE : l'agent prépare le plan, l'utilisateur le valide,
@@ -267,6 +267,7 @@ def generer_programme(utilisateur_id: int, consigne: str = "", seances_par_semai
                 split_type=split or None,
                 days_per_week=seances or len(actif.days),
                 consigne=consigne or None,
+                provider_pref=provider or None,
             )
         else:
             programme, meta = ai_program.generer_programme(
@@ -275,6 +276,7 @@ def generer_programme(utilisateur_id: int, consigne: str = "", seances_par_semai
                 split_type=split or user.split_type,
                 days_per_week=seances or user.sessions_per_week,
                 consigne=consigne or None,
+                provider_pref=provider or None,
             )
     except ai_program.ErreurIAProgram as e:
         return {"error": f"Génération IA indisponible ({e.raison}). Réessaie dans un instant."}

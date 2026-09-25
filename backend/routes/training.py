@@ -16,12 +16,22 @@ def _echec_generation(e):
     """500 lisible : le frontend affiche un message, le serveur garde la trace.
 
     Sans cela, une exception non gérée renvoie la page d'erreur HTML de Flask et
-    l'interface affiche un « Erreur » vide.
+    l'interface affiche un « Erreur » vide. Le rollback évite surtout qu'une
+    transaction PostgreSQL avortée ne fasse échouer les requêtes suivantes
+    (`InFailedSqlTransaction`) au lieu de la vraie cause.
     """
     logger.exception("Échec de la génération du programme : %r", e)
+    try:
+        db.session.rollback()
+    except Exception:
+        pass
+    cause = e
+    while getattr(cause, "__cause__", None) is not None:
+        cause = cause.__cause__
     return jsonify({
         "error": "La génération du programme a échoué.",
         "detail": f"{type(e).__name__}: {str(e)[:200]}",
+        "cause": f"{type(cause).__name__}: {str(cause)[:200]}" if cause is not e else None,
         "programme_conserve": True,
     }), 500
 
@@ -55,12 +65,14 @@ def _contexte_generation(data):
     if source not in ("auto", "ia", "algorithme"):
         source = "auto"
     consigne = (data.get("consigne") or "").strip() or None
+    provider = (data.get("provider") or "").strip() or None
     return {
         "goal": goal,
         "split_type": split_type,
         "days_per_week": days_per_week,
         "source": source,
         "consigne": consigne,
+        "provider": provider,
     }
 
 
@@ -85,6 +97,7 @@ def generate():
             days_per_week=ctx["days_per_week"],
             consigne=ctx["consigne"],
             source=ctx["source"],
+            provider_pref=ctx["provider"],
         )
     except ai_program.ErreurIAProgram as e:
         return jsonify({
@@ -140,6 +153,7 @@ def regenerate():
         "days_per_week": data.get("days_per_week") or len(actif.days),
         "source": data.get("source") or "auto",
         "consigne": data.get("consigne"),
+        "provider": data.get("provider"),
     })
     try:
         program, meta = ai_program.generer_programme(
@@ -150,6 +164,7 @@ def regenerate():
             days_per_week=ctx["days_per_week"],
             consigne=ctx["consigne"],
             source=ctx["source"],
+            provider_pref=ctx["provider"],
         )
     except ai_program.ErreurIAProgram as e:
         return jsonify({

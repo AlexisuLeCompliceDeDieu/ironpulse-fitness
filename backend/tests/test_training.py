@@ -33,7 +33,7 @@ def patch_ia(monkeypatch, contenu="auto", noms=("Push", "Pull", "Jambes"), decal
     """Simule le routeur IA. La réponse est fabriquée à l'appel (contexte applicatif)."""
     from services import ai_program
 
-    def fake(messages, max_tokens=2048, temperature=0.7):
+    def fake(messages, max_tokens=2048, temperature=0.7, provider_pref=None):
         if contenu is None:
             return None, {"reason": "daily_limit"}
         corps = _reponse_ia(noms, decalage) if contenu == "auto" else contenu
@@ -210,6 +210,25 @@ def test_generate_ia_returns_source_et_fournisseur(auth_client, monkeypatch):
     assert data["program"]["variation"] == 0
     assert [d["name"] for d in data["program"]["days"]] == ["Push", "Pull", "Jambes"]
     assert data["program"]["days"][0]["exercises"][0]["sets"] == 4
+
+
+def test_generate_transmet_le_fournisseur_choisi(auth_client, monkeypatch):
+    """Le switch de l'UI doit atteindre le routeur IA (provider_pref)."""
+    vus = {}
+
+    def fake(messages, max_tokens=2048, temperature=0.7, provider_pref=None):
+        vus["provider_pref"] = provider_pref
+        return _reponse_ia(("Push", "Pull", "Jambes"), 0), {"provider": "gemini", "label": "Google Gemini", "model": "m"}
+
+    from services import ai_program
+    monkeypatch.setattr(ai_program.ai_providers, "generate_text", fake)
+
+    resp = auth_client.post("/api/training/program/generate",
+                            json={"source": "ia", "days_per_week": 3, "provider": "gemini"})
+
+    assert resp.status_code == 201
+    assert vus["provider_pref"] == "gemini"
+    assert resp.get_json()["meta"]["fournisseur"] == "Google Gemini"
 
 
 def test_generate_repli_algorithme_quand_ia_indisponible(auth_client, monkeypatch):

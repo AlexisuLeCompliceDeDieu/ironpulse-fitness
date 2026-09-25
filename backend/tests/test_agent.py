@@ -59,7 +59,7 @@ def patch_llm(monkeypatch, script, label="Groq"):
     restante = list(script)
     appels = []
 
-    def fake_completion(messages, max_tokens=900):
+    def fake_completion(messages, max_tokens=900, provider_pref=None):
         appels.append(messages)
         reponse = restante.pop(0) if restante else _Msg("Terminé.")
         return reponse, {"provider": "groq", "label": label, "model": "modele-test"}
@@ -67,7 +67,7 @@ def patch_llm(monkeypatch, script, label="Groq"):
     monkeypatch.setattr(agent_runner, "_completion", fake_completion)
     monkeypatch.setattr(
         agent_runner.ai_providers, "available_provider",
-        lambda: ("groq", type("P", (), {"label": label})(), None),
+        lambda pref=None: ("groq", type("P", (), {"label": label})(), None),
     )
     return appels
 
@@ -90,6 +90,36 @@ def test_agent_confirmation_tool_inconnu(auth_client):
         "confirmation": {"tool": "supprimer_tout", "arguments": {}},
     })
     assert resp.status_code == 400
+
+
+def test_agent_transmet_le_fournisseur_choisi(auth_client, monkeypatch):
+    """Le choix de fournisseur du switch UI arrive jusqu'à la boucle agent."""
+    vus = {}
+
+    def fake_executer(utilisateur, demande, confirmation=None, demande_id=None, provider_pref=None):
+        vus["provider_pref"] = provider_pref
+        return {"statut": "reponse", "reponse": "ok", "etapes": []}
+
+    monkeypatch.setattr(agent_runner, "executer", fake_executer)
+
+    resp = auth_client.post("/api/agent/", json={"demande": "bonjour", "provider": "gemini"})
+    assert resp.status_code == 200
+    assert vus["provider_pref"] == "gemini"
+
+
+def test_agent_fournisseur_inconnu_ignore(auth_client, monkeypatch):
+    """Un identifiant de fournisseur inconnu ne doit pas casser la requête."""
+    vus = {}
+
+    def fake_executer(utilisateur, demande, confirmation=None, demande_id=None, provider_pref=None):
+        vus["provider_pref"] = provider_pref
+        return {"statut": "reponse", "reponse": "ok", "etapes": []}
+
+    monkeypatch.setattr(agent_runner, "executer", fake_executer)
+
+    resp = auth_client.post("/api/agent/", json={"demande": "bonjour", "provider": "skynet"})
+    assert resp.status_code == 200
+    assert vus["provider_pref"] is None
 
 
 # ── Boucle agent ────────────────────────────────────────────────────
@@ -160,7 +190,7 @@ def test_executer_max_tours(app_ctx, monkeypatch):
 def test_executer_quota_epuise(app_ctx, monkeypatch):
     """Aucun fournisseur IA disponible -> la boucle s'arrête proprement."""
     patch_llm(monkeypatch, [_Resp(_Msg("", []))])
-    monkeypatch.setattr(agent_runner.ai_providers, "available_provider", lambda: (None, None, "none_available"))
+    monkeypatch.setattr(agent_runner.ai_providers, "available_provider", lambda pref=None: (None, None, "none_available"))
 
     utilisateur = seed_user()
     resultat = agent_runner.executer(utilisateur, "dis bonjour")

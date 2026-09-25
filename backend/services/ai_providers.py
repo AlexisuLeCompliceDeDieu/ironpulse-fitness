@@ -508,19 +508,26 @@ def explain_none_available():
     return "Aucune IA n'a pu répondre, réessaie dans un instant."
 
 
-def provider_order():
+def provider_order(pref=None):
+    """Ordre de préférence. `pref` (choix explicite de l'utilisateur) passe en premier.
+
+    Le failover reste actif : si le fournisseur choisi échoue ou est bloqué, on
+    bascule quand même sur les suivants.
+    """
     raw = os.environ.get("AI_PROVIDER_ORDER", ",".join(DEFAULT_ORDER))
     order = [pid.strip() for pid in raw.split(",") if pid.strip() in PROVIDERS]
     # Complète l'ordre avec les fournisseurs configurés absents
     for pid in PROVIDERS:
         if pid not in order and PROVIDERS[pid].configured:
             order.append(pid)
+    if pref and pref in PROVIDERS:
+        order = [pref] + [pid for pid in order if pid != pref]
     return order or ["groq"]
 
 
-def available_provider():
-    """Retourne (provider_id, provider, reason_si_bloqué)."""
-    for pid in provider_order():
+def available_provider(pref=None):
+    """Retourne (provider_id, provider, raison_si_bloqué)."""
+    for pid in provider_order(pref):
         p = PROVIDERS[pid]
         if not p.configured:
             continue
@@ -532,14 +539,22 @@ def available_provider():
     return None, None, "none_available"
 
 
-def generate_text(messages, max_tokens=2048, temperature=0.7):
+def _providers_essai(pref=None):
+    """Fournisseurs réellement tentés (configurés uniquement), dans l'ordre."""
+    return [pid for pid in provider_order(pref) if PROVIDERS[pid].configured]
+
+
+def generate_text(messages, max_tokens=2048, temperature=0.7, provider_pref=None):
     """Génère un texte en testant chaque fournisseur configuré (failover).
+
+    `provider_pref` : choix explicite de l'utilisateur (switch dans l'UI). Il est
+    essayé en premier, les autres restent en secours.
 
     Retourne (text, info) avec info = {provider, label, model} en cas de succès,
     ou (None, info) où info["reason"] explique l'échec global.
     """
     attempts = []
-    for pid in provider_order():
+    for pid in provider_order(provider_pref):
         p = PROVIDERS[pid]
         if not p.configured:
             attempts.append({"provider": pid, "ok": False, "reason": "not_configured"})
@@ -559,7 +574,8 @@ def generate_text(messages, max_tokens=2048, temperature=0.7):
     return None, _echec_global(attempts)
 
 
-def generate_with_tools(messages, tools, max_tokens=2048, temperature=0.7, tool_choice="auto"):
+def generate_with_tools(messages, tools, max_tokens=2048, temperature=0.7,
+                        tool_choice="auto", provider_pref=None):
     """Function calling avec failover (utilisé par l'agent IRONPULSE).
 
     Les fournisseurs OpenAI-compatible reçoivent les tools telles quelles ;
@@ -567,11 +583,13 @@ def generate_with_tools(messages, tools, max_tokens=2048, temperature=0.7, tool_
     format normalisé, ce qui rend l'agent indépendant du fournisseur :
         {"content": str, "tool_calls": [{"id", "name", "arguments": dict}, ...]}
 
+    `provider_pref` : fournisseur choisi par l'utilisateur, essayé en premier.
+
     Retourne (résultat, info) avec info = {provider, label, model} en cas de
     succès, ou (None, info) où info["reason"] explique l'échec global.
     """
     attempts = []
-    for pid in provider_order():
+    for pid in provider_order(provider_pref):
         p = PROVIDERS[pid]
         if not p.configured:
             attempts.append({"provider": pid, "ok": False, "reason": "not_configured"})
@@ -598,16 +616,17 @@ def _prepend(first, rest):
     yield from rest
 
 
-def stream_text(messages, max_tokens=2048, temperature=0.7):
+def stream_text(messages, max_tokens=2048, temperature=0.7, provider_pref=None):
     """Démarre un stream chez le premier fournisseur disponible (avec failover).
 
+    `provider_pref` : fournisseur choisi par l'utilisateur, essayé en premier.
     Les générateurs (SSE…) sont paresseux : on consomme le premier morceau de
     façon contrôlée ici pour valider la connexion. Si le fournisseur échoue
     avant d'avoir produit un token, on essaie le suivant. Retourne
     (generator, info) ou (None, info) si rien ne peut démarrer.
     """
     attempts = []
-    for pid in provider_order():
+    for pid in provider_order(provider_pref):
         p = PROVIDERS[pid]
         if not p.configured:
             continue
@@ -634,7 +653,23 @@ def stream_text(messages, max_tokens=2048, temperature=0.7):
     return None, _echec_global(attempts)
 
 
-def active_provider_id():
+def active_provider_id(pref=None):
     """Premier fournisseur configuré ET actuellement utilisable (pour l'UI)."""
-    pid, _, _ = available_provider()
+    pid, _, _ = available_provider(pref)
     return pid
+
+
+def providers_liste():
+    """Catalogue envoyé au frontend pour construire le switch de fournisseur."""
+    diag = quota_tracker.diagnostic()
+    return [
+        {
+            "id": pid,
+            "label": PROVIDERS[pid].label if pid in PROVIDERS else pid,
+            "model": PROVIDERS[pid].model if pid in PROVIDERS else "",
+            "configured": st.get("configured", False),
+            "usable": st.get("enabled", False),
+            "raison": quota_tracker.explain(st.get("blocked_reason")),
+        }
+        for pid, st in diag["providers"].items()
+    ]

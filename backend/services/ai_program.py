@@ -348,9 +348,10 @@ def _nb_programmes(user):
 
 
 def generer_programme_ia(user, available_equipment=None, goal=None, split_type=None,
-                         days_per_week=None, consigne=None, variation=None):
+                         days_per_week=None, consigne=None, variation=None, provider_pref=None):
     """Programme proposé par l'IA, avec failover multi-fournisseurs.
 
+    `provider_pref` : fournisseur choisi par l'utilisateur, essayé en premier.
     Lève `ErreurIAProgram` si aucun fournisseur n'est disponible ou si la réponse
     est inexploitable : l'appelant bascule alors sur l'algorithme.
     """
@@ -368,7 +369,9 @@ def generer_programme_ia(user, available_equipment=None, goal=None, split_type=N
         user, ctx, day_specs, catalogue, available_equipment or [],
         programme_actif, consigne, variation,
     )
-    texte, info = ai_providers.generate_text(messages, max_tokens=MAX_TOKENS, temperature=TEMPERATURE)
+    texte, info = ai_providers.generate_text(
+        messages, max_tokens=MAX_TOKENS, temperature=TEMPERATURE, provider_pref=provider_pref
+    )
     if texte is None:
         raise ErreurIAProgram(info.get("reason", "ia_indisponible"))
 
@@ -408,10 +411,11 @@ def raison_lisible(raison):
 
 
 def generer_programme(user, available_equipment=None, goal=None, split_type=None,
-                      days_per_week=None, consigne=None, source="auto"):
+                      days_per_week=None, consigne=None, source="auto", provider_pref=None):
     """Point d'entrée unique : IA si possible et si demandée, sinon algorithme.
 
     `source` : "auto" (IA avec repli), "ia" (IA obligatoire), "algorithme" (historique).
+    `provider_pref` : fournisseur IA choisi par l'utilisateur (prioritaire).
     """
     if source not in ("auto", "ia", "algorithme"):
         source = "auto"
@@ -419,7 +423,8 @@ def generer_programme(user, available_equipment=None, goal=None, split_type=None
     if source in ("auto", "ia"):
         try:
             return generer_programme_ia(
-                user, available_equipment, goal, split_type, days_per_week, consigne)
+                user, available_equipment, goal, split_type, days_per_week, consigne,
+                provider_pref=provider_pref)
         except ErreurIAProgram as e:
             if source == "ia":
                 raise

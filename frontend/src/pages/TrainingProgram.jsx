@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import api from "../api.js";
 import PageHero, { FIT_IMAGES } from "../components/PageHero.jsx";
+import IaSwitch from "../components/IaSwitch.jsx";
 
 const GOAL_META = {
   prise_masse: { label: "Prise de masse", icon: "💪", desc: "Volume et calories pour prendre du muscle" },
@@ -55,6 +56,13 @@ export default function TrainingProgram({ user }) {
   const [confirmation, setConfirmation] = useState(null);
   const [iaStatus, setIaStatus] = useState(null);
   const [resetBusy, setResetBusy] = useState(false);
+  const [provider, setProvider] = useState(() => {
+    try {
+      return localStorage.getItem("ironpulse_ia_provider") || "";
+    } catch (e) {
+      return "";
+    }
+  });
 
   const chargerStatutIa = () => {
     api.get("/chat/status")
@@ -132,6 +140,7 @@ export default function TrainingProgram({ user }) {
         goal: isSplit ? undefined : selectedSplit.goal,
         days_per_week: daysPerWeek,
         source,
+        provider: provider || undefined,
         consigne: consigne.trim() || undefined,
       });
       setMessage(res.data.message);
@@ -152,6 +161,7 @@ export default function TrainingProgram({ user }) {
     try {
       const res = await api.post("/training/program/regenerate", {
         source,
+        provider: provider || undefined,
         consigne: consigne.trim() || undefined,
       });
       setMessage(res.data.message);
@@ -225,7 +235,7 @@ export default function TrainingProgram({ user }) {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
-        body: JSON.stringify({ demande }),
+        body: JSON.stringify({ demande, provider: provider || null }),
       });
       if (!resp.ok) {
         const data = await resp.json().catch(() => ({}));
@@ -255,6 +265,7 @@ export default function TrainingProgram({ user }) {
         credentials: "include",
         body: JSON.stringify({
           demande: "Confirmation d'action",
+          provider: provider || null,
           confirmation: {
             tool: confirmation.tool,
             arguments: confirmation.arguments,
@@ -375,6 +386,8 @@ export default function TrainingProgram({ user }) {
           consigne={consigne}
           setConsigne={setConsigne}
           iaAvailable={iaAvailable}
+          provider={provider}
+          setProvider={setProvider}
         />
 
         {iaStatus && iaStatus.configured?.length > 0 && iaStatus.usable?.length === 0 && (
@@ -445,6 +458,8 @@ export default function TrainingProgram({ user }) {
           consigne={consigne}
           setConsigne={setConsigne}
           iaAvailable={iaAvailable}
+          provider={provider}
+          setProvider={setProvider}
           compact
         />
         <div style={{ display: "flex", gap: "0.6rem", flexWrap: "wrap", marginTop: "0.8rem" }}>
@@ -524,7 +539,7 @@ function sourceBadge(program, meta) {
   return "⚙️ Généré par l'algorithme";
 }
 
-function IaPanel({ source, setSource, consigne, setConsigne, iaAvailable, compact = false }) {
+function IaPanel({ source, setSource, consigne, setConsigne, iaAvailable, provider, setProvider, compact = false }) {
   return (
     <div className="card" style={compact ? { background: "var(--grad-soft)", marginTop: "0.8rem" } : { marginTop: "1.5rem" }}>
       <h3 style={{ marginTop: 0 }}>🧠 Génération</h3>
@@ -544,6 +559,11 @@ function IaPanel({ source, setSource, consigne, setConsigne, iaAvailable, compac
           ⚙️ Algorithme
         </button>
       </div>
+      {source !== "algorithme" && (
+        <div style={{ marginBottom: "0.8rem" }}>
+          <IaSwitch value={provider} onChange={setProvider} compact />
+        </div>
+      )}
       {!iaAvailable && (
         <p className="muted" style={{ fontSize: "0.85rem", marginTop: 0 }}>
           Aucune IA configurée pour l'instant : le mode IA basculera automatiquement sur l'algorithme.

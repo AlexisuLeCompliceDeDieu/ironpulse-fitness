@@ -206,6 +206,84 @@ def test_available_provider_none(monkeypatch):
     assert reason == "none_available"
 
 
+# ── Choix explicite du fournisseur (switch UI) ───────────────────────
+
+def test_provider_order_place_le_choix_en_tete(monkeypatch):
+    monkeypatch.setattr(ai_providers, "PROVIDERS", _providers(
+        FakeProvider("groq", "Groq"),
+        FakeProvider("gemini", "Google Gemini"),
+    ))
+    assert ai_providers.provider_order()[:2] == ["groq", "gemini"]
+    assert ai_providers.provider_order("gemini")[0] == "gemini"
+    assert ai_providers.provider_order("gemini").count("gemini") == 1
+    assert ai_providers.provider_order("inconnu")[0] == "groq"
+
+
+def test_available_provider_honore_le_choix_meme_bloque(monkeypatch):
+    """Un fournisseur bloqué est ignoré : le choix de l'utilisateur n'est pas un bypass."""
+    monkeypatch.setattr(ai_providers, "PROVIDERS", _providers(
+        FakeProvider("groq", "Groq"),
+        FakeProvider("gemini", "Google Gemini"),
+    ))
+    quota_tracker.disable_provider("gemini", "daily_limit")
+    pid, _, _ = ai_providers.available_provider("gemini")
+    assert pid == "groq"
+
+
+def test_generate_text_utilise_le_fournisseur_choisi(monkeypatch):
+    """Le fournisseur choisi reçoit la requête en premier."""
+    groq = FakeProvider("groq", "Groq", text="ok-groq")
+    gemini = FakeProvider("gemini", "Google Gemini", text="ok-gemini")
+    monkeypatch.setattr(ai_providers, "PROVIDERS", _providers(groq, gemini))
+
+    texte, info = ai_providers.generate_text(
+        [{"role": "user", "content": "x"}], provider_pref="gemini"
+    )
+
+    assert texte == "ok-gemini"
+    assert info["provider"] == "gemini"
+
+
+def test_generate_with_tools_utilise_le_fournisseur_choisi(monkeypatch):
+    groq = FakeProvider("groq", "Groq")
+    gemini = FakeProvider("gemini", "Google Gemini",
+                          tools_result={"content": "coucou", "tool_calls": []})
+    monkeypatch.setattr(ai_providers, "PROVIDERS", _providers(groq, gemini))
+
+    resultat, info = ai_providers.generate_with_tools(
+        [{"role": "user", "content": "x"}], [], provider_pref="gemini"
+    )
+
+    assert info["provider"] == "gemini"
+    assert resultat["content"] == "coucou"
+    assert gemini.tools_calls == 1
+    assert groq.tools_calls == 0
+
+
+def test_fournisseur_choisi_en_echec_bascule_sur_le_suivant(monkeypatch):
+    """Failover conservé : si le choix échoue, on essaie les suivants."""
+    groq = FakeProvider("groq", "Groq", text="ok-groq")
+    gemini = FakeProvider("gemini", "Google Gemini",
+                          fail=ai_providers.ProviderError(500, "boom"))
+    monkeypatch.setattr(ai_providers, "PROVIDERS", _providers(groq, gemini))
+
+    texte, info = ai_providers.generate_text(
+        [{"role": "user", "content": "x"}], provider_pref="gemini"
+    )
+
+    assert texte == "ok-groq"
+    assert info["provider"] == "groq"
+
+
+def test_providers_liste_pour_le_switch_ui(monkeypatch):
+    monkeypatch.setattr(quota_tracker, "_provider_configured", lambda pid: pid == "groq")
+    catalogue = ai_providers.providers_liste()
+
+    par_id = {p["id"]: p for p in catalogue}
+    assert par_id["groq"]["configured"] is True
+    assert "label" in par_id["groq"] and "usable" in par_id["groq"]
+
+
 # ── Diagnostic et réactivation ──────────────────────────────────────
 
 def test_diagnostic_explique_le_blocage(monkeypatch):

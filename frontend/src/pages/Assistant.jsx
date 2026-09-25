@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import api from "../api.js";
 import PageHero, { FIT_IMAGES } from "../components/PageHero.jsx";
+import IaSwitch from "../components/IaSwitch.jsx";
 
 const CHAT_SUGGESTIONS = [
   "Que manger pour prendre du muscle ?",
@@ -29,6 +30,13 @@ export default function Assistant({ user }) {
   const [showHistory, setShowHistory] = useState(false);
   const [histLoading, setHistLoading] = useState(false);
   const [resetBusy, setResetBusy] = useState(false);
+  const [provider, setProvider] = useState(() => {
+    try {
+      return localStorage.getItem("ironpulse_ia_provider") || "";
+    } catch (e) {
+      return "";
+    }
+  });
   const abortRef = useRef(null);
   const bottomRef = useRef(null);
   const storageKey = `ironpulse_assistant_${user.id}`;
@@ -121,7 +129,7 @@ export default function Assistant({ user }) {
         headers: { "Content-Type": "application/json" },
         credentials: "include",
         signal: controller.signal,
-        body: JSON.stringify({ messages: history }),
+        body: JSON.stringify({ messages: history, provider: provider || null }),
       });
 
       if (!resp.ok) {
@@ -279,7 +287,7 @@ export default function Assistant({ user }) {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
-        body: JSON.stringify({ demande: text }),
+        body: JSON.stringify({ demande: text, provider: provider || null }),
       });
       if (!resp.ok) {
         const data = await resp.json().catch(() => ({}));
@@ -312,6 +320,7 @@ export default function Assistant({ user }) {
         credentials: "include",
         body: JSON.stringify({
           demande: entry.confirmation.demande || entry.demande || "Confirmation d'action",
+          provider: provider || null,
           confirmation: {
             tool: entry.confirmation.tool,
             arguments: entry.confirmation.arguments,
@@ -377,6 +386,8 @@ export default function Assistant({ user }) {
           💬 Chat (conversation)
         </button>
       </div>
+
+      <IaSwitch value={provider} onChange={setProvider} />
 
       {mode === "agent" && outils.length > 0 && (
         <div className="agent-panel">

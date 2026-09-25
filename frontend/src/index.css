@@ -1737,6 +1737,46 @@ td {
   color: #fff;
 }
 
+/* --- Sélecteur de fournisseur IA --- */
+.ia-switch {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  flex-wrap: wrap;
+  margin-bottom: 1rem;
+}
+
+.ia-switch.compact {
+  margin-bottom: 0.6rem;
+}
+
+.ia-switch .mode-switch {
+  margin-bottom: 0;
+}
+
+.ia-switch-label {
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.ia-switch .mode-btn {
+  padding: 0.35rem 0.75rem;
+  font-size: 0.82rem;
+}
+
+.ia-dot {
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  margin-left: 0.35rem;
+  border-radius: 50%;
+  background: var(--danger);
+  vertical-align: middle;
+}
+
 /* --- Panneaux repliables : outils de l'agent + historique --- */
 .agent-panel {
   border: 1px solid var(--border);

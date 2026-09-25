@@ -57,17 +57,20 @@ RÈGLES STRICTES :
 10. Cite brièvement les données réelles que tu as obtenues par les outils (poids, volume, ressenti...) pour montrer que ta réponse s'appuie sur la base."""
 
 
-def _completion(messages, max_tokens=900):
+def _completion(messages, max_tokens=900, provider_pref=None):
     """Appel LLM avec function calling via le routeur multi-fournisseurs.
 
-    Factorisé pour être facilement mocké en test. Lève si aucun fournisseur
-    n'a pu répondre (le routeur a déjà tenté tous les fournisseurs disponibles).
+    Factorisé pour être facilement mocké en test. `provider_pref` est le
+    fournisseur choisi par l'utilisateur (switch dans l'UI) : il est essayé en
+    premier, le failover restant actif. Lève si aucun fournisseur n'a pu
+    répondre (le routeur a déjà tenté tous les fournisseurs disponibles).
     """
     resultat, info = ai_providers.generate_with_tools(
         messages,
         TOOL_SCHEMAS,
         max_tokens=max_tokens,
         temperature=TEMPERATURE,
+        provider_pref=provider_pref,
     )
     if resultat is None:
         raise RuntimeError(f"Aucun fournisseur IA n'a pu répondre ({info.get('reason')})")
@@ -86,11 +89,13 @@ def _save_resultat(demande_id, etape, outil, arguments, reponse):
     db.session.flush()
 
 
-def _execute_tool(nom, arguments):
+def _execute_tool(nom, arguments, provider_pref=None):
     """Exécute un tool par son nom. Ne doit jamais lever : renvoie un dict d'erreur.
 
     Seuls les paramètres déclarés par le tool sont transmis (calculer_macros,
-    par exemple, est pur et ignore `utilisateur_id`).
+    par exemple, est pur et ignore `utilisateur_id`). `provider_pref` (choix de
+    l'utilisateur dans l'UI) est injecté sur les tools qui savent l'utiliser :
+    le LLM ne décide jamais lui-même quel fournisseur IA appeler.
     """
     fonction = TOOLS_IMPL.get(nom)
     if fonction is None:
@@ -98,6 +103,8 @@ def _execute_tool(nom, arguments):
     try:
         acceptes = set(inspect.signature(fonction).parameters)
         args_filtres = {k: v for k, v in arguments.items() if k in acceptes}
+        if provider_pref and "provider" in acceptes:
+            args_filtres["provider"] = provider_pref
         return fonction(**args_filtres)
     except Exception as e:  # noqa: BLE001
         logger.error(f"Tool {nom} en échec : {e!r}")
@@ -125,12 +132,16 @@ def _questions_sensibles(utilisateur, nom, arguments):
 
 
 def _args_affichage(args):
-    """Arguments sans l'identifiant technique (injecté par le code, pas par le LLM)."""
-    return {k: v for k, v in args.items() if k != "utilisateur_id"}
+    """Arguments sans l'identifiant technique (injecté par le code, pas par le LLM)
+    ni le fournisseur (choisi par l'utilisateur dans l'UI, pas par le modèle)."""
+    return {k: v for k, v in args.items() if k not in ("utilisateur_id", "provider")}
 
 
-def executer_iter(utilisateur, demande, confirmation=None, demande_id=None):
+def executer_iter(utilisateur, demande, confirmation=None, demande_id=None, provider_pref=None):
     """Générateur de la boucle agent : yield un événement à chaque étape.
+
+    `provider_pref` : fournisseur IA choisi par l'utilisateur, prioritaire mais
+    pas exclusif (le failover reste actif).
 
     Événements : debut, tour, tool_debut, tool_fin, confirmation, reponse,
     limite, quota, erreur. La valeur de retour (StopIteration.value) est le
@@ -168,12 +179,13 @@ def executer_iter(utilisateur, demande, confirmation=None, demande_id=None):
         nom_c = confirmation.get("tool")
         args_c = dict(confirmation.get("arguments") or {})
         args_c.setdefault("utilisateur_id", utilisateur.id)
+        args_c.pop("provider", None)
         meta = meta_tool(nom_c)
 
         yield {"type": "tool_debut", "etape": etape, "outil": nom_c,
                "arguments": _args_affichage(args_c), **meta}
         t0 = time.perf_counter()
-        resultat_c = _execute_tool(nom_c, args_c)
+        resultat_c = _execute_tool(nom_c, args_c, provider_pref)
         duree_ms = int((time.perf_counter() - t0) * 1000)
         _save_resultat(demande_row.id, etape, nom_c, args_c, resultat_c)
         etapes.append({"etape": etape, "outil": nom_c, "arguments": _args_affichage(args_c),
@@ -196,7 +208,7 @@ def executer_iter(utilisateur, demande, confirmation=None, demande_id=None):
 
     for tour in range(MAX_TOURS):
         # Garde-fou coûts : au moins un fournisseur doit être utilisable
-        provider_id, provider, _raison = ai_providers.available_provider()
+        provider_id, provider, _raison = ai_providers.available_provider(provider_pref)
         if provider_id is None:
             _save_resultat(demande_row.id, etape, None, None, "Aucun fournisseur IA disponible.")
             db.session.commit()
@@ -211,7 +223,7 @@ def executer_iter(utilisateur, demande, confirmation=None, demande_id=None):
                "fournisseur": provider.label, "provider": provider_id}
 
         try:
-            reponse_llm, info = _completion(messages)
+            reponse_llm, info = _completion(messages, provider_pref=provider_pref)
         except Exception as e:  # noqa: BLE001
             logger.error(f"Appel LLM de l'agent en échec : {e}")
             db.session.commit()
@@ -266,7 +278,7 @@ def executer_iter(utilisateur, demande, confirmation=None, demande_id=None):
             yield {"type": "tool_debut", "etape": etape, "outil": nom,
                    "arguments": _args_affichage(args), **meta}
             t0 = time.perf_counter()
-            resultat = _execute_tool(nom, args)
+            resultat = _execute_tool(nom, args, provider_pref)
             duree_ms = int((time.perf_counter() - t0) * 1000)
             observation = json.dumps(resultat, ensure_ascii=False, default=str)
             _save_resultat(demande_row.id, etape, nom, args, resultat)
@@ -293,7 +305,7 @@ def executer_iter(utilisateur, demande, confirmation=None, demande_id=None):
     return res
 
 
-def executer(utilisateur, demande, confirmation=None, demande_id=None):
+def executer(utilisateur, demande, confirmation=None, demande_id=None, provider_pref=None):
     """Version synchrone de la boucle : consomme `executer_iter` et renvoie le résultat.
 
     Retourne un dict :
@@ -301,7 +313,10 @@ def executer(utilisateur, demande, confirmation=None, demande_id=None):
       reponse : texte final (si statut = reponse)
       etapes  : liste des étapes exécutées {etape, outil, arguments, resultat, resume}
     """
-    generateur = executer_iter(utilisateur, demande, confirmation=confirmation, demande_id=demande_id)
+    generateur = executer_iter(
+        utilisateur, demande, confirmation=confirmation, demande_id=demande_id,
+        provider_pref=provider_pref,
+    )
     try:
         while True:
             next(generateur)

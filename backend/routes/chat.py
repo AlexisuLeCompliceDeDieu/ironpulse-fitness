@@ -85,19 +85,20 @@ def chat():
     payload = [{"role": "system", "content": _system_prompt(user)}] + history
 
     # Vérification QUANTIQUE : un fournisseur est-il disponible ?
-    pid, provider, _ = ai_providers.available_provider()
+    pref = data.get("provider") or None
+    pid, provider, _ = ai_providers.available_provider(pref)
     if provider is None:
         return jsonify({
-            "error": "Aucune IA disponible (tous les fournisseurs ont atteint leur limite).",
+            "error": ai_providers.explain_none_available(),
             "quota": quota_status(),
         }), 429
 
     stream, info = ai_providers.stream_text(
-        payload, max_tokens=MAX_TOKENS, temperature=TEMPERATURE
+        payload, max_tokens=MAX_TOKENS, temperature=TEMPERATURE, provider_pref=pref
     )
     if stream is None:
         return jsonify({
-            "error": "Aucune IA disponible (tous les fournisseurs ont atteint leur limite).",
+            "error": ai_providers.explain_none_available(),
             "quota": quota_status(),
         }), 429
 
@@ -139,13 +140,15 @@ def status():
     user = _current_user()
     if not user:
         return jsonify({"error": "Non authentifié"}), 401
-    active = ai_providers.active_provider_id()
+    pref = (request.args.get("provider") or "").strip() or None
+    active = ai_providers.active_provider_id(pref)
     return jsonify({
         "groq_enabled": any(p.configured for p in ai_providers.PROVIDERS.values()),
         "model": ai_providers.PROVIDERS[active].model if active else None,
         "provider": active,
         "quota": quota_status(),
         "ia": quota_tracker_diagnostic(),
+        "fournisseurs": ai_providers.providers_liste(),
     }), 200
 
 

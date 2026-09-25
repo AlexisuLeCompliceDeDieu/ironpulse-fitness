@@ -28,6 +28,7 @@ from models import db, User, Demande
 
 from agent import agent as agent_runner
 from agent.tools import SENSITIVE_TOOLS, TOOL_CATALOG
+from services import ai_providers
 
 logger = logging.getLogger(__name__)
 
@@ -44,25 +45,33 @@ def _current_user():
 
 
 def _parse_body(data):
-    """Valide le corps de requête. Retourne (demande, confirmation, demande_id, erreur)."""
+    """Valide le corps de requête.
+
+    Retourne (demande, confirmation, demande_id, provider, erreur) où `provider`
+    est le fournisseur choisi par l'utilisateur (switch dans l'UI), ou None.
+    """
     demande = (data.get("demande") or "").strip()
     if not demande:
-        return None, None, None, (jsonify({"error": "demande requise", "statut": "erreur"}), 400)
+        return None, None, None, None, (jsonify({"error": "demande requise", "statut": "erreur"}), 400)
     if len(demande) > MAX_DEMANDE_LENGTH:
-        return None, None, None, (
+        return None, None, None, None, (
             jsonify({"error": f"demande trop longue (max {MAX_DEMANDE_LENGTH} caractères)", "statut": "erreur"}), 400
         )
 
     confirmation = data.get("confirmation")
     if confirmation is not None:
         if not isinstance(confirmation, dict):
-            return None, None, None, (jsonify({"error": "confirmation invalide", "statut": "erreur"}), 400)
+            return None, None, None, None, (jsonify({"error": "confirmation invalide", "statut": "erreur"}), 400)
         if confirmation.get("tool") not in SENSITIVE_TOOLS:
-            return None, None, None, (jsonify({"error": "tool de confirmation inconnu", "statut": "erreur"}), 400)
+            return None, None, None, None, (jsonify({"error": "tool de confirmation inconnu", "statut": "erreur"}), 400)
         if not isinstance(confirmation.get("arguments"), dict):
-            return None, None, None, (jsonify({"error": "arguments de confirmation invalides", "statut": "erreur"}), 400)
+            return None, None, None, None, (jsonify({"error": "arguments de confirmation invalides", "statut": "erreur"}), 400)
 
-    return demande, confirmation, (confirmation or {}).get("demande_id"), None
+    provider = (data.get("provider") or "").strip() or None
+    if provider and provider not in ai_providers.PROVIDERS:
+        provider = None
+
+    return demande, confirmation, (confirmation or {}).get("demande_id"), provider, None
 
 
 @agent_bp.route("/", methods=["POST"])
@@ -71,11 +80,12 @@ def run_agent():
     if not utilisateur:
         return jsonify({"error": "Non authentifié"}), 401
 
-    demande, confirmation, demande_id, erreur = _parse_body(request.get_json(silent=True) or {})
+    demande, confirmation, demande_id, provider, erreur = _parse_body(request.get_json(silent=True) or {})
     if erreur:
         return erreur
 
-    resultat = agent_runner.executer(utilisateur, demande, confirmation=confirmation, demande_id=demande_id)
+    resultat = agent_runner.executer(utilisateur, demande, confirmation=confirmation,
+                                     demande_id=demande_id, provider_pref=provider)
 
     if resultat["statut"] == "quota":
         return jsonify(resultat), 429
@@ -92,14 +102,15 @@ def stream_agent():
     if not utilisateur:
         return jsonify({"error": "Non authentifié"}), 401
 
-    demande, confirmation, demande_id, erreur = _parse_body(request.get_json(silent=True) or {})
+    demande, confirmation, demande_id, provider, erreur = _parse_body(request.get_json(silent=True) or {})
     if erreur:
         return erreur
 
     def generate():
         try:
             for evenement in agent_runner.executer_iter(
-                utilisateur, demande, confirmation=confirmation, demande_id=demande_id
+                utilisateur, demande, confirmation=confirmation, demande_id=demande_id,
+                provider_pref=provider,
             ):
                 yield f"data: {json.dumps(evenement, ensure_ascii=False, default=str)}\n\n"
         except Exception as e:  # noqa: BLE001

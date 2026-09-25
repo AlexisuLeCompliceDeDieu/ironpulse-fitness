@@ -23,7 +23,7 @@ def patch_ia(monkeypatch, contenu, label="Groq", provider="groq"):
     """Simule le routeur : renvoie `contenu` et mémorise les messages envoyés."""
     messages_vus = []
 
-    def fake_generate_text(messages, max_tokens=2048, temperature=0.7):
+    def fake_generate_text(messages, max_tokens=2048, temperature=0.7, provider_pref=None):
         messages_vus.append(messages)
         if contenu is None:
             return None, {"reason": "daily_limit"}

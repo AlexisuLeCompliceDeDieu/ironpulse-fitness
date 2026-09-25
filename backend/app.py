@@ -52,6 +52,27 @@ def create_app():
         seed_machines()
         _run_backup()
 
+        # Un DDL qui échoue sur PostgreSQL laisse la transaction avortée : sans
+        # rollback, toutes les requêtes suivantes échouent avec
+        # InFailedSqlTransaction au lieu de levy leur vraie cause.
+        @app.teardown_request
+        def _rollback_si_erreur(exc):
+            if exc is not None:
+                try:
+                    db.session.rollback()
+                except Exception:
+                    pass
+
+        @app.errorhandler(500)
+        def _erreur_500(e):
+            """500 en JSON : la page HTML d'erreur est incompréhensible pour l'API."""
+            try:
+                db.session.rollback()
+            except Exception:
+                pass
+            detail = str(getattr(e, "original_exception", e) or e)[:300]
+            return {"error": "Erreur interne du serveur.", "detail": detail}, 500
+
         # Sert le frontend React buildé (si présent) à la racine.
         # Active le fallback SPA afin que les routes type /login, /friends...
         # soient résolues par BrowserRouter de React (mode production Render).
@@ -76,6 +97,23 @@ def _register_diag(app):
         try:
             inspector = inspect(db.engine)
             cols_users = [c["name"] for c in inspector.get_columns("users")]
+            tables = set(inspector.get_table_names())
+            # Colonnes critiques : leur absence rend les routes Training/Profile
+            # cassées (UndefinedColumn puis InFailedSqlTransaction).
+            attendues = {
+                table: [c for _t2, c, _t3 in _COLONNES_MANQUANTES if _t2 == table]
+                for table in ("users", "training_programs", "sessions", "session_sets", "friendships")
+                if table in tables
+            }
+            colonnes_reelles = {
+                table: [c["name"] for c in inspector.get_columns(table)]
+                for table in attendues
+            }
+            manquantes = {
+                table: [c for c in cols if c not in colonnes_reelles[table]]
+                for table, cols in attendues.items()
+            }
+            manquantes = {t: c for t, c in manquantes.items() if c}
             if is_pg:
                 with db.engine.connect() as conn:
                     cur_schema = conn.execute(_t("SELECT current_schema()")).scalar()
@@ -101,6 +139,10 @@ def _register_diag(app):
                 "dialect": db.engine.url.drivername,
                 "has_calories_auto": "calories_auto" in cols_users,
                 "user_columns_divergence": cols_users,
+                "colonnes_attendues": attendues,
+                "colonnes_reelles": colonnes_reelles,
+                "colonnes_manquantes": manquantes,
+                "schema_ok": not manquantes,
                 **schema_info,
             }
         except Exception as e:
@@ -182,71 +224,74 @@ def _run_backup():
     backup.run_backup()
 
 
-def _migrate_columns():
-    """Migrations manuelles destinées au développement local (SQLite).
+# Colonnes ajoutées après la création initiale du schéma. `db.create_all()` ne
+# modifie PAS les tables existantes : sur une base déjà peuplée (PostgreSQL /
+# Supabase en production) il faut un `ALTER TABLE ... ADD COLUMN IF NOT EXISTS`
+# rejoué à chaque démarrage, sinon la première requête qui lit la colonne échoue
+# avec `UndefinedColumn` puis `InFailedSqlTransaction` pour toute la requête.
+_COLONNES_MANQUANTES = [
+    ("users", "dietary_preferences", "TEXT"),
+    ("users", "split_type", "VARCHAR(30) DEFAULT NULL"),
+    ("users", "sessions_per_week", "INTEGER DEFAULT NULL"),
+    ("users", "calories_auto", "BOOLEAN DEFAULT TRUE"),
+    ("foods", "tags", "TEXT"),
+    ("session_sets", "difficulty", 'VARCHAR(20) DEFAULT ""'),
+    ("sessions", "flagged", "BOOLEAN DEFAULT 0"),
+    ("friendships", "status", "VARCHAR(20) NOT NULL DEFAULT 'pending'"),
+    ("training_programs", "generation_source", "VARCHAR(20) DEFAULT 'algorithme'"),
+    ("training_programs", "variation", "INTEGER DEFAULT 0"),
+]
 
-    Sur PostgreSQL/Supabase, `db.create_all()` crée directement le schéma
-    complet à jour, donc aucune ALTER TABLE n'est nécessaire.
+
+def _migrate_columns():
+    """Ajoute les colonnes manquantes, sur SQLite comme sur PostgreSQL.
+
+    Chaque `ALTER` passe par une connexion en AUTOCOMMIT : sur PostgreSQL, un
+    DDL qui échoue annule la transaction courante et les suivantes sont
+    ignorées (« commands ignored until end of transaction block »). En isolant
+    les ALTER, un échec n'annule plus les migrations suivantes.
     """
+    import sys
     from sqlalchemy import inspect, text
 
-    # Ne migre que les bases locales SQLite (développement)
-    if not db.engine.url.drivername.startswith("sqlite"):
+    tables = set(inspect(db.engine).get_table_names())
+    is_sqlite = db.engine.url.drivername.startswith("sqlite")
+    manquantes = []
+    for table, column, type_sql in _COLONNES_MANQUANTES:
+        if table not in tables:
+            continue
+        colonnes = {c["name"] for c in inspect(db.engine).get_columns(table)}
+        if column not in colonnes:
+            manquantes.append((table, column, type_sql))
+
+    if not manquantes:
         return
 
-    inspector = inspect(db.engine)
-    columns_u = [c["name"] for c in inspector.get_columns("users")]
-    if "dietary_preferences" not in columns_u:
-        db.session.execute(text('ALTER TABLE users ADD COLUMN dietary_preferences TEXT'))
-        db.session.commit()
-    if "split_type" not in columns_u:
-        db.session.execute(text("ALTER TABLE users ADD COLUMN split_type VARCHAR(30) DEFAULT NULL"))
-        db.session.commit()
-    if "sessions_per_week" not in columns_u:
-        db.session.execute(text("ALTER TABLE users ADD COLUMN sessions_per_week INTEGER DEFAULT NULL"))
-        db.session.commit()
-    db.session.commit()
-    columns_f = [c["name"] for c in inspector.get_columns("foods")]
-    if "tags" not in columns_f:
-        db.session.execute(text('ALTER TABLE foods ADD COLUMN tags TEXT'))
-        db.session.commit()
+    prefixe = "" if is_sqlite else "public."
+    for table, column, type_sql in manquantes:
+        if is_sqlite:
+            stmt = f"ALTER TABLE {table} ADD COLUMN {column} {type_sql}"
+        else:
+            stmt = f"ALTER TABLE {prefixe}{table} ADD COLUMN IF NOT EXISTS {column} {type_sql}"
+        try:
+            with db.engine.connect().execution_options(isolation_level="AUTOCOMMIT") as conn:
+                conn.execute(text(stmt))
+            print(f"migration: {table}.{column} ajoutée.", file=sys.stderr)
+        except Exception as e:  # pragma: no cover - sécurité de démarrage
+            print(f"migration {table}.{column} FAILED: {e!r}", file=sys.stderr)
+            try:
+                db.session.rollback()
+            except Exception:
+                pass
 
-    columns_ss = [c["name"] for c in inspector.get_columns("session_sets")]
-    if "difficulty" not in columns_ss:
-        db.session.execute(text('ALTER TABLE session_sets ADD COLUMN difficulty VARCHAR(20) DEFAULT ""'))
-        db.session.commit()
-
-    # tables sûres (créées par db.create_all sur les bases neuves)
-    try:
-        columns_s = [c["name"] for c in inspector.get_columns("sessions")]
-        if "flagged" not in columns_s:
-            db.session.execute(text("ALTER TABLE sessions ADD COLUMN flagged BOOLEAN DEFAULT 0"))
-            db.session.commit()
-    except Exception:
-        pass
-
-    # Colonne status sur friendships : les amitiés existantes deviennent définitives,
-    # les nouvelles demandes démarrent en "pending" (à valider par l'autre).
-    cols_fr = [c["name"] for c in inspector.get_columns("friendships")]
-    if "status" not in cols_fr:
-        db.session.execute(
-            text("ALTER TABLE friendships ADD COLUMN status VARCHAR(20) NOT NULL DEFAULT 'pending'")
-        )
-        db.session.commit()
-        db.session.execute(text("UPDATE friendships SET status = 'accepted'"))
-        db.session.commit()
-
-    # Traçabilité de la génération : source (ia / algorithme) et n° de variante.
-    # db.create_all() ne modifie pas les tables existantes, d'où l'ALTER idempotent.
-    cols_tp = [c["name"] for c in inspector.get_columns("training_programs")]
-    if "generation_source" not in cols_tp:
-        db.session.execute(
-            text("ALTER TABLE training_programs ADD COLUMN generation_source VARCHAR(20) DEFAULT 'algorithme'")
-        )
-        db.session.commit()
-    if "variation" not in cols_tp:
-        db.session.execute(text("ALTER TABLE training_programs ADD COLUMN variation INTEGER DEFAULT 0"))
-        db.session.commit()
+    # Les amitiés déjà créées passent à « accepted » (elles existaient avant la
+    # colonne `status`, donc la valeur par défaut « pending » serait fausse).
+    if any(t == "friendships" and c == "status" for t, c, _ in manquantes):
+        try:
+            with db.engine.connect().execution_options(isolation_level="AUTOCOMMIT") as conn:
+                conn.execute(text(f"UPDATE {prefixe}friendships SET status = 'accepted'"))
+        except Exception as e:  # pragma: no cover
+            print(f"migration friendships.status backfill FAILED: {e!r}", file=sys.stderr)
 
 
 def _ensure_machine_image_text():
