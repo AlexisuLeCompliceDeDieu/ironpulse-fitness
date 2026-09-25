@@ -28,9 +28,22 @@ export default function Assistant({ user }) {
   const [historique, setHistorique] = useState([]);
   const [showHistory, setShowHistory] = useState(false);
   const [histLoading, setHistLoading] = useState(false);
+  const [resetBusy, setResetBusy] = useState(false);
   const abortRef = useRef(null);
   const bottomRef = useRef(null);
   const storageKey = `ironpulse_assistant_${user.id}`;
+
+  const reinitialiserIa = async () => {
+    setResetBusy(true);
+    try {
+      const res = await api.post("/chat/reset-quota");
+      setStatus((s) => ({ ...(s || {}), ia: res.data.ia, groq_enabled: true }));
+    } catch (e) {
+      /* l'utilisateur réessaiera */
+    } finally {
+      setResetBusy(false);
+    }
+  };
 
   useEffect(() => {
     try {
@@ -429,6 +442,19 @@ export default function Assistant({ user }) {
 
       {!status?.groq_enabled && (
         <div className="error">L'agent IA n'est pas encore configuré. Les messages ne pourront pas être envoyés.</div>
+      )}
+
+      {status?.ia?.configured?.length > 0 && status?.ia?.usable?.length === 0 && (
+        <div className="card" style={{ marginTop: "1rem", borderColor: "rgba(245,158,11,.5)" }}>
+          <p style={{ margin: 0, fontWeight: 700 }}>🚫 {status.ia.message}</p>
+          <p className="muted" style={{ fontSize: "0.85rem", margin: "0.4rem 0 0.6rem 0" }}>
+            Les fournisseurs sont bloqués temporairement (limite d'API ou message
+            d'erreur mal interprété). Tu peux les réactiver sans attendre.
+          </p>
+          <button className="btn" disabled={resetBusy} onClick={reinitialiserIa}>
+            {resetBusy ? "⏳ Réactivation..." : "🔄 Réactiver les IA"}
+          </button>
+        </div>
       )}
 
       <div className="card chat-card">

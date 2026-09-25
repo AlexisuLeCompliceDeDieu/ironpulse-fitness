@@ -281,7 +281,9 @@ def test_repli_quand_aucun_fournisseur(app_ctx, user_ia, monkeypatch):
     program, meta = ai_program.generer_programme(user_ia, [], source="auto")
 
     assert meta["source"] == "algorithme"
-    assert "daily_limit" in meta["raison"]
+    # Message lisible pour l'utilisateur + code technique conservé pour la trace
+    assert "limite quotidienne atteinte" in meta["raison"]
+    assert meta["raison_code"] == "daily_limit"
     assert program.generation_source == "algorithme"
     for day in program.days:
         assert len(day.exercises) > 0

@@ -90,6 +90,8 @@ def generate():
         return jsonify({
             "error": "Génération IA indisponible pour le moment.",
             "raison": e.raison,
+            "raison_fr": ai_program.raison_lisible(e.raison),
+            "reinitialiser_ia": True,
             "programme_algorithme_disponible": True,
         }), 503
     except Exception as e:  # noqa: BLE001
@@ -153,6 +155,8 @@ def regenerate():
         return jsonify({
             "error": "Régénération IA indisponible pour le moment.",
             "raison": e.raison,
+            "raison_fr": ai_program.raison_lisible(e.raison),
+            "reinitialiser_ia": True,
             "programme_actif_conserve": True,
         }), 503
     except Exception as e:  # noqa: BLE001

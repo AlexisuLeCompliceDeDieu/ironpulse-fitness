@@ -78,6 +78,17 @@ def test_failure_reason_mapping():
         assert ai_providers._failure_reason(err) == expected, err.message
 
 
+def test_limite_par_minute_ne_desactive_pas_jusqu_a_minuit():
+    """Gemini annonce « per minute and per day » : c'est une limite par minute.
+
+    Sans ce test, le message était classé `daily_limit` et le fournisseur restait
+    bloqué jusqu'à minuit alors qu'un simple cooldown de 75 s suffisait.
+    """
+    err = ai_providers.ProviderError(
+        429, "Quota exceeded for quota metric 'Generate requests per minute and per day'")
+    assert ai_providers._failure_reason(err) == "per_minute"
+
+
 def test_handle_failure_daily_disable(monkeypatch):
     calls = []
     monkeypatch.setattr(quota_tracker, "disable_provider",
@@ -150,7 +161,20 @@ def test_generate_text_none_when_all_fail(monkeypatch):
     ))
     text, info = ai_providers.generate_text([{"role": "user", "content": "x"}])
     assert text is None
-    assert info["reason"] == "rate_limit"  # dernière tentative
+    assert info["reason"] == "rate_limit"  # dernière tentative réelle
+    assert info["raisons"] == {"groq": "server_error", "gemini": "rate_limit"}
+
+
+def test_echec_global_ignore_les_fournisseurs_non_configures(monkeypatch):
+    """Un fournisseur sans clé ne doit pas masquer la vraie cause de l'échec."""
+    monkeypatch.setattr(ai_providers, "PROVIDERS", _providers(
+        FakeProvider("groq", "Groq", fail=ai_providers.ProviderError(429, "tokens per day (TPD)")),
+        FakeProvider("openrouter", "OpenRouter", configured=False),
+    ))
+    text, info = ai_providers.generate_text([{"role": "user", "content": "x"}])
+    assert text is None
+    assert info["reason"] == "daily_limit"
+    assert info["raisons"]["openrouter"] == "not_configured"
 
 
 def test_generate_text_bumps_usage(monkeypatch):
@@ -182,6 +206,33 @@ def test_available_provider_none(monkeypatch):
     assert reason == "none_available"
 
 
+# ── Diagnostic et réactivation ──────────────────────────────────────
+
+def test_diagnostic_explique_le_blocage(monkeypatch):
+    monkeypatch.setattr(quota_tracker, "_provider_configured", lambda pid: pid in ("groq", "gemini"))
+    quota_tracker.disable_provider("groq", "daily_limit")
+    quota_tracker.set_provider_cooldown("gemini", 120)
+
+    diag = quota_tracker.diagnostic()
+
+    assert diag["configured"] == ["groq", "gemini"]
+    assert diag["usable"] == []
+    assert "limite quotidienne atteinte" in diag["message"]
+    assert quota_tracker.explain("cooldown") == "en attente après une limite par minute"
+
+
+def test_reset_providers_reactive_les_ia(monkeypatch):
+    monkeypatch.setattr(quota_tracker, "_provider_configured", lambda pid: pid == "groq")
+    quota_tracker.disable_provider("groq", "daily_limit")
+    quota_tracker.set_provider_cooldown("groq", 300)
+    assert quota_tracker.can_use_provider("groq")[0] is False
+
+    quota_tracker.reset_providers()
+
+    assert quota_tracker.can_use_provider("groq") == (True, None)
+    assert quota_tracker.diagnostic()["usable"] == ["groq"]
+
+
 # ── Streaming ──────────────────────────────────────────────────────
 
 def test_stream_text_fails_over(monkeypatch):
@@ -204,7 +255,9 @@ def test_stream_text_none_when_all_fail(monkeypatch):
     ))
     it, info = ai_providers.stream_text([{"role": "user", "content": "x"}])
     assert it is None
-    assert info["reason"] == "none_available"
+    # La cause réelle est remontée (elle était masquée par « none_available »)
+    assert info["reason"] == "server_error"
+    assert info["raisons"] == {"groq": "server_error"}
 
 
 # ── Function calling (tools) + failover ────────────────────────────

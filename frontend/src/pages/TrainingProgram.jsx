@@ -53,6 +53,31 @@ export default function TrainingProgram({ user }) {
   const [agentBusy, setAgentBusy] = useState(false);
   const [agentSteps, setAgentSteps] = useState([]);
   const [confirmation, setConfirmation] = useState(null);
+  const [iaStatus, setIaStatus] = useState(null);
+  const [resetBusy, setResetBusy] = useState(false);
+
+  const chargerStatutIa = () => {
+    api.get("/chat/status")
+      .then((res) => {
+        setIaStatus(res.data.ia || null);
+        setIaAvailable(!!(res.data.ia?.usable?.length || res.data.groq_enabled));
+      })
+      .catch(() => setIaAvailable(false));
+  };
+
+  const reinitialiserIa = async () => {
+    setResetBusy(true);
+    try {
+      const res = await api.post("/chat/reset-quota");
+      setIaStatus(res.data.ia || null);
+      setIaAvailable(true);
+      setErreur("");
+    } catch (e) {
+      setErreur("Réactivation impossible. Réessaie dans un instant.");
+    } finally {
+      setResetBusy(false);
+    }
+  };
 
   useEffect(() => {
     api.get("/training/presets")
@@ -61,9 +86,7 @@ export default function TrainingProgram({ user }) {
     api.get("/training/program/current")
       .then((res) => setProgram(res.data.program))
       .catch(() => setProgram(null));
-    api.get("/chat/status")
-      .then((res) => setIaAvailable(!!res.data.groq_enabled))
-      .catch(() => setIaAvailable(false));
+    chargerStatutIa();
   }, []);
 
   // Pré-sélection automatique depuis le profil : uniquement si un split explicite
@@ -82,7 +105,8 @@ export default function TrainingProgram({ user }) {
   const messageErreur = (e, defaut) => {
     const data = e.response?.data || {};
     const detail = data.detail ? ` (${data.detail})` : "";
-    return `${data.error || defaut}${detail}`;
+    const raison = data.raison_fr ? ` — ${data.raison_fr}` : "";
+    return `${data.error || defaut}${raison}${detail}`;
   };
 
   const chargerProgramme = async () => {
@@ -352,6 +376,19 @@ export default function TrainingProgram({ user }) {
           setConsigne={setConsigne}
           iaAvailable={iaAvailable}
         />
+
+        {iaStatus && iaStatus.configured?.length > 0 && iaStatus.usable?.length === 0 && (
+          <div className="card" style={{ marginTop: "1rem", borderColor: "rgba(245,158,11,.5)" }}>
+            <p style={{ margin: 0, fontWeight: 700 }}>🚫 {iaStatus.message}</p>
+            <p className="muted" style={{ fontSize: "0.85rem", margin: "0.4rem 0 0.6rem 0" }}>
+              La génération IA est temporairement bloquée. Le mode algorithme reste
+              disponible, ou tu peux réactiver les fournisseurs immédiatement.
+            </p>
+            <button className="btn" disabled={resetBusy} onClick={reinitialiserIa}>
+              {resetBusy ? "⏳ Réactivation..." : "🔄 Réactiver les IA"}
+            </button>
+          </div>
+        )}
 
         <button
           className="btn btn-lg"

@@ -106,6 +106,29 @@ def _register_diag(app):
         except Exception as e:
             return {"error": repr(e)}, 500
 
+    @app.route("/healthz/ia", methods=["GET"])
+    def _healthz_ia():
+        """État des fournisseurs IA (sans secret) : quel modèle, quel blocage.
+
+        Permet de comprendre « quota épuisé » sans accès aux logs : chaque
+        fournisseur est décrit (configuré ? bloqué ? pourquoi ?).
+        """
+        try:
+            from services import ai_providers, quota_tracker
+            diag = quota_tracker.diagnostic()
+            for pid, st in diag["providers"].items():
+                provider = ai_providers.PROVIDERS.get(pid)
+                st["label"] = provider.label if provider else pid
+                st["model"] = provider.model if provider else ""
+            return {
+                **diag,
+                "ordre": ai_providers.provider_order(),
+                "raisons": {pid: quota_tracker.explain(st.get("blocked_reason"))
+                            for pid, st in diag["providers"].items()},
+            }
+        except Exception as e:
+            return {"error": repr(e)}, 500
+
     @app.route("/healthz/probe", methods=["GET"])
     def _healthz_probe():
         """Rejoue le chemin exact de /login pour capturer l'exception réelle."""

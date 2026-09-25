@@ -401,6 +401,12 @@ def generer_programme_ia(user, available_equipment=None, goal=None, split_type=N
     }
 
 
+def raison_lisible(raison):
+    """Raison technique du routeur → phrase française pour l'utilisateur."""
+    from services import quota_tracker
+    return quota_tracker.explain(raison)
+
+
 def generer_programme(user, available_equipment=None, goal=None, split_type=None,
                       days_per_week=None, consigne=None, source="auto"):
     """Point d'entrée unique : IA si possible et si demandée, sinon algorithme.
@@ -417,15 +423,18 @@ def generer_programme(user, available_equipment=None, goal=None, split_type=None
         except ErreurIAProgram as e:
             if source == "ia":
                 raise
-            motif = f"IA indisponible ({e.raison}), programme algorithmique utilisé"
+            raison_code = e.raison
+            motif = f"IA indisponible ({raison_lisible(e.raison)}), programme algorithmique utilisé"
             if e.details:
                 motif += f" : {e.details}"
         except Exception:  # noqa: BLE001
             if source == "ia":
                 raise
+            raison_code = "erreur_inattendue"
             motif = "IA indisponible (erreur inattendue), programme algorithmique utilisé"
     else:
         motif = None
+        raison_code = None
 
     programme_actif = _programme_actif(user)
     nb_avant = _nb_programmes(user)
@@ -441,4 +450,5 @@ def generer_programme(user, available_equipment=None, goal=None, split_type=None
         "resume": "",
         "avertissements": [],
         "raison": motif,
+        "raison_code": raison_code,
     }

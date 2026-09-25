@@ -227,7 +227,11 @@ def test_generate_source_ia_strict_renvoie_503(auth_client, app_ctx, monkeypatch
     patch_ia(monkeypatch, None)
     resp = auth_client.post("/api/training/program/generate", json={"source": "ia"})
     assert resp.status_code == 503
-    assert resp.get_json()["raison"] == "daily_limit"
+    data = resp.get_json()
+    assert data["raison"] == "daily_limit"
+    # L'utilisateur voit une cause lisible, pas un code technique
+    assert data["raison_fr"] == "limite quotidienne atteinte"
+    assert data["reinitialiser_ia"] is True
     assert TrainingProgram.query.count() == 0
 
 

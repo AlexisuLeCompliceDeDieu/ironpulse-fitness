@@ -145,4 +145,33 @@ def status():
         "model": ai_providers.PROVIDERS[active].model if active else None,
         "provider": active,
         "quota": quota_status(),
+        "ia": quota_tracker_diagnostic(),
     }), 200
+
+
+@chat_bp.route("/reset-quota", methods=["POST"])
+def reset_quota():
+    """Réactive les fournisseurs IA bloqués (limite atteinte par erreur).
+
+    Les quotas et cooldowns sont remis à zéro : l'IA redevient immédiatement
+    disponible au lieu d'attendre minuit.
+    """
+    user = _current_user()
+    if not user:
+        return jsonify({"error": "Non authentifié"}), 401
+    from services import quota_tracker
+    providers = quota_tracker.reset_providers()
+    return jsonify({
+        "message": "Fournisseurs IA réactivés.",
+        "providers": providers,
+        "ia": quota_tracker_diagnostic(),
+    }), 200
+
+
+def quota_tracker_diagnostic():
+    """Diagnostic IA lisible (sans secret) pour le frontend."""
+    try:
+        from services import quota_tracker
+        return quota_tracker.diagnostic()
+    except Exception:
+        return {}

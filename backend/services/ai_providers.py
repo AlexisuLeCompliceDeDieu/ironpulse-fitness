@@ -436,11 +436,20 @@ def _chunk_text(text, size=40):
 # ── Gestion des erreurs ─────────────────────────────────────────────
 
 def _failure_reason(err, provider=None):
+    """Classe une erreur d'API pour décider du délai avant de réessayer.
+
+    Piège évité : certains fournisseurs renvoient un message mentionnant à la
+    fois « per minute » et « per day ». On teste d'abord la limite par minute,
+    sinon une limite d'une minute désactive le fournisseur jusqu'à minuit.
+    """
     low = (err.message or "").lower()
-    if "tokens per day" in low or " per day" in low or " tpd" in low:
-        return "daily_limit"
-    if "tokens per minute" in low or " per minute" in low or "too large" in low or "otpm" in low:
+    par_minute = ("tokens per minute" in low or " per minute" in low
+                  or "too large" in low or "otpm" in low or "rpm" in low)
+    par_jour = "tokens per day" in low or " per day" in low or " tpd" in low
+    if par_minute:
         return "per_minute"
+    if par_jour:
+        return "daily_limit"
     if err.status in (401, 403):
         return "invalid_key"
     if err.status == 429:
@@ -465,6 +474,38 @@ def _handle_failure(provider_id, err):
         quota_tracker.set_provider_cooldown(provider_id, 75)
     # server_error / bad_request / model_not_found : transitoire, on passe au suivant
     return reason
+
+
+def _echec_global(attempts):
+    """Résume l'échec de tous les fournisseurs (raison utile + détail par IA).
+
+    On ignore les fournisseurs simplement non configurés : sinon la dernière
+    entrée masquerait la vraie cause (« not_configured » au lieu de
+    « daily_limit ») et l'utilisateur verrait un message trompeur.
+    """
+    reels = [a for a in attempts if a.get("reason") != "not_configured"]
+    source = reels or attempts
+    raison = source[-1].get("reason", "none_available") if source else "none_available"
+    return {
+        "reason": raison,
+        "attempts": attempts,
+        "raisons": {a["provider"]: a.get("reason") for a in attempts},
+        "message": explain_none_available(),
+    }
+
+
+def explain_none_available():
+    """Phrase française expliquant pourquoi aucune IA n'a répondu."""
+    diag = quota_tracker.diagnostic()
+    if not diag["configured"]:
+        return "Aucune clé API IA n'est configurée sur le serveur."
+    if not diag["usable"]:
+        details = ", ".join(
+            f"{pid} : {quota_tracker.explain(diag['providers'][pid]['blocked_reason'])}"
+            for pid in diag["configured"]
+        )
+        return f"Toutes les IA sont bloquées ({details})."
+    return "Aucune IA n'a pu répondre, réessaie dans un instant."
 
 
 def provider_order():
@@ -515,8 +556,7 @@ def generate_text(messages, max_tokens=2048, temperature=0.7):
             reason = _handle_failure(pid, e)
             attempts.append({"provider": pid, "ok": False, "reason": reason})
             continue
-    last = attempts[-1] if attempts else {}
-    return None, {"reason": last.get("reason", "none_available"), "attempts": attempts}
+    return None, _echec_global(attempts)
 
 
 def generate_with_tools(messages, tools, max_tokens=2048, temperature=0.7, tool_choice="auto"):
@@ -548,8 +588,7 @@ def generate_with_tools(messages, tools, max_tokens=2048, temperature=0.7, tool_
             reason = _handle_failure(pid, e)
             attempts.append({"provider": pid, "ok": False, "reason": reason})
             continue
-    last = attempts[-1] if attempts else {}
-    return None, {"reason": last.get("reason", "none_available"), "attempts": attempts}
+    return None, _echec_global(attempts)
 
 
 def _prepend(first, rest):
@@ -567,12 +606,14 @@ def stream_text(messages, max_tokens=2048, temperature=0.7):
     avant d'avoir produit un token, on essaie le suivant. Retourne
     (generator, info) ou (None, info) si rien ne peut démarrer.
     """
+    attempts = []
     for pid in provider_order():
         p = PROVIDERS[pid]
         if not p.configured:
             continue
         ok, reason = quota_tracker.can_use_provider(pid)
         if not ok:
+            attempts.append({"provider": pid, "ok": False, "reason": reason})
             continue
         try:
             it = iter(p.stream(messages, max_tokens, temperature))
@@ -580,15 +621,17 @@ def stream_text(messages, max_tokens=2048, temperature=0.7):
             quota_tracker.record_provider_usage(pid)
             return _prepend(first, it), {"provider": pid, "label": p.label, "model": p.model}
         except StopIteration:
+            attempts.append({"provider": pid, "ok": False, "reason": "empty_response"})
             continue  # rien produit : on passe au suivant
         except ProviderError as e:
-            _handle_failure(pid, e)
+            attempts.append({"provider": pid, "ok": False, "reason": _handle_failure(pid, e)})
             continue
         except Exception as e:
             logger.warning(f"Fournisseur {pid} : échec au démarrage du stream : {e}")
             quota_tracker.set_provider_cooldown(pid, 30)
+            attempts.append({"provider": pid, "ok": False, "reason": "server_error"})
             continue
-    return None, {"reason": "none_available"}
+    return None, _echec_global(attempts)
 
 
 def active_provider_id():

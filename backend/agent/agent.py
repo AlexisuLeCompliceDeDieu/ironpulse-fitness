@@ -196,12 +196,13 @@ def executer_iter(utilisateur, demande, confirmation=None, demande_id=None):
 
     for tour in range(MAX_TOURS):
         # Garde-fou coûts : au moins un fournisseur doit être utilisable
-        provider_id, provider, raison = ai_providers.available_provider()
+        provider_id, provider, _raison = ai_providers.available_provider()
         if provider_id is None:
             _save_resultat(demande_row.id, etape, None, None, "Aucun fournisseur IA disponible.")
             db.session.commit()
+            explication = ai_providers.explain_none_available()
             res = {"statut": "quota",
-                   "reponse": f"Aucun fournisseur IA disponible ({raison}) : clé API manquante ou quota épuisé. Réessaye plus tard.",
+                   "reponse": f"{explication} Réessaie dans un instant.",
                    "etapes": etapes, "demande_id": demande_row.id}
             yield {"type": "quota", "reponse": res["reponse"], "etapes": etapes, "demande_id": demande_row.id}
             return res
