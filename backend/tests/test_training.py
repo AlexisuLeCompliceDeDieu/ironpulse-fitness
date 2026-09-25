@@ -1,3 +1,53 @@
+import json
+
+import pytest
+
+from models import TrainingProgram
+
+
+def _reponse_ia(noms=("Push", "Pull", "Jambes"), decalage=0):
+    """Réponse IA minimale mais valide, construite depuis le vrai catalogue.
+
+    `decalage` décale le choix d'exercices pour obtenir une vraie variante.
+    """
+    from models import Exercise
+
+    groupes = {
+        "Push": ("pectoraux", "epaule", "triceps"),
+        "Pull": ("dos", "biceps"),
+        "Jambes": ("quadriceps", "ischio", "fessiers"),
+    }
+    jours = []
+    for nom in noms:
+        exos = []
+        for c in groupes[nom]:
+            categorie = Exercise.query.filter_by(category=c).order_by(Exercise.id).all()
+            ex = categorie[min(decalage, len(categorie) - 1)]
+            exos.append({"exercise_id": ex.id, "series": 4, "reps": 10,
+                         "repos_secondes": 120, "charge_kg": 40})
+        jours.append({"nom": nom, "exercices": exos})
+    return json.dumps({"resume": "Objectif : Chest et triceps.", "jours": jours}, ensure_ascii=False)
+
+
+def patch_ia(monkeypatch, contenu="auto", noms=("Push", "Pull", "Jambes"), decalage=0):
+    """Simule le routeur IA. La réponse est fabriquée à l'appel (contexte applicatif)."""
+    from services import ai_program
+
+    def fake(messages, max_tokens=2048, temperature=0.7):
+        if contenu is None:
+            return None, {"reason": "daily_limit"}
+        corps = _reponse_ia(noms, decalage) if contenu == "auto" else contenu
+        return corps, {"provider": "groq", "label": "Groq", "model": "llama-test"}
+
+    monkeypatch.setattr(ai_program.ai_providers, "generate_text", fake)
+
+
+@pytest.fixture()
+def app_ctx(app):
+    with app.app_context():
+        yield
+
+
 def test_generate_program_requires_auth(client):
     resp = client.post("/api/training/program/generate")
     assert resp.status_code == 401
@@ -144,3 +194,100 @@ def test_profile_saves_split_fields(auth_client):
     user = resp.get_json()["user"]
     assert user["split_type"] == "push_pull_legs"
     assert user["sessions_per_week"] == 5
+
+
+# ── Génération par IA + régénération ────────────────────────────────
+
+def test_generate_ia_returns_source_et_fournisseur(auth_client, monkeypatch):
+    patch_ia(monkeypatch)
+    resp = auth_client.post("/api/training/program/generate", json={"source": "ia", "days_per_week": 3})
+    assert resp.status_code == 201
+    data = resp.get_json()
+    assert "IA" in data["message"]
+    assert data["meta"]["source"] == "ia"
+    assert data["meta"]["fournisseur"] == "Groq"
+    assert data["program"]["generation_source"] == "ia"
+    assert data["program"]["variation"] == 0
+    assert [d["name"] for d in data["program"]["days"]] == ["Push", "Pull", "Jambes"]
+    assert data["program"]["days"][0]["exercises"][0]["sets"] == 4
+
+
+def test_generate_repli_algorithme_quand_ia_indisponible(auth_client, monkeypatch):
+    patch_ia(monkeypatch, None)
+    resp = auth_client.post("/api/training/program/generate", json={"source": "auto"})
+    assert resp.status_code == 201
+    data = resp.get_json()
+    assert data["meta"]["source"] == "algorithme"
+    assert data["meta"]["raison"]
+    assert data["program"]["generation_source"] == "algorithme"
+    assert data["program"]["days"]
+
+
+def test_generate_source_ia_strict_renvoie_503(auth_client, app_ctx, monkeypatch):
+    patch_ia(monkeypatch, None)
+    resp = auth_client.post("/api/training/program/generate", json={"source": "ia"})
+    assert resp.status_code == 503
+    assert resp.get_json()["raison"] == "daily_limit"
+    assert TrainingProgram.query.count() == 0
+
+
+def test_generate_algorithme_ignore_la_ia(auth_client, monkeypatch):
+    patch_ia(monkeypatch)
+    resp = auth_client.post("/api/training/program/generate", json={"source": "algorithme"})
+    assert resp.status_code == 201
+    assert resp.get_json()["meta"]["source"] == "algorithme"
+
+
+def test_regenerate_requires_auth(client):
+    assert client.post("/api/training/program/regenerate").status_code == 401
+
+
+def test_regenerate_sans_programme_404(auth_client):
+    assert auth_client.post("/api/training/program/regenerate", json={}).status_code == 404
+
+
+def test_regenerate_cree_une_variante_et_conserve_l_historique(auth_client, app_ctx, monkeypatch):
+    patch_ia(monkeypatch)
+    premier = auth_client.post(
+        "/api/training/program/generate", json={"source": "ia", "days_per_week": 3}
+    ).get_json()["program"]
+    ids_premier = [e["exercise"]["id"] for e in premier["days"][0]["exercises"]]
+
+    patch_ia(monkeypatch, decalage=1)
+    resp = auth_client.post("/api/training/program/regenerate", json={"consigne": "mets de la cardio"})
+    assert resp.status_code == 201
+    data = resp.get_json()
+    second = data["program"]
+
+    assert "régénéré" in data["message"].lower()
+    assert data["meta"]["source"] == "ia"
+    assert second["id"] > premier["id"]
+    assert second["variation"] == 1
+    assert second["is_active"] is True
+    # La régénération conserve la structure du programme (3 séances)
+    assert len(second["days"]) == len(premier["days"]) == 3
+    # La sélection d'exercices a réellement changé
+    ids_second = [e["exercise"]["id"] for e in second["days"][0]["exercises"]]
+    assert ids_second != ids_premier
+    assert TrainingProgram.query.get(premier["id"]).is_active is False
+    # Le nouveau programme actif est bien celui rendu par /current
+    assert auth_client.get("/api/training/program/current").get_json()["program"]["id"] == second["id"]
+
+
+def test_regenerate_ia_strict_503_conserve_le_programme(auth_client, monkeypatch):
+    patch_ia(monkeypatch)
+    auth_client.post("/api/training/program/generate", json={"source": "ia"})
+    actif = auth_client.get("/api/training/program/current").get_json()["program"]
+
+    patch_ia(monkeypatch, None)
+    resp = auth_client.post("/api/training/program/regenerate", json={"source": "ia"})
+    assert resp.status_code == 503
+    courant = auth_client.get("/api/training/program/current").get_json()["program"]
+    assert courant["id"] == actif["id"]
+
+
+def test_source_inconnu_retombe_sur_auto(auth_client, monkeypatch):
+    patch_ia(monkeypatch)
+    resp = auth_client.post("/api/training/program/generate", json={"source": "quantum"})
+    assert resp.status_code == 201
+    assert resp.get_json()["meta"]["source"] == "ia"

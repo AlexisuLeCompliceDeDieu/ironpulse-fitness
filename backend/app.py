@@ -213,6 +213,18 @@ def _migrate_columns():
         db.session.execute(text("UPDATE friendships SET status = 'accepted'"))
         db.session.commit()
 
+    # Traçabilité de la génération : source (ia / algorithme) et n° de variante.
+    # db.create_all() ne modifie pas les tables existantes, d'où l'ALTER idempotent.
+    cols_tp = [c["name"] for c in inspector.get_columns("training_programs")]
+    if "generation_source" not in cols_tp:
+        db.session.execute(
+            text("ALTER TABLE training_programs ADD COLUMN generation_source VARCHAR(20) DEFAULT 'algorithme'")
+        )
+        db.session.commit()
+    if "variation" not in cols_tp:
+        db.session.execute(text("ALTER TABLE training_programs ADD COLUMN variation INTEGER DEFAULT 0"))
+        db.session.commit()
+
 
 def _ensure_machine_image_text():
     """Élargit `machines.image_url` en TEXT pour stocker les data-URI SVG.

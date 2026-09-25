@@ -31,6 +31,13 @@ const GOAL_COLORS = {
 
 const WEEK_OPTIONS = [2, 3, 4, 5, 6];
 
+const CONSIGNES = [
+  "Moins d'exercices, séances plus courtes",
+  "Plus de travail sur les jambes",
+  "Plus de cardio, moins de charges",
+  "Garde les charges, change les exercices",
+];
+
 export default function TrainingProgram({ user }) {
   const [program, setProgram] = useState(null);
   const [presets, setPresets] = useState([]);
@@ -38,6 +45,10 @@ export default function TrainingProgram({ user }) {
   const [daysPerWeek, setDaysPerWeek] = useState(user.sessions_per_week || 3);
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
+  const [meta, setMeta] = useState(null);
+  const [source, setSource] = useState("auto");
+  const [iaAvailable, setIaAvailable] = useState(true);
+  const [consigne, setConsigne] = useState("");
 
   useEffect(() => {
     api.get("/training/presets")
@@ -46,6 +57,9 @@ export default function TrainingProgram({ user }) {
     api.get("/training/program/current")
       .then((res) => setProgram(res.data.program))
       .catch(() => setProgram(null));
+    api.get("/chat/status")
+      .then((res) => setIaAvailable(!!res.data.groq_enabled))
+      .catch(() => setIaAvailable(false));
   }, []);
 
   // Pré-sélection automatique depuis le profil : uniquement si un split explicite
@@ -73,9 +87,31 @@ export default function TrainingProgram({ user }) {
         split_type: isSplit ? selectedSplit.split_type : undefined,
         goal: isSplit ? undefined : selectedSplit.goal,
         days_per_week: daysPerWeek,
+        source,
+        consigne: consigne.trim() || undefined,
       });
       setMessage(res.data.message);
       setProgram(res.data.program);
+      setMeta(res.data.meta || null);
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    } catch (e) {
+      setMessage(e.response?.data?.error || "Erreur");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const regenerate = async () => {
+    setLoading(true);
+    setMessage("");
+    try {
+      const res = await api.post("/training/program/regenerate", {
+        source,
+        consigne: consigne.trim() || undefined,
+      });
+      setMessage(res.data.message);
+      setProgram(res.data.program);
+      setMeta(res.data.meta || null);
       window.scrollTo({ top: 0, behavior: "smooth" });
     } catch (e) {
       setMessage(e.response?.data?.error || "Erreur");
@@ -177,6 +213,14 @@ export default function TrainingProgram({ user }) {
           </div>
         </div>
 
+        <IaPanel
+          source={source}
+          setSource={setSource}
+          consigne={consigne}
+          setConsigne={setConsigne}
+          iaAvailable={iaAvailable}
+        />
+
         <button
           className="btn btn-lg"
           style={{ marginTop: "1.5rem" }}
@@ -196,13 +240,46 @@ export default function TrainingProgram({ user }) {
         title={`🗓️ Programme : ${goalLabel(program.goal)}`}
         subtitle={`Du ${program.start_date} au ${program.end_date} · ${program.days.length} séances/semaine`}
         image={FIT_IMAGES.training}
-        tags={[`📆 ${program.days.length} séances/semaine`, `💪 ${program.days.length} jours`]}
+        tags={[
+          `📆 ${program.days.length} séances/semaine`,
+          sourceBadge(program, meta),
+        ]}
       />
 
-      <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: "1rem" }}>
-        <button className="btn btn-ghost" onClick={() => setProgram(null)}>
-          ⚡ Régénérer un programme
-        </button>
+      <div className="card" style={{ marginTop: "1rem" }}>
+        <h3 style={{ marginTop: 0 }}>🔄 Régénérer le programme</h3>
+        <p className="muted" style={{ marginTop: 0, fontSize: "0.9rem" }}>
+          L'IA propose une nouvelle sélection d'exercices en tenant compte de tes
+          dernières performances. Ton historique de séances est conservé.
+        </p>
+        <IaPanel
+          source={source}
+          setSource={setSource}
+          consigne={consigne}
+          setConsigne={setConsigne}
+          iaAvailable={iaAvailable}
+          compact
+        />
+        <div style={{ display: "flex", gap: "0.6rem", flexWrap: "wrap", marginTop: "0.8rem" }}>
+          <button className="btn" disabled={loading} onClick={regenerate}>
+            {loading ? "⏳ Régénération..." : "🧠 Régénérer avec l'IA"}
+          </button>
+          <button className="btn btn-ghost" disabled={loading} onClick={() => setProgram(null)}>
+            ⚙️ Changer de split
+          </button>
+        </div>
+        {message && <p style={{ color: "var(--success)", fontWeight: 700 }}>{message}</p>}
+        {meta?.raison && (
+          <p className="muted" style={{ fontSize: "0.85rem", marginBottom: 0 }}>ℹ️ {meta.raison}</p>
+        )}
+        {meta?.avertissements?.length > 0 && (
+          <details style={{ fontSize: "0.85rem" }}>
+            <summary className="muted">{meta.avertissements.length} ajustement(s) appliqué(s) par l'IA</summary>
+            <ul className="muted">
+              {meta.avertissements.map((a, i) => <li key={i}>{a}</li>)}
+            </ul>
+          </details>
+        )}
       </div>
 
       {program.days.map((day) => (
@@ -248,6 +325,65 @@ export default function TrainingProgram({ user }) {
 
 function goalIcon(goal) {
   return (GOAL_META[goal] || {}).icon || "🏋️";
+}
+
+function sourceBadge(program, meta) {
+  if (program.generation_source === "ia") {
+    const variante = program.variation ? ` · variante ${program.variation + 1}` : "";
+    const qui = meta?.fournisseur ? ` (${meta.fournisseur})` : "";
+    return `🧠 Généré par l'IA${qui}${variante}`;
+  }
+  return "⚙️ Généré par l'algorithme";
+}
+
+function IaPanel({ source, setSource, consigne, setConsigne, iaAvailable, compact = false }) {
+  return (
+    <div className="card" style={compact ? { background: "var(--grad-soft)", marginTop: "0.8rem" } : { marginTop: "1.5rem" }}>
+      <h3 style={{ marginTop: 0 }}>🧠 Génération</h3>
+      <div className="mode-switch" style={{ marginBottom: "0.8rem" }}>
+        <button
+          type="button"
+          className={"mode-btn" + (source === "auto" ? " active" : "")}
+          onClick={() => setSource("auto")}
+        >
+          🧠 IA (repli auto)
+        </button>
+        <button
+          type="button"
+          className={"mode-btn" + (source === "algorithme" ? " active" : "")}
+          onClick={() => setSource("algorithme")}
+        >
+          ⚙️ Algorithme
+        </button>
+      </div>
+      {!iaAvailable && (
+        <p className="muted" style={{ fontSize: "0.85rem", marginTop: 0 }}>
+          Aucune IA configurée pour l'instant : le mode IA basculera automatiquement sur l'algorithme.
+        </p>
+      )}
+      {source !== "algorithme" && (
+        <>
+          <div className="form-group" style={{ margin: 0 }}>
+            <label>Consigne (optionnelle) : « plus de jambes », « séances plus courtes »…</label>
+            <input
+              type="text"
+              value={consigne}
+              maxLength={300}
+              placeholder="Ex. : garde mes charges mais change les exercices"
+              onChange={(e) => setConsigne(e.target.value)}
+            />
+          </div>
+          <div style={{ display: "flex", gap: "0.4rem", flexWrap: "wrap", marginTop: "0.5rem" }}>
+            {CONSIGNES.map((c) => (
+              <button key={c} type="button" className="chip" onClick={() => setConsigne(c)}>
+                {c}
+              </button>
+            ))}
+          </div>
+        </>
+      )}
+    </div>
+  );
 }
 
 const EFFORT_SEC_PER_REP = 5;   // ~5s par répétition (tempo conc. + excentrique)
