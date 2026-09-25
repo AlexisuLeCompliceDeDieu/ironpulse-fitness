@@ -5,9 +5,10 @@ Couvre les exigences du cahier des charges :
   - la trace en base (demandes / resultats avec outil_utilise) ;
   - la validation humaine des tools d'écriture (enregistrer_seance) ;
   - la gestion d'erreurs (tool en échec, quota, max_tours).
-"""
 
-from unittest.mock import MagicMock
+Le LLM est simulé au niveau du routeur (`_completion`), qui est le point
+d'entrée de l'agent vers le failover multi-fournisseurs.
+"""
 
 import json
 
@@ -26,36 +27,23 @@ def app_ctx(app):
         yield
 
 
-# ── Fabrication d'une réponse LLM simulée ───────────────────────────
+# ── Fabrication d'une réponse LLM simulée (format du routeur) ──────
 
-class _Func:
-    def __init__(self, name, arguments=None):
-        self.name = name
-        self.arguments = arguments or {}
+class _Call(dict):
+    """Appel de tool normalisé : {id, name, arguments}."""
 
-
-class _Call:
-    def __init__(self, name, arguments=None):
-        self.id = "call_1"
-        self.function = _Func(name, arguments)
+    def __init__(self, name, arguments=None, id="call_1"):
+        super().__init__(id=id, name=name, arguments=arguments or {})
 
 
-class _Msg:
-    def __init__(self, content, tool_calls=None):
-        self.content = content
-        self.tool_calls = tool_calls or []
+def _Msg(content, tool_calls=None):
+    """Réponse LLM normalisée : {content, tool_calls}."""
+    return {"content": content or "", "tool_calls": tool_calls or []}
 
 
-class _Resp:
-    def __init__(self, msg):
-        self.choices = [type("C", (), {"message": msg})()]
-
-
-def fake_client(script):
-    """Client Groq simulé qui renvoie les réponses du script dans l'ordre."""
-    client = MagicMock()
-    client.chat.completions.create.side_effect = script
-    return client
+def _Resp(msg):
+    """Alias historique : une réponse est simplement un dict normalisé."""
+    return msg
 
 
 def seed_user():
@@ -65,12 +53,22 @@ def seed_user():
     return u
 
 
-def patch_llm(monkeypatch, script):
-    client = fake_client(script)
-    monkeypatch.setattr(agent_runner, "_get_client", lambda: client)
-    monkeypatch.setattr(agent_runner.quota_tracker, "check_quota", lambda: (True, {}))
-    monkeypatch.setattr(agent_runner.quota_tracker, "record_usage", lambda: None)
-    return client
+def patch_llm(monkeypatch, script, label="Groq"):
+    """Simule le routeur multi-IA : renvoie les réponses du script dans l'ordre."""
+    restante = list(script)
+    appels = []
+
+    def fake_completion(messages, max_tokens=900):
+        appels.append(messages)
+        reponse = restante.pop(0) if restante else _Msg("Terminé.")
+        return reponse, {"provider": "groq", "label": label, "model": "modele-test"}
+
+    monkeypatch.setattr(agent_runner, "_completion", fake_completion)
+    monkeypatch.setattr(
+        agent_runner.ai_providers, "available_provider",
+        lambda: ("groq", type("P", (), {"label": label})(), None),
+    )
+    return appels
 
 
 # ── Route : garde-fous de base ──────────────────────────────────────
@@ -112,6 +110,17 @@ def test_executer_reponse_directe(app_ctx, monkeypatch):
     assert resultat["demande_id"] == demande.id
 
 
+def test_executer_trace_le_fournisseur(app_ctx, monkeypatch):
+    """Le fournisseur ayant répondu (après failover) est renvoyé à l'UI."""
+    patch_llm(monkeypatch, [_Resp(_Msg("Salut !", []))], label="Google Gemini")
+    utilisateur = seed_user()
+
+    resultat = agent_runner.executer(utilisateur, "Dis moi bonjour")
+
+    assert resultat["statut"] == "reponse"
+    assert resultat["fournisseur"] == "Google Gemini"
+
+
 def test_executer_appelle_tool_puis_repond(app_ctx, monkeypatch):
     """Niveau 2 : le LLM choisit calculer_macros, observe, puis conclut."""
     call = _Call("calculer_macros", {"calories": 3000, "objectif": "prise_masse"})
@@ -148,9 +157,9 @@ def test_executer_max_tours(app_ctx, monkeypatch):
 
 
 def test_executer_quota_epuise(app_ctx, monkeypatch):
-    """Quota IA atteint -> la boucle s'arrête proprement."""
+    """Aucun fournisseur IA disponible -> la boucle s'arrête proprement."""
     patch_llm(monkeypatch, [_Resp(_Msg("", []))])
-    monkeypatch.setattr(agent_runner.quota_tracker, "check_quota", lambda: (False, {"reason": "rpm_limit"}))
+    monkeypatch.setattr(agent_runner.ai_providers, "available_provider", lambda: (None, None, "none_available"))
 
     utilisateur = seed_user()
     resultat = agent_runner.executer(utilisateur, "dis bonjour")
@@ -297,7 +306,10 @@ def test_stream_events_boucle_complete(auth_client, monkeypatch):
     assert "tool_fin" in types
     assert types[-1] == "reponse"
 
-    fin = next(e for e in _lire_events(resp) if e["type"] == "tool_fin")
+    evenements = _lire_events(resp)
+    tour = next(e for e in evenements if e["type"] == "tour")
+    assert tour["fournisseur"] == "Groq"          # fournisseur ayant répondu ce tour
+    fin = next(e for e in evenements if e["type"] == "tool_fin")
     assert fin["outil"] == "calculer_macros"
     assert fin["icone"] == "🧮"
     assert "protéines" in fin["resume"]

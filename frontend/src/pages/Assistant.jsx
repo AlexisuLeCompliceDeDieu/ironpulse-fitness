@@ -162,7 +162,7 @@ export default function Assistant({ user }) {
         majMsg(index, (m) => ({ ...m, demande_id: evt.demande_id, maxTours: evt.max_tours }));
         break;
       case "tour":
-        majMsg(index, (m) => ({ ...m, tour: evt.tour, maxTours: evt.max_tours }));
+        majMsg(index, (m) => ({ ...m, tour: evt.tour, maxTours: evt.max_tours, fournisseur: evt.fournisseur || m.fournisseur }));
         break;
       case "tool_debut":
         majMsg(index, (m) => ({
@@ -216,6 +216,7 @@ export default function Assistant({ user }) {
           statut: evt.type,
           agentLoading: false,
           confirmation: null,
+          fournisseur: evt.fournisseur || m.fournisseur,
           etapes: evt.etapes || m.etapes,
         }));
         break;
@@ -456,6 +457,7 @@ export default function Assistant({ user }) {
               {m.role === "assistant" && m.agentLoading && (
                 <div className="agent-tour">
                   🔁 raisonnement — tour {Math.max(m.tour || 1, 1)}/{m.maxTours || 5}
+                  {m.fournisseur ? ` · 🧠 ${m.fournisseur}` : ""}
                 </div>
               )}
 

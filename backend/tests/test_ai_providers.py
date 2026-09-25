@@ -6,18 +6,27 @@ from services import ai_providers, quota_tracker
 
 
 class FakeProvider:
-    def __init__(self, pid, label, model="fake-model", configured=True, fail=None, text="ok"):
+    def __init__(self, pid, label, model="fake-model", configured=True, fail=None, text="ok",
+                 tools_result=None):
         self.id = pid
         self.label = label
         self.model = model
         self.configured = configured
         self.fail = fail
         self.text = text
+        self.tools_result = tools_result or {"content": "", "tool_calls": []}
+        self.tools_calls = 0
 
     def generate(self, messages, max_tokens, temperature):
         if self.fail:
             raise self.fail
         return self.text
+
+    def generate_tools(self, messages, tools, max_tokens, temperature, tool_choice="auto"):
+        self.tools_calls += 1
+        if self.fail:
+            raise self.fail
+        return self.tools_result
 
     def stream(self, messages, max_tokens, temperature):
         if self.fail:
@@ -196,3 +205,85 @@ def test_stream_text_none_when_all_fail(monkeypatch):
     it, info = ai_providers.stream_text([{"role": "user", "content": "x"}])
     assert it is None
     assert info["reason"] == "none_available"
+
+
+# ── Function calling (tools) + failover ────────────────────────────
+
+TOOLS = [{
+    "type": "function",
+    "function": {
+        "name": "calculer_macros",
+        "description": "Répartit les calories",
+        "parameters": {"type": "object", "properties": {"calories": {"type": "number"}}, "required": ["calories"]},
+    },
+}]
+
+
+def test_generate_with_tools_returns_normalized_calls(monkeypatch):
+    attendu = {"content": "", "tool_calls": [{"id": "c1", "name": "calculer_macros", "arguments": {"calories": 2500}}]}
+    groq = FakeProvider("groq", "Groq", tools_result=attendu)
+    monkeypatch.setattr(ai_providers, "PROVIDERS", _providers(groq))
+
+    resultat, info = ai_providers.generate_with_tools([{"role": "user", "content": "x"}], TOOLS)
+    assert resultat == attendu
+    assert info["provider"] == "groq"
+    assert groq.tools_calls == 1
+
+
+def test_generate_with_tools_fails_over(monkeypatch):
+    """Groq épuisé pour la journée → l'agent bascule sur Gemini, tools comprises."""
+    groq = FakeProvider("groq", "Groq", fail=ai_providers.ProviderError(429, "tokens per day (TPD)"))
+    gemini = FakeProvider("gemini", "Google Gemini", tools_result={
+        "content": "", "tool_calls": [{"id": "g1", "name": "calculer_macros", "arguments": {"calories": 2000}}],
+    })
+    monkeypatch.setattr(ai_providers, "PROVIDERS", _providers(groq, gemini))
+
+    resultat, info = ai_providers.generate_with_tools([{"role": "user", "content": "x"}], TOOLS)
+    assert resultat["tool_calls"][0]["name"] == "calculer_macros"
+    assert info["provider"] == "gemini"
+    assert info["label"] == "Google Gemini"
+    ok, reason = quota_tracker.can_use_provider("groq")
+    assert not ok and reason == "daily_limit"
+
+
+def test_generate_with_tools_none_when_all_fail(monkeypatch):
+    monkeypatch.setattr(ai_providers, "PROVIDERS", _providers(
+        FakeProvider("groq", "Groq", fail=ai_providers.ProviderError(500, "boom")),
+    ))
+    resultat, info = ai_providers.generate_with_tools([{"role": "user", "content": "x"}], TOOLS)
+    assert resultat is None
+    assert info["reason"] == "server_error"
+
+
+def test_normalize_openai_message_parses_arguments_string():
+    """L'API OpenAI renvoie les arguments en JSON string : on les normalise en dict."""
+    message = {
+        "content": None,
+        "tool_calls": [{"id": "call_x", "function": {"name": "calculer_macros", "arguments": '{"calories": 3000}'}}],
+    }
+    norm = ai_providers._normalize_openai_message(message)
+    assert norm["content"] == ""
+    assert norm["tool_calls"] == [{"id": "call_x", "name": "calculer_macros", "arguments": {"calories": 3000}}]
+
+
+def test_gemini_translates_tool_calls_and_responses():
+    """Gemini n'utilise ni le rôle assistant ni le rôle tool : on traduit."""
+    messages = [
+        {"role": "system", "content": "tu es IRONPULSE"},
+        {"role": "user", "content": "répartis 3000 kcal"},
+        {"role": "assistant", "content": None, "tool_calls": [{
+            "id": "c1", "type": "function",
+            "function": {"name": "calculer_macros", "arguments": '{"calories": 3000}'},
+        }]},
+        {"role": "tool", "tool_call_id": "c1", "name": "calculer_macros", "content": '{"proteines_g": 225}'},
+    ]
+    system, contents = ai_providers.PROVIDERS["gemini"]._to_gemini_tools(messages, TOOLS, "auto")
+
+    assert system == ["tu es IRONPULSE"]
+    assert contents[0] == {"role": "user", "parts": [{"text": "répartis 3000 kcal"}]}
+    assert contents[1]["role"] == "model"
+    assert contents[1]["parts"][0]["functionCall"] == {"name": "calculer_macros", "args": {"calories": 3000}}
+    assert contents[2]["role"] == "user"
+    part = contents[2]["parts"][0]["functionResponse"]
+    assert part["name"] == "calculer_macros"
+    assert part["response"]["result"] == {"proteines_g": 225}

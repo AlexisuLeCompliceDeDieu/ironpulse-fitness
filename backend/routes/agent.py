@@ -80,8 +80,6 @@ def run_agent():
     if resultat["statut"] == "quota":
         return jsonify(resultat), 429
     if resultat["statut"] == "erreur":
-        if "non configuré" in resultat["reponse"]:
-            return jsonify(resultat), 503
         return jsonify(resultat), 400
 
     return jsonify(resultat), 200

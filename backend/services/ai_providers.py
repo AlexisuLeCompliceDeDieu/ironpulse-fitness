@@ -71,6 +71,46 @@ def _openai_chat(url, key, model, messages, max_tokens, temperature, extra=None)
     return data["choices"][0]["message"]["content"]
 
 
+def _openai_chat_tools(url, key, model, messages, tools, max_tokens, temperature,
+                       tool_choice="auto", extra=None):
+    """POST JSON avec function calling (API OpenAI-compatible). Retourne le message brut."""
+    headers = {"Authorization": f"Bearer {key}", "Content-Type": "application/json"}
+    payload = {
+        "model": model,
+        "messages": messages,
+        "tools": tools,
+        "tool_choice": tool_choice,
+        "temperature": temperature,
+        "max_tokens": max_tokens,
+        "stream": False,
+    }
+    if extra:
+        payload.update(extra)
+    _, data = _http_json(url, headers, payload)
+    return data["choices"][0]["message"]
+
+
+def _normalize_openai_message(message):
+    """Message OpenAI → format normalisé de l'agent : {content, tool_calls}."""
+    tool_calls = []
+    for tc in (message.get("tool_calls") or []):
+        fn = tc.get("function") or {}
+        args = fn.get("arguments")
+        if isinstance(args, str):
+            try:
+                args = json.loads(args or "{}")
+            except ValueError:
+                args = {}
+        if not isinstance(args, dict):
+            args = {}
+        tool_calls.append({
+            "id": tc.get("id") or f"call_{len(tool_calls)}",
+            "name": fn.get("name") or "",
+            "arguments": args,
+        })
+    return {"content": message.get("content") or "", "tool_calls": tool_calls}
+
+
 def _sse_stream(url, key, model, messages, max_tokens, temperature, extra=None):
     """Générateur de morceaux de texte via un flux SSE (OpenAI-compatible)."""
     headers = {"Authorization": f"Bearer {key}", "Content-Type": "application/json"}
@@ -125,6 +165,9 @@ class _BaseProvider:
     def generate(self, messages, max_tokens, temperature):  # pragma: no cover - interface
         raise NotImplementedError
 
+    def generate_tools(self, messages, tools, max_tokens, temperature, tool_choice="auto"):  # pragma: no cover - interface
+        raise NotImplementedError
+
     def stream(self, messages, max_tokens, temperature):  # pragma: no cover - interface
         raise NotImplementedError
 
@@ -159,6 +202,22 @@ class GroqProvider(_BaseProvider):
             if (e.status == 400 or "reasoning" in low or "invalid" in low):
                 return _sse_stream(url, key, self.model, messages, max_tokens, temperature)
             raise
+
+    def generate_tools(self, messages, tools, max_tokens, temperature, tool_choice="auto"):
+        url = "https://api.groq.com/openai/v1/chat/completions"
+        key = os.environ.get("GROQ_API_KEY")
+        try:
+            message = _openai_chat_tools(url, key, self.model, messages, tools, max_tokens,
+                                         temperature, tool_choice,
+                                         extra={"reasoning_effort": "none"})
+        except ProviderError as e:
+            low = e.message.lower()
+            if (e.status == 400 or "reasoning" in low or "invalid" in low):
+                message = _openai_chat_tools(url, key, self.model, messages, tools, max_tokens,
+                                             temperature, tool_choice)
+            else:
+                raise
+        return _normalize_openai_message(message)
 
 
 class GeminiProvider(_BaseProvider):
@@ -200,6 +259,108 @@ class GeminiProvider(_BaseProvider):
         full = self.generate(messages[:], max_tokens, temperature)  # pas de streaming natif : on bufferise
         yield from _chunk_text(full)
 
+    @staticmethod
+    def _to_gemini_tools(messages, tools, tool_choice):
+        """Traduit les messages OpenAI (avec tool_calls et résultats de tools)
+        vers le format Gemini (functionCall / functionResponse)."""
+        system = [m.get("content") for m in messages if m["role"] == "system"]
+        contents = []
+        for m in messages:
+            role = m.get("role")
+            if role == "system":
+                continue
+            if role == "user":
+                contents.append({"role": "user", "parts": [{"text": m.get("content") or ""}]})
+            elif role == "assistant":
+                parts = []
+                if m.get("content"):
+                    parts.append({"text": m["content"]})
+                for tc in (m.get("tool_calls") or []):
+                    fn = tc.get("function") or {}
+                    args = fn.get("arguments")
+                    if isinstance(args, str):
+                        try:
+                            args = json.loads(args or "{}")
+                        except ValueError:
+                            args = {}
+                    parts.append({"functionCall": {
+                        "name": fn.get("name") or "",
+                        "args": args if isinstance(args, dict) else {},
+                    }})
+                if parts:
+                    contents.append({"role": "model", "parts": parts})
+            elif role == "tool":
+                reponse = m.get("content")
+                try:
+                    reponse = json.loads(reponse) if isinstance(reponse, str) else reponse
+                except ValueError:
+                    pass
+                part = {"functionResponse": {
+                    "name": m.get("name") or "",
+                    "response": {"result": reponse},
+                }}
+                # Gemini regroupe les résultats de tools parallèles dans un seul contenu
+                precedente = contents[-1] if contents else None
+                if (precedente and precedente["role"] == "user"
+                        and precedente["parts"] and "functionResponse" in precedente["parts"][0]):
+                    precedente["parts"].append(part)
+                else:
+                    contents.append({"role": "user", "parts": [part]})
+        return system, contents
+
+    def generate_tools(self, messages, tools, max_tokens, temperature, tool_choice="auto"):
+        url = ("https://generativelanguage.googleapis.com/v1beta/models/"
+               f"{urllib.parse.quote(self.model)}:generateContent"
+               f"?key={urllib.parse.quote(os.environ.get('GEMINI_API_KEY', ''))}")
+        system, contents = self._to_gemini_tools(messages, tools, tool_choice)
+        payload = {
+            "contents": contents,
+            "generationConfig": {"temperature": temperature, "maxOutputTokens": max_tokens},
+        }
+        if system:
+            payload["system_instruction"] = {"parts": [{"text": "\n".join(system)}]}
+
+        declarations = []
+        for t in tools or []:
+            fn = t.get("function") or {}
+            params = dict(fn.get("parameters") or {"type": "object", "properties": {}})
+            if not params.get("required"):
+                params.pop("required", None)
+            declarations.append({
+                "name": fn.get("name"),
+                "description": fn.get("description", ""),
+                "parameters": params,
+            })
+        if declarations:
+            payload["tools"] = [{"function_declarations": declarations}]
+            mode = "ANY" if tool_choice in ("any", "required") else "AUTO"
+            payload["tool_config"] = {"function_calling_config": {"mode": mode}}
+
+        _, data = _http_json(url, {}, payload)
+        candidates = data.get("candidates") or []
+        if not candidates:
+            raise ProviderError(200, "Gemini : aucune réponse")
+        parts = (candidates[0].get("content") or {}).get("parts") or []
+
+        text = "".join(p.get("text", "") for p in parts if p.get("text"))
+        tool_calls = []
+        for p in parts:
+            fc = p.get("functionCall")
+            if not fc:
+                continue
+            args = fc.get("args") or fc.get("arguments") or {}
+            if isinstance(args, str):
+                try:
+                    args = json.loads(args or "{}")
+                except ValueError:
+                    args = {}
+            tool_calls.append({
+                "id": f"call_{len(tool_calls)}",
+                "name": fc.get("name") or "",
+                "arguments": args if isinstance(args, dict) else {},
+            })
+        return {"content": text, "tool_calls": tool_calls}
+
 
 class OpenRouterProvider(_BaseProvider):
     id = "openrouter"
@@ -221,6 +382,12 @@ class OpenRouterProvider(_BaseProvider):
         return _sse_stream(url, os.environ.get("OPENROUTER_API_KEY", ""), self.model,
                            messages, max_tokens, temperature)
 
+    def generate_tools(self, messages, tools, max_tokens, temperature, tool_choice="auto"):
+        url = "https://openrouter.ai/api/v1/chat/completions"
+        message = _openai_chat_tools(url, os.environ.get("OPENROUTER_API_KEY", ""), self.model,
+                                     messages, tools, max_tokens, temperature, tool_choice)
+        return _normalize_openai_message(message)
+
 
 class MistralProvider(_BaseProvider):
     id = "mistral"
@@ -237,6 +404,12 @@ class MistralProvider(_BaseProvider):
         url = "https://api.mistral.ai/v1/chat/completions"
         return _sse_stream(url, os.environ.get("MISTRAL_API_KEY", ""), self.model,
                            messages, max_tokens, temperature)
+
+    def generate_tools(self, messages, tools, max_tokens, temperature, tool_choice="auto"):
+        url = "https://api.mistral.ai/v1/chat/completions"
+        message = _openai_chat_tools(url, os.environ.get("MISTRAL_API_KEY", ""), self.model,
+                                     messages, tools, max_tokens, temperature, tool_choice)
+        return _normalize_openai_message(message)
 
 
 PROVIDERS = {
@@ -338,6 +511,39 @@ def generate_text(messages, max_tokens=2048, temperature=0.7):
             text = p.generate(messages, max_tokens, temperature)
             quota_tracker.record_provider_usage(pid)
             return text, {"provider": pid, "label": p.label, "model": p.model}
+        except ProviderError as e:
+            reason = _handle_failure(pid, e)
+            attempts.append({"provider": pid, "ok": False, "reason": reason})
+            continue
+    last = attempts[-1] if attempts else {}
+    return None, {"reason": last.get("reason", "none_available"), "attempts": attempts}
+
+
+def generate_with_tools(messages, tools, max_tokens=2048, temperature=0.7, tool_choice="auto"):
+    """Function calling avec failover (utilisé par l'agent IRONPULSE).
+
+    Les fournisseurs OpenAI-compatible reçoivent les tools telles quelles ;
+    Gemini est traduit (functionCall / functionResponse). Tous renvoient le MÊME
+    format normalisé, ce qui rend l'agent indépendant du fournisseur :
+        {"content": str, "tool_calls": [{"id", "name", "arguments": dict}, ...]}
+
+    Retourne (résultat, info) avec info = {provider, label, model} en cas de
+    succès, ou (None, info) où info["reason"] explique l'échec global.
+    """
+    attempts = []
+    for pid in provider_order():
+        p = PROVIDERS[pid]
+        if not p.configured:
+            attempts.append({"provider": pid, "ok": False, "reason": "not_configured"})
+            continue
+        ok, reason = quota_tracker.can_use_provider(pid)
+        if not ok:
+            attempts.append({"provider": pid, "ok": False, "reason": reason})
+            continue
+        try:
+            resultat = p.generate_tools(messages, tools, max_tokens, temperature, tool_choice)
+            quota_tracker.record_provider_usage(pid)
+            return resultat, {"provider": pid, "label": p.label, "model": p.model}
         except ProviderError as e:
             reason = _handle_failure(pid, e)
             attempts.append({"provider": pid, "ok": False, "reason": reason})
