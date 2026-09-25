@@ -217,6 +217,18 @@ def _borne(valeur, mini, maxi, defaut):
     return max(mini, min(maxi, v))
 
 
+def _texte(valeur, defaut="", maxi=300):
+    """Texte court et sûr : le modèle peut renvoyer un nombre, une liste, un dict."""
+    if valeur is None:
+        return defaut
+    if not isinstance(valeur, str):
+        try:
+            valeur = json.dumps(valeur, ensure_ascii=False, default=str)
+        except (TypeError, ValueError):
+            valeur = str(valeur)
+    return valeur.strip()[:maxi] or defaut
+
+
 def _charge(user, ex, prescription, valeur):
     """Charge cible : celle de l'IA si plausible, sinon estimation par niveau."""
     try:
@@ -276,11 +288,17 @@ def _valider(jours_bruts, catalogue, day_specs, user, prescription):
     for i, spec in enumerate(day_specs):
         brut = jours_bruts[i] if i < len(jours_bruts) else None
         brut = brut if isinstance(brut, dict) else {}
-        nom = (brut.get("nom") or brut.get("name") or spec["name"])[:50]
+        nom = _texte(brut.get("nom") or brut.get("name"), spec["name"], 50)
+
+        bruts = brut.get("exercices")
+        if bruts is None:
+            bruts = brut.get("exercises")
+        if not isinstance(bruts, list):
+            bruts = []
 
         exercices = []
         vus = set()
-        for item in (brut.get("exercices") or brut.get("exercises") or [])[:MAX_EXOS_JOUR]:
+        for item in bruts[:MAX_EXOS_JOUR]:
             ex = _resoudre_exercice(item, par_id, par_nom)
             if ex is None:
                 continue
@@ -361,7 +379,10 @@ def generer_programme_ia(user, available_equipment=None, goal=None, split_type=N
 
     prescription = program_generator.LEVEL_PRESCRIPTIONS.get(
         user.level, program_generator.LEVEL_PRESCRIPTIONS["debutant"])
-    jours, alertes = _valider(data.get("jours", []), catalogue, day_specs, user, prescription)
+    jours_bruts = data.get("jours")
+    if not isinstance(jours_bruts, list):
+        jours_bruts = []
+    jours, alertes = _valider(jours_bruts, catalogue, day_specs, user, prescription)
     if not any(j["exercises"] for j in jours):
         raise ErreurIAProgram("aucun_exercice")
 
@@ -374,7 +395,7 @@ def generer_programme_ia(user, available_equipment=None, goal=None, split_type=N
         "provider": info.get("provider"),
         "variation": variation,
         "regenere": programme_actif is not None,
-        "resume": (data.get("resume") or "").strip()[:300],
+        "resume": _texte(data.get("resume"), "", MAX_CONSIGNE),
         "avertissements": alertes,
         "raison": None,
     }

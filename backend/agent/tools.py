@@ -8,7 +8,7 @@ Trois catégories couvertes (annexe A, schéma 5 du cahier des charges) :
   - Lecture   : consulter_profil, consulter_progression
   - Calcul    : calculer_macros
   - Lecture   : proposer_seance (recommandation à partir des données)
-  - Écriture  : enregistrer_seance  ← sensible, demande la validation humaine
+  - Écriture  : enregistrer_seance, generer_programme  ← sensibles, validation humaine
 
 Règles :
   - une responsabilité unique par tool ;
@@ -235,6 +235,75 @@ def enregistrer_seance(utilisateur_id: int, date: str = None, ressenti: int = 3,
     }
 
 
+def generer_programme(utilisateur_id: int, consigne: str = "", seances_par_semaine: int = None,
+                      split: str = "", regeneration: bool = False) -> dict:
+    """Génère (ou régénère) le programme d'entraînement via l'IA.
+
+    Tool d'écriture SENSIBLE : l'agent prépare le plan, l'utilisateur le valide,
+    puis seulement le programme est remplacé en base. L'historique des séances
+    réalisées est conservé.
+    """
+    user = db.session.get(User, utilisateur_id)
+    if not user:
+        return {"error": "Utilisateur introuvable."}
+
+    from services import ai_program
+
+    try:
+        seances = int(seances_par_semaine) if seances_par_semaine else None
+    except (TypeError, ValueError):
+        seances = None
+
+    try:
+        if regeneration:
+            from models import TrainingProgram
+            actif = TrainingProgram.query.filter_by(
+                user_id=utilisateur_id, is_active=True).order_by(TrainingProgram.id.desc()).first()
+            if not actif:
+                return {"error": "Aucun programme actif à régénérer."}
+            programme, meta = ai_program.generer_programme(
+                user, user.equipment_list(),
+                goal=actif.goal,
+                split_type=split or None,
+                days_per_week=seances or len(actif.days),
+                consigne=consigne or None,
+            )
+        else:
+            programme, meta = ai_program.generer_programme(
+                user, user.equipment_list(),
+                goal=user.goal,
+                split_type=split or user.split_type,
+                days_per_week=seances or user.sessions_per_week,
+                consigne=consigne or None,
+            )
+    except ai_program.ErreurIAProgram as e:
+        return {"error": f"Génération IA indisponible ({e.raison}). Réessaie dans un instant."}
+    except Exception as e:  # noqa: BLE001
+        return {"error": f"Échec de la génération du programme : {type(e).__name__}: {str(e)[:200]}"}
+
+    jours = [
+        {
+            "nom": j.name,
+            "exercices": [
+                f"{pe.exercise.name} ({pe.sets}×{pe.reps})"
+                for pe in j.exercises if pe.exercise
+            ],
+        }
+        for j in programme.days
+    ]
+    source = "l'IA" if meta["source"] == "ia" else "l'algorithme"
+    return {
+        "resume": f"Programme de {len(programme.days)} séances par {source}"
+                  + (f" (variante {programme.variation + 1})" if programme.variation else ""),
+        "message": "Programme enregistré.",
+        "programme_id": programme.id,
+        "source": meta["source"],
+        "fournisseur": meta.get("fournisseur"),
+        "variation": programme.variation or 0,
+        "jours": jours,
+    }
+
+
 # ─────────────────────────────────────────────────────────────────────
 #  Déclarations au LLM (schémas JSON) + registre nom → fonction
 # ─────────────────────────────────────────────────────────────────────
@@ -245,10 +314,11 @@ TOOLS_IMPL = {
     "calculer_macros": calculer_macros,
     "proposer_seance": proposer_seance,
     "enregistrer_seance": enregistrer_seance,
+    "generer_programme": generer_programme,
 }
 
 # Tools dont l'exécution modifie la base : validation humaine obligatoire
-SENSITIVE_TOOLS = {"enregistrer_seance"}
+SENSITIVE_TOOLS = {"enregistrer_seance", "generer_programme"}
 
 TOOL_SCHEMAS = [
     {
@@ -334,6 +404,49 @@ TOOL_SCHEMAS = [
             },
         },
     },
+    {
+        "type": "function",
+        "function": {
+            "name": "generer_programme",
+            "description": (
+                "Génère un programme d'entraînement personnalisé (séances, exercices, "
+                "séries, répétitions, charges) à partir du profil, du matériel "
+                "disponible et des dernières performances. Utiliser ce tool quand "
+                "l'utilisateur demande un programme, un plan d'entraînement ou une "
+                "variante. Met true pour regeneration quand il veut une nouvelle "
+                "version d'un programme existant. Cette action MODIFIE la base : "
+                "elle sera soumise à sa validation avant exécution."
+            ),
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "consigne": {
+                        "type": "string",
+                        "description": (
+                            "Précision libre dudesired : « plus de jambes », "
+                            "« séances plus courtes », « garde mes charges »…"
+                        ),
+                    },
+                    "seances_par_semaine": {
+                        "type": "integer",
+                        "description": "Nombre de séances par semaine (défaut : celui du profil).",
+                    },
+                    "split": {
+                        "type": "string",
+                        "description": (
+                            "Split souhaité (défaut : celui du profil) : full_body, "
+                            "upper_lower, push_pull_legs, upper_lower_push_pull, bro_split."
+                        ),
+                    },
+                    "regeneration": {
+                        "type": "boolean",
+                        "description": "true pour régénérer le programme actif, false pour en créer un nouveau.",
+                    },
+                },
+                "required": [],
+            },
+        },
+    },
 ]
 
 
@@ -348,6 +461,7 @@ TOOL_META = {
     "calculer_macros":        {"libelle": "Calcul des macros",   "icone": "🧮", "categorie": "Calcul"},
     "proposer_seance":        {"libelle": "Séance conseillée",   "icone": "🏋️", "categorie": "Lecture"},
     "enregistrer_seance":     {"libelle": "Enregistrer une séance", "icone": "✅", "categorie": "Écriture"},
+    "generer_programme":      {"libelle": "Générer le programme",  "icone": "🧠", "categorie": "Écriture"},
 }
 
 

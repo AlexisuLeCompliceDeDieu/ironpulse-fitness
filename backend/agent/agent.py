@@ -50,10 +50,11 @@ RÈGLES STRICTES :
 3. Pour tout calcul de macros ou de répartition calorique, appelle calculer_macros (jamais de calcul à la main).
 4. Pour recommander la prochaine séance, appelle proposer_seance.
 5. Pour enregistrer une séance réalisée, appelle enregistrer_seance : l'action sera soumise à la validation de l'utilisateur.
-6. Si la demande est ambiguë ou incomplète, demande une précision au lieu de deviner.
-7. Si les données indiquent un problème (ressenti très bas, stagnation), signale-le et propose une action adaptée.
-8. Réponds TOUJOURS en français, de façon concise (5 à 10 phrases maximum), pratique et encourageante.
-9. Cite brièvement les données réelles que tu as obtenues par les outils (poids, volume, ressenti...) pour montrer que ta réponse s'appuie sur la base."""
+6. Pour créer ou refaire un programme d'entraînement (plan, séances, exercices, charges), appelle generer_programme en transmettant la consigne de l'utilisateur : l'action sera soumise à sa validation. Ne rédige jamais un programme toi-même, le tool s'en charge.
+7. Si la demande est ambiguë ou incomplète, demande une précision au lieu de deviner.
+8. Si les données indiquent un problème (ressenti très bas, stagnation), signale-le et propose une action adaptée.
+9. Réponds TOUJOURS en français, de façon concise (5 à 10 phrases maximum), pratique et encourageante.
+10. Cite brièvement les données réelles que tu as obtenues par les outils (poids, volume, ressenti...) pour montrer que ta réponse s'appuie sur la base."""
 
 
 def _completion(messages, max_tokens=900):
@@ -112,6 +113,14 @@ def _questions_sensibles(utilisateur, nom, arguments):
             f"Confirmer l'enregistrement de la séance du {date} "
             f"avec un ressenti de {ressenti}/5 ?"
         )
+    if nom == "generer_programme":
+        action = "régénérer le programme" if arguments.get("regeneration") else "générer ton programme"
+        seances = arguments.get("seances_par_semaine")
+        detail = f" pour {seances} séances/semaine" if seances else ""
+        consigne = arguments.get("consigne")
+        if consigne:
+            detail += f" en tenant compte de « {consigne} »"
+        return f"Confirmer que je dois {action}{detail} ? Le plan sera remplacé, ton historique est conservé."
     return f"Confirmer l'exécution de l'action « {nom} » ?"
 
 

@@ -14,10 +14,11 @@ import json
 
 import pytest
 
-from models import db, User, Session, Demande
+from models import db, User, Session, Demande, TrainingProgram
 
 from agent import agent as agent_runner
 from agent import tools as agent_tools
+from services import ai_program
 
 
 @pytest.fixture()
@@ -208,6 +209,62 @@ def test_executer_avec_confirmation_execute(app_ctx, monkeypatch):
     assert demande.resultats[0].outil_utilise == "enregistrer_seance"
 
 
+# ── Génération de programme par l'agent (tool sensible) ──────────────
+
+def test_generer_programme_est_un_tool_sensible(app_ctx, auth_client):
+    assert "generer_programme" in agent_tools.SENSITIVE_TOOLS
+    schemas = {s["function"]["name"] for s in agent_tools.TOOL_SCHEMAS}
+    assert "generer_programme" in schemas
+    assert agent_tools.TOOL_META["generer_programme"]["categorie"] == "Écriture"
+
+
+def test_generer_programme_cree_le_programme(app_ctx, monkeypatch):
+    u = seed_user()
+
+    def fake_generer(user, materiel=None, **kw):
+        program = TrainingProgram(user_id=user.id, goal=user.goal or "prise_masse",
+                                  generation_source="ia", variation=0, is_active=True)
+        db.session.add(program)
+        db.session.commit()
+        return program, {"source": "ia", "fournisseur": "Groq"}
+
+    monkeypatch.setattr(ai_program, "generer_programme", fake_generer)
+
+    data = agent_tools.generer_programme(u.id, consigne="plus de jambes", seances_par_semaine=3)
+
+    assert "error" not in data
+    assert data["source"] == "ia"
+    assert data["programme_id"] is not None
+    assert "Programme" in data["resume"]
+
+
+def test_generer_programme_renvoie_une_erreur_json(app_ctx, monkeypatch):
+    u = seed_user()
+
+    def boom(*args, **kwargs):
+        raise ai_program.ErreurIAProgram("daily_limit")
+
+    monkeypatch.setattr(ai_program, "generer_programme", boom)
+    data = agent_tools.generer_programme(u.id)
+
+    assert "daily_limit" in data["error"]
+    assert agent_tools.generer_programme(999999)["error"]
+
+
+def test_agent_pause_avant_de_generer_un_programme(app_ctx, monkeypatch):
+    """L'agent prépare le programme puis attend la validation humaine."""
+    call = _Call("generer_programme", {"consigne": "séances plus courtes", "seances_par_semaine": 3})
+    patch_llm(monkeypatch, [_Resp(_Msg("", [call]))])
+    utilisateur = seed_user()
+
+    resultat = agent_runner.executer(utilisateur, "Fais-moi un programme")
+
+    assert resultat["statut"] == "confirmation_requise"
+    assert resultat["confirmation"]["tool"] == "generer_programme"
+    assert "séances plus courtes" in resultat["reponse"]
+    assert TrainingProgram.query.count() == 0
+
+
 # ── Outils : lecture réelle en base ─────────────────────────────────
 
 def test_consulter_progression_vide(app_ctx):
@@ -255,12 +312,12 @@ def test_catalogue_outils(auth_client):
     noms = {o["nom"] for o in outils}
     assert noms == {
         "consulter_profil", "consulter_progression", "calculer_macros",
-        "proposer_seance", "enregistrer_seance",
+        "proposer_seance", "enregistrer_seance", "generer_programme",
     }
     for o in outils:
         assert o["libelle"] and o["icone"] and o["description"]
-    sensible = [o for o in outils if o["sensible"]]
-    assert [o["nom"] for o in sensible] == ["enregistrer_seance"]
+    sensible = sorted(o["nom"] for o in outils if o["sensible"])
+    assert sensible == ["enregistrer_seance", "generer_programme"]
 
 
 def test_catalogue_outils_unauthenticated(client):

@@ -246,6 +246,24 @@ def test_reponse_hors_format_declenche_le_repli(app_ctx, user_ia, monkeypatch):
     assert len(program.days) == 3
 
 
+def test_types_inattendus_dans_la_reponse_ia(app_ctx, user_ia, monkeypatch):
+    """Un modèle qui renvoie des types bizarres ne doit pas faire planter la route."""
+    par_cat = _par_categorie(user_ia)
+    jours = _jours_ia(par_cat)
+    jours[0] = {"nom": 123, "exercices": {"pas": "une liste"}, "serie": 999}
+    jours[1] = "Push mais en texte"
+    jours[2] = {"nom": None, "exercices": [None, "Squat", 42,
+                                             {"nom": par_cat["dos"][0].name, "series": "beaucoup"}]}
+    patch_ia(monkeypatch, _reponse_ia(jours, resume=["Une", "liste"]))
+
+    program, meta = ai_program.generer_programme(user_ia, [], source="ia")
+
+    assert len(program.days) == 3
+    assert all(d.exercises for d in program.days)
+    assert isinstance(meta["resume"], str)
+    assert all(isinstance(d.name, str) for d in program.days)
+
+
 def test_ia_source_stricte_renvoie_503_si_indisponible(app_ctx, user_ia, monkeypatch):
     patch_ia(monkeypatch, None)
 

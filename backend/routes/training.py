@@ -1,3 +1,5 @@
+import logging
+
 from flask import Blueprint, jsonify, session, request
 from datetime import date, timedelta
 from models import (
@@ -6,6 +8,22 @@ from models import (
 from services import program_generator, adaptation, ai_program
 
 training_bp = Blueprint("training", __name__)
+
+logger = logging.getLogger(__name__)
+
+
+def _echec_generation(e):
+    """500 lisible : le frontend affiche un message, le serveur garde la trace.
+
+    Sans cela, une exception non gérée renvoie la page d'erreur HTML de Flask et
+    l'interface affiche un « Erreur » vide.
+    """
+    logger.exception("Échec de la génération du programme : %r", e)
+    return jsonify({
+        "error": "La génération du programme a échoué.",
+        "detail": f"{type(e).__name__}: {str(e)[:200]}",
+        "programme_conserve": True,
+    }), 500
 
 
 def current_user():
@@ -74,6 +92,8 @@ def generate():
             "raison": e.raison,
             "programme_algorithme_disponible": True,
         }), 503
+    except Exception as e:  # noqa: BLE001
+        return _echec_generation(e)
 
     message = "Programme généré par l'IA 🧠" if meta["source"] == "ia" else "Programme généré ⚙️"
     return jsonify({"message": message, "program": program.to_dict(), "meta": meta}), 201
@@ -135,6 +155,8 @@ def regenerate():
             "raison": e.raison,
             "programme_actif_conserve": True,
         }), 503
+    except Exception as e:  # noqa: BLE001
+        return _echec_generation(e)
 
     message = "Programme régénéré par l'IA 🧠" if meta["source"] == "ia" else "Programme régénéré ⚙️"
     return jsonify({"message": message, "program": program.to_dict(), "meta": meta}), 201

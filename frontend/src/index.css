@@ -2000,6 +2000,16 @@ td {
   margin: 0.3rem 0 0;
 }
 
+.agent-timeline {
+  list-style: none;
+  border-left: 2px solid var(--border);
+  padding-left: 0.9rem;
+}
+
+.agent-timeline li {
+  color: var(--muted);
+}
+
 .confirm-card {
   margin-top: 0.6rem;
   border: 1px solid #f59e0b;

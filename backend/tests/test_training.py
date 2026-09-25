@@ -238,6 +238,21 @@ def test_generate_algorithme_ignore_la_ia(auth_client, monkeypatch):
     assert resp.get_json()["meta"]["source"] == "algorithme"
 
 
+def test_generate_erreur_inattendue_renvoie_un_json_lisible(auth_client, monkeypatch):
+    """Une exception non gérée ne doit plus renvoyer la page HTML de Flask."""
+    def boom(*args, **kwargs):
+        raise RuntimeError("colonne manquante")
+
+    monkeypatch.setattr("services.ai_program.generer_programme", boom)
+    resp = auth_client.post("/api/training/program/generate", json={})
+
+    assert resp.status_code == 500
+    data = resp.get_json()
+    assert "échoué" in data["error"]
+    assert "RuntimeError" in data["detail"]
+    assert data["programme_conserve"] is True
+
+
 def test_regenerate_requires_auth(client):
     assert client.post("/api/training/program/regenerate").status_code == 401
 

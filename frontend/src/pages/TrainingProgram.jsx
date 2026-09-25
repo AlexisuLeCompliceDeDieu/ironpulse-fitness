@@ -49,6 +49,10 @@ export default function TrainingProgram({ user }) {
   const [source, setSource] = useState("auto");
   const [iaAvailable, setIaAvailable] = useState(true);
   const [consigne, setConsigne] = useState("");
+  const [erreur, setErreur] = useState("");
+  const [agentBusy, setAgentBusy] = useState(false);
+  const [agentSteps, setAgentSteps] = useState([]);
+  const [confirmation, setConfirmation] = useState(null);
 
   useEffect(() => {
     api.get("/training/presets")
@@ -75,10 +79,26 @@ export default function TrainingProgram({ user }) {
   const splitOptions = presets.filter((p) => p.kind === "split");
   const goalOptions = presets.filter((p) => p.kind === "goal");
 
+  const messageErreur = (e, defaut) => {
+    const data = e.response?.data || {};
+    const detail = data.detail ? ` (${data.detail})` : "";
+    return `${data.error || defaut}${detail}`;
+  };
+
+  const chargerProgramme = async () => {
+    try {
+      const res = await api.get("/training/program/current");
+      setProgram(res.data.program);
+    } catch (e) {
+      setProgram(null);
+    }
+  };
+
   const generate = async () => {
     if (!selectedSplit) return;
     setLoading(true);
     setMessage("");
+    setErreur("");
     try {
       const isSplit = selectedSplit.kind === "split";
       const res = await api.post("/training/program/generate", {
@@ -95,7 +115,7 @@ export default function TrainingProgram({ user }) {
       setMeta(res.data.meta || null);
       window.scrollTo({ top: 0, behavior: "smooth" });
     } catch (e) {
-      setMessage(e.response?.data?.error || "Erreur");
+      setErreur(messageErreur(e, "Génération impossible"));
     } finally {
       setLoading(false);
     }
@@ -104,6 +124,7 @@ export default function TrainingProgram({ user }) {
   const regenerate = async () => {
     setLoading(true);
     setMessage("");
+    setErreur("");
     try {
       const res = await api.post("/training/program/regenerate", {
         source,
@@ -114,9 +135,120 @@ export default function TrainingProgram({ user }) {
       setMeta(res.data.meta || null);
       window.scrollTo({ top: 0, behavior: "smooth" });
     } catch (e) {
-      setMessage(e.response?.data?.error || "Erreur");
+      setErreur(messageErreur(e, "Régénération impossible"));
     } finally {
       setLoading(false);
+    }
+  };
+
+  // ── Génération pilotée par l'agent (boucle agentique + validation humaine) ──
+  const lireFluxAgent = async (resp) => {
+    const reader = resp.body.getReader();
+    const decoder = new TextDecoder();
+    let buffer = "";
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      buffer += decoder.decode(value, { stream: true });
+      const parts = buffer.split("\n\n");
+      buffer = parts.pop();
+      for (const part of parts) {
+        const line = part.trim();
+        if (!line.startsWith("data:")) continue;
+        const payload = line.slice(5).trim();
+        if (!payload || payload === "[DONE]") continue;
+        let ev;
+        try {
+          ev = JSON.parse(payload);
+        } catch (err) {
+          continue;
+        }
+        traiterEventAgent(ev);
+      }
+    }
+  };
+
+  const traiterEventAgent = (ev) => {
+    if (ev.type === "tour") {
+      setAgentSteps((s) => [...s, `🧭 Tour ${ev.tour}/${ev.max_tours} — raisonnement ${ev.fournisseur || ""}`]);
+    } else if (ev.type === "tool_debut") {
+      setAgentSteps((s) => [...s, `${ev.icone || "🔧"} ${ev.libelle || ev.outil}…`]);
+    } else if (ev.type === "tool_fin") {
+      setAgentSteps((s) => [...s, `✅ ${ev.resume || ev.libelle || ev.outil} (${ev.duree_ms ?? 0} ms)`]);
+    } else if (ev.type === "confirmation") {
+      setConfirmation({ ...ev.confirmation, question: ev.reponse, demande_id: ev.demande_id });
+      setAgentSteps((s) => [...s, "⏸️ En attente de ta validation"]);
+    } else if (ev.type === "reponse") {
+      setMessage(`🤖 Agent : ${ev.reponse}`);
+      setAgentSteps((s) => [...s, `💬 ${ev.reponse}`]);
+      chargerProgramme();
+    } else if (ev.type === "erreur" || ev.type === "quota" || ev.type === "limite") {
+      setErreur(ev.reponse || "L'agent n'a pas pu aboutir.");
+    }
+  };
+
+  const genererViaAgent = async () => {
+    if (agentBusy) return;
+    setAgentBusy(true);
+    setErreur("");
+    setMessage("");
+    setAgentSteps([]);
+    setConfirmation(null);
+    const detail = consigne.trim() ? ` en tenant compte de « ${consigne.trim()} »` : "";
+    const demande = `Génère mon programme d'entraînement${detail} avec ${daysPerWeek} séances par semaine.`;
+    try {
+      const resp = await fetch("/api/agent/stream", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({ demande }),
+      });
+      if (!resp.ok) {
+        const data = await resp.json().catch(() => ({}));
+        setErreur(data.error || "Erreur du serveur");
+        return;
+      }
+      await lireFluxAgent(resp);
+    } catch (err) {
+      setErreur("Connexion coupée. Réessaie.");
+    } finally {
+      setAgentBusy(false);
+    }
+  };
+
+  const confirmerAgent = async (ok) => {
+    if (!confirmation || agentBusy) return;
+    if (!ok) {
+      setConfirmation(null);
+      setAgentSteps((s) => [...s, "✔ Action annulée, rien n'a été modifié."]);
+      return;
+    }
+    setAgentBusy(true);
+    try {
+      const resp = await fetch("/api/agent/stream", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({
+          demande: "Confirmation d'action",
+          confirmation: {
+            tool: confirmation.tool,
+            arguments: confirmation.arguments,
+            demande_id: confirmation.demande_id,
+          },
+        }),
+      });
+      if (!resp.ok) {
+        const data = await resp.json().catch(() => ({}));
+        setErreur(data.error || "Échec de la confirmation.");
+        return;
+      }
+      setConfirmation(null);
+      await lireFluxAgent(resp);
+    } catch (err) {
+      setErreur("Échec de la confirmation. Réessaie.");
+    } finally {
+      setAgentBusy(false);
     }
   };
 
@@ -229,7 +361,25 @@ export default function TrainingProgram({ user }) {
         >
           {loading ? "⏳ Génération..." : "⚡ Générer mon programme"}
         </button>
+
+        <div style={{ marginTop: "0.8rem" }}>
+          <button
+            className="btn btn-ghost"
+            disabled={loading || agentBusy}
+            onClick={genererViaAgent}
+          >
+            {agentBusy ? "🤖 L'agent travaille..." : "🤖 Générer via l'agent"}
+          </button>
+          <p className="muted" style={{ fontSize: "0.85rem", margin: "0.5rem 0 0 0" }}>
+            L'agent raisonne étape par étape, prépare le plan, puis te demande de le valider
+            avant de remplacer ton programme.
+          </p>
+        </div>
+
+        <AgentPanel steps={agentSteps} confirmation={confirmation} onConfirm={confirmerAgent} busy={agentBusy} />
+
         {message && <p style={{ marginTop: "0.8rem", color: "var(--success)", fontWeight: 700 }}>{message}</p>}
+        {erreur && <p style={{ marginTop: "0.8rem", color: "var(--danger)", fontWeight: 700 }}>{erreur}</p>}
       </div>
     );
   }
@@ -269,6 +419,7 @@ export default function TrainingProgram({ user }) {
           </button>
         </div>
         {message && <p style={{ color: "var(--success)", fontWeight: 700 }}>{message}</p>}
+        {erreur && <p style={{ color: "var(--danger)", fontWeight: 700 }}>{erreur}</p>}
         {meta?.raison && (
           <p className="muted" style={{ fontSize: "0.85rem", marginBottom: 0 }}>ℹ️ {meta.raison}</p>
         )}
@@ -381,6 +532,35 @@ function IaPanel({ source, setSource, consigne, setConsigne, iaAvailable, compac
             ))}
           </div>
         </>
+      )}
+    </div>
+  );
+}
+
+function AgentPanel({ steps, confirmation, onConfirm, busy }) {
+  if (!steps.length && !confirmation) return null;
+  return (
+    <div className="card" style={{ marginTop: "1rem", background: "var(--grad-soft)" }}>
+      <h3 style={{ marginTop: 0 }}>🤖 Déroulé de l'agent</h3>
+      {steps.length > 0 && (
+        <ul className="agent-timeline" style={{ margin: 0, paddingLeft: "1.1rem", fontSize: "0.9rem" }}>
+          {steps.map((s, i) => (
+            <li key={i} className="muted" style={{ marginBottom: "0.25rem" }}>{s}</li>
+          ))}
+        </ul>
+      )}
+      {confirmation && (
+        <div className="confirm-card">
+          <p style={{ margin: "0 0 0.6rem 0", fontWeight: 700 }}>⏸️ {confirmation.question}</p>
+          <div style={{ display: "flex", gap: "0.5rem", flexWrap: "wrap" }}>
+            <button className="btn" disabled={busy} onClick={() => onConfirm(true)}>
+              ✅ Confirmer
+            </button>
+            <button className="btn btn-ghost" disabled={busy} onClick={() => onConfirm(false)}>
+              Annuler
+            </button>
+          </div>
+        </div>
       )}
     </div>
   );
