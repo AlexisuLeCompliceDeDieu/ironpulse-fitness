@@ -85,19 +85,20 @@ def chat():
     payload = [{"role": "system", "content": _system_prompt(user)}] + history
 
     # Vérification QUANTIQUE : un fournisseur est-il disponible ?
-    pid, provider, _ = ai_providers.available_provider()
+    pref = data.get("provider") or None
+    pid, provider, _ = ai_providers.available_provider(pref)
     if provider is None:
         return jsonify({
-            "error": "Aucune IA disponible (tous les fournisseurs ont atteint leur limite).",
+            "error": ai_providers.explain_none_available(),
             "quota": quota_status(),
         }), 429
 
     stream, info = ai_providers.stream_text(
-        payload, max_tokens=MAX_TOKENS, temperature=TEMPERATURE
+        payload, max_tokens=MAX_TOKENS, temperature=TEMPERATURE, provider_pref=pref
     )
     if stream is None:
         return jsonify({
-            "error": "Aucune IA disponible (tous les fournisseurs ont atteint leur limite).",
+            "error": ai_providers.explain_none_available(),
             "quota": quota_status(),
         }), 429
 
@@ -139,10 +140,41 @@ def status():
     user = _current_user()
     if not user:
         return jsonify({"error": "Non authentifié"}), 401
-    active = ai_providers.active_provider_id()
+    pref = (request.args.get("provider") or "").strip() or None
+    active = ai_providers.active_provider_id(pref)
     return jsonify({
         "groq_enabled": any(p.configured for p in ai_providers.PROVIDERS.values()),
         "model": ai_providers.PROVIDERS[active].model if active else None,
         "provider": active,
         "quota": quota_status(),
+        "ia": quota_tracker_diagnostic(),
+        "fournisseurs": ai_providers.providers_liste(),
     }), 200
+
+
+@chat_bp.route("/reset-quota", methods=["POST"])
+def reset_quota():
+    """Réactive les fournisseurs IA bloqués (limite atteinte par erreur).
+
+    Les quotas et cooldowns sont remis à zéro : l'IA redevient immédiatement
+    disponible au lieu d'attendre minuit.
+    """
+    user = _current_user()
+    if not user:
+        return jsonify({"error": "Non authentifié"}), 401
+    from services import quota_tracker
+    providers = quota_tracker.reset_providers()
+    return jsonify({
+        "message": "Fournisseurs IA réactivés.",
+        "providers": providers,
+        "ia": quota_tracker_diagnostic(),
+    }), 200
+
+
+def quota_tracker_diagnostic():
+    """Diagnostic IA lisible (sans secret) pour le frontend."""
+    try:
+        from services import quota_tracker
+        return quota_tracker.diagnostic()
+    except Exception:
+        return {}

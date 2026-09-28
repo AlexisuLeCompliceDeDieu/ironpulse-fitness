@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import api from "../api.js";
 import PageHero, { FIT_IMAGES } from "../components/PageHero.jsx";
+import IaSwitch from "../components/IaSwitch.jsx";
 
 const CHAT_SUGGESTIONS = [
   "Que manger pour prendre du muscle ?",
@@ -28,9 +29,29 @@ export default function Assistant({ user }) {
   const [historique, setHistorique] = useState([]);
   const [showHistory, setShowHistory] = useState(false);
   const [histLoading, setHistLoading] = useState(false);
+  const [resetBusy, setResetBusy] = useState(false);
+  const [provider, setProvider] = useState(() => {
+    try {
+      return localStorage.getItem("ironpulse_ia_provider") || "";
+    } catch (e) {
+      return "";
+    }
+  });
   const abortRef = useRef(null);
   const bottomRef = useRef(null);
   const storageKey = `ironpulse_assistant_${user.id}`;
+
+  const reinitialiserIa = async () => {
+    setResetBusy(true);
+    try {
+      const res = await api.post("/chat/reset-quota");
+      setStatus((s) => ({ ...(s || {}), ia: res.data.ia, groq_enabled: true }));
+    } catch (e) {
+      /* l'utilisateur réessaiera */
+    } finally {
+      setResetBusy(false);
+    }
+  };
 
   useEffect(() => {
     try {
@@ -108,7 +129,7 @@ export default function Assistant({ user }) {
         headers: { "Content-Type": "application/json" },
         credentials: "include",
         signal: controller.signal,
-        body: JSON.stringify({ messages: history }),
+        body: JSON.stringify({ messages: history, provider: provider || null }),
       });
 
       if (!resp.ok) {
@@ -162,7 +183,7 @@ export default function Assistant({ user }) {
         majMsg(index, (m) => ({ ...m, demande_id: evt.demande_id, maxTours: evt.max_tours }));
         break;
       case "tour":
-        majMsg(index, (m) => ({ ...m, tour: evt.tour, maxTours: evt.max_tours }));
+        majMsg(index, (m) => ({ ...m, tour: evt.tour, maxTours: evt.max_tours, fournisseur: evt.fournisseur || m.fournisseur }));
         break;
       case "tool_debut":
         majMsg(index, (m) => ({
@@ -216,6 +237,7 @@ export default function Assistant({ user }) {
           statut: evt.type,
           agentLoading: false,
           confirmation: null,
+          fournisseur: evt.fournisseur || m.fournisseur,
           etapes: evt.etapes || m.etapes,
         }));
         break;
@@ -265,7 +287,7 @@ export default function Assistant({ user }) {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
-        body: JSON.stringify({ demande: text }),
+        body: JSON.stringify({ demande: text, provider: provider || null }),
       });
       if (!resp.ok) {
         const data = await resp.json().catch(() => ({}));
@@ -298,6 +320,7 @@ export default function Assistant({ user }) {
         credentials: "include",
         body: JSON.stringify({
           demande: entry.confirmation.demande || entry.demande || "Confirmation d'action",
+          provider: provider || null,
           confirmation: {
             tool: entry.confirmation.tool,
             arguments: entry.confirmation.arguments,
@@ -363,6 +386,8 @@ export default function Assistant({ user }) {
           💬 Chat (conversation)
         </button>
       </div>
+
+      <IaSwitch value={provider} onChange={setProvider} />
 
       {mode === "agent" && outils.length > 0 && (
         <div className="agent-panel">
@@ -430,6 +455,19 @@ export default function Assistant({ user }) {
         <div className="error">L'agent IA n'est pas encore configuré. Les messages ne pourront pas être envoyés.</div>
       )}
 
+      {status?.ia?.configured?.length > 0 && status?.ia?.usable?.length === 0 && (
+        <div className="card" style={{ marginTop: "1rem", borderColor: "rgba(245,158,11,.5)" }}>
+          <p style={{ margin: 0, fontWeight: 700 }}>🚫 {status.ia.message}</p>
+          <p className="muted" style={{ fontSize: "0.85rem", margin: "0.4rem 0 0.6rem 0" }}>
+            Les fournisseurs sont bloqués temporairement (limite d'API ou message
+            d'erreur mal interprété). Tu peux les réactiver sans attendre.
+          </p>
+          <button className="btn" disabled={resetBusy} onClick={reinitialiserIa}>
+            {resetBusy ? "⏳ Réactivation..." : "🔄 Réactiver les IA"}
+          </button>
+        </div>
+      )}
+
       <div className="card chat-card">
         <div className="chat-scroll">
           {conv.length === 0 && (
@@ -456,6 +494,7 @@ export default function Assistant({ user }) {
               {m.role === "assistant" && m.agentLoading && (
                 <div className="agent-tour">
                   🔁 raisonnement — tour {Math.max(m.tour || 1, 1)}/{m.maxTours || 5}
+                  {m.fournisseur ? ` · 🧠 ${m.fournisseur}` : ""}
                 </div>
               )}
 

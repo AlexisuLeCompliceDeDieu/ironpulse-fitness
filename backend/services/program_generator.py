@@ -190,6 +190,81 @@ def build_days(templates, days_count):
     return days
 
 
+def resoudre_split(user, goal=None, split_type=None, days_per_week=None):
+    """Résout le contexte de génération à partir du profil et des surcharges.
+
+    Retourne {"goal", "split_type", "templates", "days_count"} — utilisé par la
+    génération algorithmique ET par la génération IA pour garder exactement la
+    même structure de séances.
+    """
+    selected_goal = goal or user.goal
+    selected_split = split_type or user.split_type
+    if selected_split and selected_split in SPLIT_TEMPLATES:
+        templates = SPLIT_TEMPLATES[selected_split]["days"]
+    else:
+        templates = SPLITS.get(selected_goal, SPLITS["prise_masse"])["days"]
+        selected_split = selected_goal
+
+    target_days = days_per_week or user.sessions_per_week
+    if not target_days:
+        target_days = len(templates)
+    if selected_split in SPLIT_TEMPLATES:
+        target_days = min(target_days, SPLIT_TEMPLATES[selected_split]["max_days"])
+
+    return {
+        "goal": selected_goal,
+        "split_type": selected_split,
+        "templates": templates,
+        "days_count": target_days,
+    }
+
+
+def creer_programme(user, goal, jours, source="algorithme", variation=0):
+    """Enregistre en base un programme et désactive les précédents.
+
+    `jours` = [{"name": str, "exercises": [{"exercise", "sets", "reps",
+    "rest_seconds", "target_weight"}, ...]}, ...] — même structure produite par
+    l'algorithme et validée côté IA. Les séances déjà réalisées restent liées à
+    l'ancien programme : une régénération n'efface jamais l'historique.
+    """
+    from models import (
+        TrainingProgram, ProgramDay, ProgramExercise, db,
+    )
+
+    TrainingProgram.query.filter_by(user_id=user.id, is_active=True).update({TrainingProgram.is_active: False})
+    db.session.flush()
+
+    program = TrainingProgram(
+        user_id=user.id,
+        goal=goal,
+        start_date=date.today(),
+        end_date=date.today() + timedelta(days=28),
+        is_active=True,
+        generation_source=source,
+        variation=variation,
+    )
+    db.session.add(program)
+    db.session.flush()
+
+    for day_number, jour in enumerate(jours, start=1):
+        day = ProgramDay(program_id=program.id, day_number=day_number, name=jour["name"])
+        db.session.add(day)
+        db.session.flush()
+        for order, ex in enumerate(jour["exercises"], start=1):
+            db.session.add(ProgramExercise(
+                day_id=day.id,
+                exercise_id=ex["exercise"].id,
+                sets=ex["sets"],
+                reps=ex["reps"],
+                rest_seconds=ex["rest_seconds"],
+                target_weight=ex["target_weight"],
+                order=order,
+            ))
+
+    db.session.commit()
+    return program
+
+
 def generate_program(user, available_equipment=None, goal=None, split_type=None, days_per_week=None):
     """Génère un programme mensuel pour un utilisateur.
 
@@ -199,77 +274,29 @@ def generate_program(user, available_equipment=None, goal=None, split_type=None,
     - `days_per_week` : nombre de séances/semaine (sinon sessions_per_week du profil,
       ou le nombre de jours du split).
     """
-    from models import (
-        TrainingProgram, ProgramDay, ProgramExercise, Exercise, db,
-    )
-
     available_equipment = available_equipment or []
-    selected_goal = goal or user.goal
-
-    # Déterminer le split
-    selected_split = split_type or user.split_type
-    if selected_split and selected_split in SPLIT_TEMPLATES:
-        templates = SPLIT_TEMPLATES[selected_split]["days"]
-    else:
-        # Fallback : split par objectif
-        templates = SPLITS.get(selected_goal, SPLITS["prise_masse"])["days"]
-        selected_split = selected_goal
-
-    # Déterminer le nombre de séances / semaine
-    target_days = days_per_week or user.sessions_per_week
-    if not target_days:
-        target_days = len(templates)
-    if selected_split in SPLIT_TEMPLATES:
-        target_days = min(target_days, SPLIT_TEMPLATES[selected_split]["max_days"])
-
+    ctx = resoudre_split(user, goal, split_type, days_per_week)
     prescription = LEVEL_PRESCRIPTIONS.get(user.level, LEVEL_PRESCRIPTIONS["debutant"])
 
-    # Désactiver les anciens programmes actifs
-    TrainingProgram.query.filter_by(user_id=user.id, is_active=True).update({TrainingProgram.is_active: False})
-    db.session.flush()
-
-    program = TrainingProgram(
-        user_id=user.id,
-        goal=selected_goal,
-        start_date=date.today(),
-        end_date=date.today() + timedelta(days=28),
-        is_active=True,
-    )
-    db.session.add(program)
-    db.session.flush()
-
-    day_specs = build_days(templates, target_days)
     # Générateur aléatoire propre au programme : chaque régénération varie
     rng = random.Random()
-    day_number = 1
-    for day_spec in day_specs:
-        day = ProgramDay(program_id=program.id, day_number=day_number, name=day_spec["name"])
-        db.session.add(day)
-        db.session.flush()
-
-        order = 1
+    jours = []
+    for day_spec in build_days(ctx["templates"], ctx["days_count"]):
+        exercices = []
         for category in day_spec["categories"]:
-            count = day_spec.get("exercises_per_category", 1)
-            exercises = select_exercises(category, count, available_equipment, rng=rng)
-            for ex in exercises:
-                # Repos : plus long sur les gros exercices (polyarticulaires), plus court
-                # sur les petits (isolations).
-                rest_seconds = 150 if ex.is_compound else 90
-                db.session.add(ProgramExercise(
-                    day_id=day.id,
-                    exercise_id=ex.id,
-                    sets=prescription["sets"],
-                    reps=prescription["reps"],
-                    rest_seconds=rest_seconds,
-                    target_weight=estimate_weight(user, ex, prescription),
-                    order=order,
-                ))
-                order += 1
+            for ex in select_exercises(category, day_spec.get("exercises_per_category", 1), available_equipment, rng=rng):
+                # Repos : plus long sur les gros exercices (polyarticulaires),
+                # plus court sur les petits (isolations).
+                exercices.append({
+                    "exercise": ex,
+                    "sets": prescription["sets"],
+                    "reps": prescription["reps"],
+                    "rest_seconds": 150 if ex.is_compound else 90,
+                    "target_weight": estimate_weight(user, ex, prescription),
+                })
+        jours.append({"name": day_spec["name"], "exercises": exercices})
 
-        day_number += 1
-
-    db.session.commit()
-    return program
+    return creer_programme(user, ctx["goal"], jours)
 
 
 def select_exercises(category, count, available_equipment, rng=None):

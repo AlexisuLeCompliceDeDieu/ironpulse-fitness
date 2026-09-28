@@ -352,3 +352,83 @@ def reset_quota():
         "last_warning": "",
     })
     logger.info("Quota Groq réinitialisé")
+
+
+def reset_providers():
+    """Réactive tous les fournisseurs (désactivations + cooldowns).
+
+    Utile quand une limite a été atteinte par erreur (message d'API mal
+    interprété) : on ne laisse pas l'utilisateur bloqué jusqu'à minuit.
+    """
+    data = _load()
+    index = _providers(data)
+    for entry in index.values():
+        entry["disabled"] = False
+        entry["disabled_reason"] = ""
+        entry["cooldown_until"] = 0.0
+        entry["rpm"] = []
+        entry["rpd"] = 0
+        entry["date"] = str(date.today())
+    data["auto_disabled"] = False
+    data["rpm_timestamps"] = []
+    data["rpd_count"] = 0
+    data["rpd_date"] = str(date.today())
+    data["last_warning"] = ""
+    _save(data)
+    logger.info("Fournisseurs IA réactivés (quotas et cooldowns remis à zéro)")
+    return get_providers_status()
+
+
+# ── Diagnostic lisible (route publique /healthz/ia) ─────────────────
+
+REASONS_FR = {
+    "not_configured": "aucune clé API configurée",
+    "daily_limit": "limite quotidienne atteinte",
+    "rpd_limit": "limite quotidienne atteinte",
+    "rpm_limit": "trop de requêtes par minute",
+    "rate_limit": "trop de requêtes (limite temporaire)",
+    "per_minute": "trop de requêtes par minute",
+    "cooldown": "en attente après une limite par minute",
+    "invalid_key": "clé API invalide ou expirée",
+    "model_not_found": "modèle introuvable chez ce fournisseur",
+    "bad_request": "requête refusée par le fournisseur",
+    "server_error": "erreur temporaire du fournisseur",
+    "none_available": "aucun fournisseur IA disponible",
+    "auto_disabled": "IA désactivées automatiquement",
+}
+
+
+def explain(reason):
+    """Traduit une raison technique en phrase française pour l'UI."""
+    return REASONS_FR.get(reason, reason or "raison inconnue")
+
+
+def diagnostic():
+    """État complet et sans secret de tous les fournisseurs IA.
+
+    Sert au diagnostic à distance (`GET /healthz/ia`) : l'utilisateur peut voir
+    quel fournisseur est bloqué et pourquoi, sans avoir accès aux logs.
+    """
+    providers = get_providers_status()
+    configurés = [pid for pid in providers if _provider_configured(pid)]
+    utilisables = [pid for pid in configurés if providers[pid]["enabled"]]
+    for pid, st in providers.items():
+        st["configured"] = _provider_configured(pid)
+        st["model"] = os.environ.get(
+            {"groq": "GROQ_MODEL", "gemini": "GEMINI_MODEL",
+             "mistral": "MISTRAL_MODEL", "openrouter": "OPENROUTER_MODEL"}.get(pid, ""), "")
+    if not configurés:
+        message = "Aucune clé API IA configurée sur le serveur."
+    elif utilisables:
+        message = f"IA disponible sur : {', '.join(utilisables)}."
+    else:
+        details = ", ".join(
+            f"{pid} ({explain(providers[pid]['blocked_reason'])})" for pid in configurés
+        )
+        message = f"Aucun fournisseur IA utilisable — {details}."
+    return {
+        "providers": providers,
+        "configured": configurés,
+        "usable": utilisables,
+        "message": message,
+    }

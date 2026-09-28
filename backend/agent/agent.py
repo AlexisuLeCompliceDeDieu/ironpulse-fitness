@@ -9,14 +9,10 @@ C'est ici que vit la boucle du cahier des charges (diapos 3 et 9) :
   [4] Observation    le résultat est renvoyé au LLM (role: "tool")
   [5] Décision       objectif atteint ? sinon → nouveau tour de boucle
 
-Le LLM est appelé via le routeur multi-IA `ai_providers.openai_chat`
-(function calling sur l'endpoint OpenAI-compatible de chaque fournisseur) :
-Groq, Gemini, Mistral ou OpenRouter selon la disponibilité, avec failover
-automatique quand un fournisseur atteint ses limites.
-
 Garde-fous :
   - max_tours limite le nombre de tours (anti-boucle infinie, diapo 9) ;
-  - quota_tracker borne la consommation par fournisseur (diapo 18 : coûts) ;
+  - le routeur multi-fournisseurs (Groq → Gemini → Mistral → OpenRouter) gère
+    les limites de débit et bascule automatiquement en cas d'échec (diapo 18) ;
   - actions sensibles (écriture en base) soumises à validation humaine (diapo 18).
 
 Toute demande et chaque étape de la boucle sont tracées en base (tables
@@ -31,7 +27,6 @@ même parcours en version synchrone (utilisée par les tests et l'API classique)
 import inspect
 import json
 import logging
-import os
 import time
 
 from models import db, Demande, Resultat
@@ -42,12 +37,8 @@ from agent.tools import TOOLS_IMPL, TOOL_SCHEMAS, SENSITIVE_TOOLS, meta_tool
 
 logger = logging.getLogger(__name__)
 
-MAX_TOURS = int(os.environ.get("AGENT_MAX_TOURS", "5"))
+MAX_TOURS = int(__import__("os").environ.get("AGENT_MAX_TOURS", "5"))
 TEMPERATURE = 0.4
-
-
-class AgentIAIndisponible(Exception):
-    """Aucun fournisseur IA ne peut traiter la demande (quota/limite)."""
 
 
 SYSTEM_PROMPT = """Tu es « IRONPULSE Coach », un coach sportif et nutritionniste.
@@ -59,29 +50,31 @@ RÈGLES STRICTES :
 3. Pour tout calcul de macros ou de répartition calorique, appelle calculer_macros (jamais de calcul à la main).
 4. Pour recommander la prochaine séance, appelle proposer_seance.
 5. Pour enregistrer une séance réalisée, appelle enregistrer_seance : l'action sera soumise à la validation de l'utilisateur.
-6. Si la demande est ambiguë ou incomplète, demande une précision au lieu de deviner.
-7. Si les données indiquent un problème (ressenti très bas, stagnation), signale-le et propose une action adaptée.
-8. Réponds TOUJOURS en français, de façon concise (5 à 10 phrases maximum), pratique et encourageante.
-9. Cite brièvement les données réelles que tu as obtenues par les outils (poids, volume, ressenti...) pour montrer que ta réponse s'appuie sur la base."""
+6. Pour créer ou refaire un programme d'entraînement (plan, séances, exercices, charges), appelle generer_programme en transmettant la consigne de l'utilisateur : l'action sera soumise à sa validation. Ne rédige jamais un programme toi-même, le tool s'en charge.
+7. Si la demande est ambiguë ou incomplète, demande une précision au lieu de deviner.
+8. Si les données indiquent un problème (ressenti très bas, stagnation), signale-le et propose une action adaptée.
+9. Réponds TOUJOURS en français, de façon concise (5 à 10 phrases maximum), pratique et encourageante.
+10. Cite brièvement les données réelles que tu as obtenues par les outils (poids, volume, ressenti...) pour montrer que ta réponse s'appuie sur la base."""
 
 
-def _create_completion(messages, max_tokens=900):
-    """Appel LLM (function calling) via le routeur multi-IA avec failover.
+def _completion(messages, max_tokens=900, provider_pref=None):
+    """Appel LLM avec function calling via le routeur multi-fournisseurs.
 
-    Retourne le message assistant (dict) :
-      {"role", "content"|None, "tool_calls": [{"id","function":{"name","arguments"}}]}
-    Lève AgentIAIndisponible si aucun fournisseur ne peut répondre.
+    Factorisé pour être facilement mocké en test. `provider_pref` est le
+    fournisseur choisi par l'utilisateur (switch dans l'UI) : il est essayé en
+    premier, le failover restant actif. Lève si aucun fournisseur n'a pu
+    répondre (le routeur a déjà tenté tous les fournisseurs disponibles).
     """
-    message, info = ai_providers.openai_chat(
+    resultat, info = ai_providers.generate_with_tools(
         messages,
+        TOOL_SCHEMAS,
         max_tokens=max_tokens,
         temperature=TEMPERATURE,
-        tools=TOOL_SCHEMAS,
-        tool_choice="auto",
+        provider_pref=provider_pref,
     )
-    if message is None:
-        raise AgentIAIndisponible(info.get("reason", "none_available"))
-    return message
+    if resultat is None:
+        raise RuntimeError(f"Aucun fournisseur IA n'a pu répondre ({info.get('reason')})")
+    return resultat, info
 
 
 def _save_resultat(demande_id, etape, outil, arguments, reponse):
@@ -96,11 +89,13 @@ def _save_resultat(demande_id, etape, outil, arguments, reponse):
     db.session.flush()
 
 
-def _execute_tool(nom, arguments):
+def _execute_tool(nom, arguments, provider_pref=None):
     """Exécute un tool par son nom. Ne doit jamais lever : renvoie un dict d'erreur.
 
     Seuls les paramètres déclarés par le tool sont transmis (calculer_macros,
-    par exemple, est pur et ignore `utilisateur_id`).
+    par exemple, est pur et ignore `utilisateur_id`). `provider_pref` (choix de
+    l'utilisateur dans l'UI) est injecté sur les tools qui savent l'utiliser :
+    le LLM ne décide jamais lui-même quel fournisseur IA appeler.
     """
     fonction = TOOLS_IMPL.get(nom)
     if fonction is None:
@@ -108,6 +103,8 @@ def _execute_tool(nom, arguments):
     try:
         acceptes = set(inspect.signature(fonction).parameters)
         args_filtres = {k: v for k, v in arguments.items() if k in acceptes}
+        if provider_pref and "provider" in acceptes:
+            args_filtres["provider"] = provider_pref
         return fonction(**args_filtres)
     except Exception as e:  # noqa: BLE001
         logger.error(f"Tool {nom} en échec : {e!r}")
@@ -123,16 +120,28 @@ def _questions_sensibles(utilisateur, nom, arguments):
             f"Confirmer l'enregistrement de la séance du {date} "
             f"avec un ressenti de {ressenti}/5 ?"
         )
+    if nom == "generer_programme":
+        action = "régénérer le programme" if arguments.get("regeneration") else "générer ton programme"
+        seances = arguments.get("seances_par_semaine")
+        detail = f" pour {seances} séances/semaine" if seances else ""
+        consigne = arguments.get("consigne")
+        if consigne:
+            detail += f" en tenant compte de « {consigne} »"
+        return f"Confirmer que je dois {action}{detail} ? Le plan sera remplacé, ton historique est conservé."
     return f"Confirmer l'exécution de l'action « {nom} » ?"
 
 
 def _args_affichage(args):
-    """Arguments sans l'identifiant technique (injecté par le code, pas par le LLM)."""
-    return {k: v for k, v in args.items() if k != "utilisateur_id"}
+    """Arguments sans l'identifiant technique (injecté par le code, pas par le LLM)
+    ni le fournisseur (choisi par l'utilisateur dans l'UI, pas par le modèle)."""
+    return {k: v for k, v in args.items() if k not in ("utilisateur_id", "provider")}
 
 
-def executer_iter(utilisateur, demande, confirmation=None, demande_id=None):
+def executer_iter(utilisateur, demande, confirmation=None, demande_id=None, provider_pref=None):
     """Générateur de la boucle agent : yield un événement à chaque étape.
+
+    `provider_pref` : fournisseur IA choisi par l'utilisateur, prioritaire mais
+    pas exclusif (le failover reste actif).
 
     Événements : debut, tour, tool_debut, tool_fin, confirmation, reponse,
     limite, quota, erreur. La valeur de retour (StopIteration.value) est le
@@ -170,12 +179,13 @@ def executer_iter(utilisateur, demande, confirmation=None, demande_id=None):
         nom_c = confirmation.get("tool")
         args_c = dict(confirmation.get("arguments") or {})
         args_c.setdefault("utilisateur_id", utilisateur.id)
+        args_c.pop("provider", None)
         meta = meta_tool(nom_c)
 
         yield {"type": "tool_debut", "etape": etape, "outil": nom_c,
                "arguments": _args_affichage(args_c), **meta}
         t0 = time.perf_counter()
-        resultat_c = _execute_tool(nom_c, args_c)
+        resultat_c = _execute_tool(nom_c, args_c, provider_pref)
         duree_ms = int((time.perf_counter() - t0) * 1000)
         _save_resultat(demande_row.id, etape, nom_c, args_c, resultat_c)
         etapes.append({"etape": etape, "outil": nom_c, "arguments": _args_affichage(args_c),
@@ -194,31 +204,26 @@ def executer_iter(utilisateur, demande, confirmation=None, demande_id=None):
         deja_valide = (nom_c, json.dumps(_args_affichage(args_c), sort_keys=True))
         etape += 1
 
-    if not any(p.configured for p in ai_providers.PROVIDERS.values()):
-        if confirmation:
-            db.session.commit()   # l'action validée a été exécutée et tracée : on garde
-        else:
-            db.session.rollback()  # rien d'utile à garder, on abandonne la trace vide
-        res = {"statut": "erreur", "reponse": "Agent non configuré (clé API manquante).", "etapes": etapes}
-        yield {"type": "erreur", "reponse": res["reponse"]}
-        return res
-
     yield {"type": "debut", "demande_id": demande_row.id, "max_tours": MAX_TOURS}
 
     for tour in range(MAX_TOURS):
-        yield {"type": "tour", "tour": tour + 1, "max_tours": MAX_TOURS}
+        # Garde-fou coûts : au moins un fournisseur doit être utilisable
+        provider_id, provider, _raison = ai_providers.available_provider(provider_pref)
+        if provider_id is None:
+            _save_resultat(demande_row.id, etape, None, None, "Aucun fournisseur IA disponible.")
+            db.session.commit()
+            explication = ai_providers.explain_none_available()
+            res = {"statut": "quota",
+                   "reponse": f"{explication} Réessaie dans un instant.",
+                   "etapes": etapes, "demande_id": demande_row.id}
+            yield {"type": "quota", "reponse": res["reponse"], "etapes": etapes, "demande_id": demande_row.id}
+            return res
+
+        yield {"type": "tour", "tour": tour + 1, "max_tours": MAX_TOURS,
+               "fournisseur": provider.label, "provider": provider_id}
 
         try:
-            message = _create_completion(messages)
-        except AgentIAIndisponible as e:
-            _save_resultat(demande_row.id, etape, None, None, "Quota IA épuisé, réponse interrompue.")
-            db.session.commit()
-            res = {"statut": "quota",
-                   "reponse": "Toutes les IAs ont atteint leur limite. Réessaye un peu plus tard.",
-                   "etapes": etapes, "quota": {"reason": str(e)}, "demande_id": demande_row.id}
-            yield {"type": "quota", "reponse": res["reponse"], "etapes": etapes,
-                   "quota": res["quota"], "demande_id": demande_row.id}
-            return res
+            reponse_llm, info = _completion(messages, provider_pref=provider_pref)
         except Exception as e:  # noqa: BLE001
             logger.error(f"Appel LLM de l'agent en échec : {e}")
             db.session.commit()
@@ -226,28 +231,34 @@ def executer_iter(utilisateur, demande, confirmation=None, demande_id=None):
             yield {"type": "erreur", "reponse": res["reponse"]}
             return res
 
-        messages.append(message)
+        content = reponse_llm.get("content") or ""
+        appels = reponse_llm.get("tool_calls") or []
 
-        appels = message.get("tool_calls") or []
+        # Message assistant normalisé (dicts) : compatible tous fournisseurs
+        messages.append({
+            "role": "assistant",
+            "content": content or None,
+            "tool_calls": [{
+                "id": tc.get("id"),
+                "type": "function",
+                "function": {"name": tc.get("name"), "arguments": json.dumps(tc.get("arguments") or {}, ensure_ascii=False)},
+            } for tc in appels] or None,
+        })
+
         if not appels:
             # Décision : objectif atteint, on répond
-            conclusion = (message.get("content") or "").strip() or "Terminé."
+            conclusion = (content or "").strip() or "Terminé."
             _save_resultat(demande_row.id, etape, None, None, conclusion)
             db.session.commit()
-            res = {"statut": "reponse", "reponse": conclusion, "etapes": etapes, "demande_id": demande_row.id}
-            yield {"type": "reponse", "reponse": conclusion, "etapes": etapes, "demande_id": demande_row.id}
+            res = {"statut": "reponse", "reponse": conclusion, "etapes": etapes,
+                   "demande_id": demande_row.id, "fournisseur": info.get("label"), "model": info.get("model")}
+            yield {"type": "reponse", "reponse": conclusion, "etapes": etapes, "demande_id": demande_row.id,
+                   "fournisseur": info.get("label"), "model": info.get("model")}
             return res
 
         for appel in appels:
-            nom = ((appel.get("function") or {}).get("name") or "").strip()
-            raw_args = (appel.get("function") or {}).get("arguments") or "{}"
-            if isinstance(raw_args, str):
-                try:
-                    args = json.loads(raw_args)
-                except json.JSONDecodeError:
-                    args = {}
-            else:
-                args = raw_args
+            nom = (appel.get("name") or "").strip()
+            args = appel.get("arguments") or {}
             if not isinstance(args, dict):
                 args = {}
             args.setdefault("utilisateur_id", utilisateur.id)
@@ -267,7 +278,7 @@ def executer_iter(utilisateur, demande, confirmation=None, demande_id=None):
             yield {"type": "tool_debut", "etape": etape, "outil": nom,
                    "arguments": _args_affichage(args), **meta}
             t0 = time.perf_counter()
-            resultat = _execute_tool(nom, args)
+            resultat = _execute_tool(nom, args, provider_pref)
             duree_ms = int((time.perf_counter() - t0) * 1000)
             observation = json.dumps(resultat, ensure_ascii=False, default=str)
             _save_resultat(demande_row.id, etape, nom, args, resultat)
@@ -294,7 +305,7 @@ def executer_iter(utilisateur, demande, confirmation=None, demande_id=None):
     return res
 
 
-def executer(utilisateur, demande, confirmation=None, demande_id=None):
+def executer(utilisateur, demande, confirmation=None, demande_id=None, provider_pref=None):
     """Version synchrone de la boucle : consomme `executer_iter` et renvoie le résultat.
 
     Retourne un dict :
@@ -302,7 +313,10 @@ def executer(utilisateur, demande, confirmation=None, demande_id=None):
       reponse : texte final (si statut = reponse)
       etapes  : liste des étapes exécutées {etape, outil, arguments, resultat, resume}
     """
-    generateur = executer_iter(utilisateur, demande, confirmation=confirmation, demande_id=demande_id)
+    generateur = executer_iter(
+        utilisateur, demande, confirmation=confirmation, demande_id=demande_id,
+        provider_pref=provider_pref,
+    )
     try:
         while True:
             next(generateur)

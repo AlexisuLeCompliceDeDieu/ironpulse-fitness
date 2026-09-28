@@ -6,22 +6,27 @@ from services import ai_providers, quota_tracker
 
 
 class FakeProvider:
-    def __init__(self, pid, label, model="fake-model", configured=True, fail=None, text="ok"):
+    def __init__(self, pid, label, model="fake-model", configured=True, fail=None, text="ok",
+                 tools_result=None):
         self.id = pid
         self.label = label
         self.model = model
         self.configured = configured
         self.fail = fail
         self.text = text
-        self.openai_url = f"https://fake/{pid}/chat/completions"
-
-    def openai_headers(self):
-        return {"Authorization": "Bearer x", "Content-Type": "application/json"}
+        self.tools_result = tools_result or {"content": "", "tool_calls": []}
+        self.tools_calls = 0
 
     def generate(self, messages, max_tokens, temperature):
         if self.fail:
             raise self.fail
         return self.text
+
+    def generate_tools(self, messages, tools, max_tokens, temperature, tool_choice="auto"):
+        self.tools_calls += 1
+        if self.fail:
+            raise self.fail
+        return self.tools_result
 
     def stream(self, messages, max_tokens, temperature):
         if self.fail:
@@ -71,6 +76,17 @@ def test_failure_reason_mapping():
     ]
     for err, expected in cases:
         assert ai_providers._failure_reason(err) == expected, err.message
+
+
+def test_limite_par_minute_ne_desactive_pas_jusqu_a_minuit():
+    """Gemini annonce « per minute and per day » : c'est une limite par minute.
+
+    Sans ce test, le message était classé `daily_limit` et le fournisseur restait
+    bloqué jusqu'à minuit alors qu'un simple cooldown de 75 s suffisait.
+    """
+    err = ai_providers.ProviderError(
+        429, "Quota exceeded for quota metric 'Generate requests per minute and per day'")
+    assert ai_providers._failure_reason(err) == "per_minute"
 
 
 def test_handle_failure_daily_disable(monkeypatch):
@@ -145,7 +161,20 @@ def test_generate_text_none_when_all_fail(monkeypatch):
     ))
     text, info = ai_providers.generate_text([{"role": "user", "content": "x"}])
     assert text is None
-    assert info["reason"] == "rate_limit"  # dernière tentative
+    assert info["reason"] == "rate_limit"  # dernière tentative réelle
+    assert info["raisons"] == {"groq": "server_error", "gemini": "rate_limit"}
+
+
+def test_echec_global_ignore_les_fournisseurs_non_configures(monkeypatch):
+    """Un fournisseur sans clé ne doit pas masquer la vraie cause de l'échec."""
+    monkeypatch.setattr(ai_providers, "PROVIDERS", _providers(
+        FakeProvider("groq", "Groq", fail=ai_providers.ProviderError(429, "tokens per day (TPD)")),
+        FakeProvider("openrouter", "OpenRouter", configured=False),
+    ))
+    text, info = ai_providers.generate_text([{"role": "user", "content": "x"}])
+    assert text is None
+    assert info["reason"] == "daily_limit"
+    assert info["raisons"]["openrouter"] == "not_configured"
 
 
 def test_generate_text_bumps_usage(monkeypatch):
@@ -177,6 +206,111 @@ def test_available_provider_none(monkeypatch):
     assert reason == "none_available"
 
 
+# ── Choix explicite du fournisseur (switch UI) ───────────────────────
+
+def test_provider_order_place_le_choix_en_tete(monkeypatch):
+    monkeypatch.setattr(ai_providers, "PROVIDERS", _providers(
+        FakeProvider("groq", "Groq"),
+        FakeProvider("gemini", "Google Gemini"),
+    ))
+    assert ai_providers.provider_order()[:2] == ["groq", "gemini"]
+    assert ai_providers.provider_order("gemini")[0] == "gemini"
+    assert ai_providers.provider_order("gemini").count("gemini") == 1
+    assert ai_providers.provider_order("inconnu")[0] == "groq"
+
+
+def test_available_provider_honore_le_choix_meme_bloque(monkeypatch):
+    """Un fournisseur bloqué est ignoré : le choix de l'utilisateur n'est pas un bypass."""
+    monkeypatch.setattr(ai_providers, "PROVIDERS", _providers(
+        FakeProvider("groq", "Groq"),
+        FakeProvider("gemini", "Google Gemini"),
+    ))
+    quota_tracker.disable_provider("gemini", "daily_limit")
+    pid, _, _ = ai_providers.available_provider("gemini")
+    assert pid == "groq"
+
+
+def test_generate_text_utilise_le_fournisseur_choisi(monkeypatch):
+    """Le fournisseur choisi reçoit la requête en premier."""
+    groq = FakeProvider("groq", "Groq", text="ok-groq")
+    gemini = FakeProvider("gemini", "Google Gemini", text="ok-gemini")
+    monkeypatch.setattr(ai_providers, "PROVIDERS", _providers(groq, gemini))
+
+    texte, info = ai_providers.generate_text(
+        [{"role": "user", "content": "x"}], provider_pref="gemini"
+    )
+
+    assert texte == "ok-gemini"
+    assert info["provider"] == "gemini"
+
+
+def test_generate_with_tools_utilise_le_fournisseur_choisi(monkeypatch):
+    groq = FakeProvider("groq", "Groq")
+    gemini = FakeProvider("gemini", "Google Gemini",
+                          tools_result={"content": "coucou", "tool_calls": []})
+    monkeypatch.setattr(ai_providers, "PROVIDERS", _providers(groq, gemini))
+
+    resultat, info = ai_providers.generate_with_tools(
+        [{"role": "user", "content": "x"}], [], provider_pref="gemini"
+    )
+
+    assert info["provider"] == "gemini"
+    assert resultat["content"] == "coucou"
+    assert gemini.tools_calls == 1
+    assert groq.tools_calls == 0
+
+
+def test_fournisseur_choisi_en_echec_bascule_sur_le_suivant(monkeypatch):
+    """Failover conservé : si le choix échoue, on essaie les suivants."""
+    groq = FakeProvider("groq", "Groq", text="ok-groq")
+    gemini = FakeProvider("gemini", "Google Gemini",
+                          fail=ai_providers.ProviderError(500, "boom"))
+    monkeypatch.setattr(ai_providers, "PROVIDERS", _providers(groq, gemini))
+
+    texte, info = ai_providers.generate_text(
+        [{"role": "user", "content": "x"}], provider_pref="gemini"
+    )
+
+    assert texte == "ok-groq"
+    assert info["provider"] == "groq"
+
+
+def test_providers_liste_pour_le_switch_ui(monkeypatch):
+    monkeypatch.setattr(quota_tracker, "_provider_configured", lambda pid: pid == "groq")
+    catalogue = ai_providers.providers_liste()
+
+    par_id = {p["id"]: p for p in catalogue}
+    assert par_id["groq"]["configured"] is True
+    assert "label" in par_id["groq"] and "usable" in par_id["groq"]
+
+
+# ── Diagnostic et réactivation ──────────────────────────────────────
+
+def test_diagnostic_explique_le_blocage(monkeypatch):
+    monkeypatch.setattr(quota_tracker, "_provider_configured", lambda pid: pid in ("groq", "gemini"))
+    quota_tracker.disable_provider("groq", "daily_limit")
+    quota_tracker.set_provider_cooldown("gemini", 120)
+
+    diag = quota_tracker.diagnostic()
+
+    assert diag["configured"] == ["groq", "gemini"]
+    assert diag["usable"] == []
+    assert "limite quotidienne atteinte" in diag["message"]
+    assert quota_tracker.explain("cooldown") == "en attente après une limite par minute"
+
+
+def test_reset_providers_reactive_les_ia(monkeypatch):
+    monkeypatch.setattr(quota_tracker, "_provider_configured", lambda pid: pid == "groq")
+    quota_tracker.disable_provider("groq", "daily_limit")
+    quota_tracker.set_provider_cooldown("groq", 300)
+    assert quota_tracker.can_use_provider("groq")[0] is False
+
+    quota_tracker.reset_providers()
+
+    assert quota_tracker.can_use_provider("groq") == (True, None)
+    assert quota_tracker.diagnostic()["usable"] == ["groq"]
+
+
 # ── Streaming ──────────────────────────────────────────────────────
 
 def test_stream_text_fails_over(monkeypatch):
@@ -199,61 +333,88 @@ def test_stream_text_none_when_all_fail(monkeypatch):
     ))
     it, info = ai_providers.stream_text([{"role": "user", "content": "x"}])
     assert it is None
-    assert info["reason"] == "none_available"
+    # La cause réelle est remontée (elle était masquée par « none_available »)
+    assert info["reason"] == "server_error"
+    assert info["raisons"] == {"groq": "server_error"}
 
 
-# ── Function calling (OpenAI-compatible) ────────────────────────────
+# ── Function calling (tools) + failover ────────────────────────────
 
-def test_openai_chat_fails_over_and_returns_message(monkeypatch):
-    """openai_chat route le function calling : TPD Groq -> bascule Mistral."""
-    groq = FakeProvider("groq", "Groq", fail=ai_providers.ProviderError(429, "tokens per day (TPD)"))
-    mistral = FakeProvider("mistral", "Mistral AI")
-
-    capteur = {}
-
-    def fake_http_json(url, headers, payload):
-        if url == groq.openai_url:
-            raise ai_providers.ProviderError(429, "tokens per day (TPD)")
-        capteur["tools_envoyes"] = bool(payload.get("tools"))
-        capteur["reasoning_envoye"] = "reasoning_effort" in payload
-        return {"choices": [{"message": {
-            "role": "assistant", "content": None,
-            "tool_calls": [{"id": "c1", "type": "function",
-                            "function": {"name": "calculer_macros", "arguments": "{}"}}],
-        }}]}
-
-    monkeypatch.setattr(ai_providers, "PROVIDERS", _providers(groq, mistral))
-    monkeypatch.setattr(ai_providers, "_http_json", fake_http_json)
-
-    msg, info = ai_providers.openai_chat(
-        [{"role": "user", "content": "x"}],
-        max_tokens=500,
-        temperature=0.3,
-        tools=[{"type": "function", "function": {"name": "calculer_macros"}}],
-    )
-
-    assert info["provider"] == "mistral"
-    assert msg["tool_calls"][0]["function"]["name"] == "calculer_macros"
-    assert capteur["tools_envoyes"] is True
-    assert capteur["reasoning_envoye"] is False  # reasoning_effort réservé à Groq
-    ok, reason = quota_tracker.can_use_provider("groq")
-    assert not ok
-    assert reason == "daily_limit"
+TOOLS = [{
+    "type": "function",
+    "function": {
+        "name": "calculer_macros",
+        "description": "Répartit les calories",
+        "parameters": {"type": "object", "properties": {"calories": {"type": "number"}}, "required": ["calories"]},
+    },
+}]
 
 
-def test_openai_chat_sends_reasoning_effort_on_groq(monkeypatch):
-    """Sur Groq, reasoning_effort=none est transmis (économie d'OTPM)."""
-    groq = FakeProvider("groq", "Groq")
-    capteur = {}
-
-    def fake_http_json(url, headers, payload):
-        capteur["reasoning_envoye"] = payload.get("reasoning_effort")
-        return {"choices": [{"message": {"role": "assistant", "content": "ok"}}]}
-
+def test_generate_with_tools_returns_normalized_calls(monkeypatch):
+    attendu = {"content": "", "tool_calls": [{"id": "c1", "name": "calculer_macros", "arguments": {"calories": 2500}}]}
+    groq = FakeProvider("groq", "Groq", tools_result=attendu)
     monkeypatch.setattr(ai_providers, "PROVIDERS", _providers(groq))
-    monkeypatch.setattr(ai_providers, "_http_json", fake_http_json)
 
-    msg, info = ai_providers.openai_chat([{"role": "user", "content": "x"}])
+    resultat, info = ai_providers.generate_with_tools([{"role": "user", "content": "x"}], TOOLS)
+    assert resultat == attendu
     assert info["provider"] == "groq"
-    assert capteur["reasoning_envoye"] == "none"
-    assert msg["content"] == "ok"
+    assert groq.tools_calls == 1
+
+
+def test_generate_with_tools_fails_over(monkeypatch):
+    """Groq épuisé pour la journée → l'agent bascule sur Gemini, tools comprises."""
+    groq = FakeProvider("groq", "Groq", fail=ai_providers.ProviderError(429, "tokens per day (TPD)"))
+    gemini = FakeProvider("gemini", "Google Gemini", tools_result={
+        "content": "", "tool_calls": [{"id": "g1", "name": "calculer_macros", "arguments": {"calories": 2000}}],
+    })
+    monkeypatch.setattr(ai_providers, "PROVIDERS", _providers(groq, gemini))
+
+    resultat, info = ai_providers.generate_with_tools([{"role": "user", "content": "x"}], TOOLS)
+    assert resultat["tool_calls"][0]["name"] == "calculer_macros"
+    assert info["provider"] == "gemini"
+    assert info["label"] == "Google Gemini"
+    ok, reason = quota_tracker.can_use_provider("groq")
+    assert not ok and reason == "daily_limit"
+
+
+def test_generate_with_tools_none_when_all_fail(monkeypatch):
+    monkeypatch.setattr(ai_providers, "PROVIDERS", _providers(
+        FakeProvider("groq", "Groq", fail=ai_providers.ProviderError(500, "boom")),
+    ))
+    resultat, info = ai_providers.generate_with_tools([{"role": "user", "content": "x"}], TOOLS)
+    assert resultat is None
+    assert info["reason"] == "server_error"
+
+
+def test_normalize_openai_message_parses_arguments_string():
+    """L'API OpenAI renvoie les arguments en JSON string : on les normalise en dict."""
+    message = {
+        "content": None,
+        "tool_calls": [{"id": "call_x", "function": {"name": "calculer_macros", "arguments": '{"calories": 3000}'}}],
+    }
+    norm = ai_providers._normalize_openai_message(message)
+    assert norm["content"] == ""
+    assert norm["tool_calls"] == [{"id": "call_x", "name": "calculer_macros", "arguments": {"calories": 3000}}]
+
+
+def test_gemini_translates_tool_calls_and_responses():
+    """Gemini n'utilise ni le rôle assistant ni le rôle tool : on traduit."""
+    messages = [
+        {"role": "system", "content": "tu es IRONPULSE"},
+        {"role": "user", "content": "répartis 3000 kcal"},
+        {"role": "assistant", "content": None, "tool_calls": [{
+            "id": "c1", "type": "function",
+            "function": {"name": "calculer_macros", "arguments": '{"calories": 3000}'},
+        }]},
+        {"role": "tool", "tool_call_id": "c1", "name": "calculer_macros", "content": '{"proteines_g": 225}'},
+    ]
+    system, contents = ai_providers.PROVIDERS["gemini"]._to_gemini_tools(messages, TOOLS, "auto")
+
+    assert system == ["tu es IRONPULSE"]
+    assert contents[0] == {"role": "user", "parts": [{"text": "répartis 3000 kcal"}]}
+    assert contents[1]["role"] == "model"
+    assert contents[1]["parts"][0]["functionCall"] == {"name": "calculer_macros", "args": {"calories": 3000}}
+    assert contents[2]["role"] == "user"
+    part = contents[2]["parts"][0]["functionResponse"]
+    assert part["name"] == "calculer_macros"
+    assert part["response"]["result"] == {"proteines_g": 225}

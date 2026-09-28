@@ -38,9 +38,9 @@ export default function Nutrition({ user }) {
     api.get("/nutrition/shopping-list/latest")
       .then((res) => setShoppingList(res.data.shopping_list))
       .catch(() => setShoppingList(null));
-    api.get("/nutrition/ai-status")
-      .then((res) => setAiStatus(res.data))
-      .catch(() => setAiStatus({ groq_enabled: false }));
+    api.get("/chat/status")
+      .then((res) => setAiStatus({ ...res.data, ...(res.data.ia || {}) }))
+      .catch(() => setAiStatus({ groq_enabled: false, chargement: false }));
   }, []);
 
   const showMessage = (msg, type = "success") => {
@@ -153,9 +153,6 @@ export default function Nutrition({ user }) {
           >
             ⚙️ Classique
           </button>
-          {!aiStatus?.groq_enabled && (
-            <span className="muted" style={{ fontSize: "0.82rem" }}>ℹ️ L'agent IA n'est pas configuré (fallback classique).</span>
-          )}
         </div>
 
         {quotaWarning(aiStatus) && (
@@ -293,9 +290,15 @@ function aiFallbackMsg(reason) {
 }
 
 function quotaWarning(aiStatus) {
-  if (!aiStatus?.groq_enabled) return "";
-  if (aiStatus.groq_auto_disabled) {
-    return "🚫 Quota IA atteint pour aujourd'hui — les repas sont générés en mode classique.";
+  if (!aiStatus) return "";
+  const configures = aiStatus.configured?.length || 0;
+  if (!configures) {
+    return aiStatus.chargement === false
+      ? "ℹ️ Impossible de lire le statut de l'IA : les repas sont générés en mode classique."
+      : "ℹ️ L'agent IA n'est pas configuré (fallback classique).";
+  }
+  if (!(aiStatus.usable?.length || 0)) {
+    return `🚫 ${aiStatus.message || "Toutes les IA sont bloquées"} — les repas sont générés en mode classique.`;
   }
   const rpdPct = Number(aiStatus.groq_rpd_pct || 0);
   const rpmPct = Number(aiStatus.groq_rpm_pct || 0);

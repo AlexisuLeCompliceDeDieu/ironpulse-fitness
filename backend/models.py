@@ -104,6 +104,8 @@ class TrainingProgram(db.Model):
     start_date = db.Column(db.Date, default=date.today)
     end_date = db.Column(db.Date)
     is_active = db.Column(db.Boolean, default=True)
+    generation_source = db.Column(db.String(20), default="algorithme")  # "ia" ou "algorithme"
+    variation = db.Column(db.Integer, default=0)                      # n° de régénération
 
     days = db.relationship("ProgramDay", backref="program", lazy=True, cascade="all, delete-orphan")
 
@@ -115,6 +117,8 @@ class TrainingProgram(db.Model):
             "start_date": self.start_date.isoformat(),
             "end_date": self.end_date.isoformat() if self.end_date else None,
             "is_active": self.is_active,
+            "generation_source": self.generation_source or "algorithme",
+            "variation": self.variation or 0,
             "days": [d.to_dict() for d in self.days],
         }
 

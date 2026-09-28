@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import api from "../api.js";
 import PageHero, { FIT_IMAGES } from "../components/PageHero.jsx";
+import IaSwitch from "../components/IaSwitch.jsx";
 
 const GOAL_META = {
   prise_masse: { label: "Prise de masse", icon: "💪", desc: "Volume et calories pour prendre du muscle" },
@@ -31,6 +32,13 @@ const GOAL_COLORS = {
 
 const WEEK_OPTIONS = [2, 3, 4, 5, 6];
 
+const CONSIGNES = [
+  "Moins d'exercices, séances plus courtes",
+  "Plus de travail sur les jambes",
+  "Plus de cardio, moins de charges",
+  "Garde les charges, change les exercices",
+];
+
 export default function TrainingProgram({ user }) {
   const [program, setProgram] = useState(null);
   const [presets, setPresets] = useState([]);
@@ -38,6 +46,46 @@ export default function TrainingProgram({ user }) {
   const [daysPerWeek, setDaysPerWeek] = useState(user.sessions_per_week || 3);
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
+  const [meta, setMeta] = useState(null);
+  const [source, setSource] = useState("auto");
+  const [iaAvailable, setIaAvailable] = useState(true);
+  const [consigne, setConsigne] = useState("");
+  const [erreur, setErreur] = useState("");
+  const [agentBusy, setAgentBusy] = useState(false);
+  const [agentSteps, setAgentSteps] = useState([]);
+  const [confirmation, setConfirmation] = useState(null);
+  const [iaStatus, setIaStatus] = useState(null);
+  const [resetBusy, setResetBusy] = useState(false);
+  const [provider, setProvider] = useState(() => {
+    try {
+      return localStorage.getItem("ironpulse_ia_provider") || "";
+    } catch (e) {
+      return "";
+    }
+  });
+
+  const chargerStatutIa = () => {
+    api.get("/chat/status")
+      .then((res) => {
+        setIaStatus(res.data.ia || null);
+        setIaAvailable(!!(res.data.ia?.usable?.length || res.data.groq_enabled));
+      })
+      .catch(() => setIaAvailable(false));
+  };
+
+  const reinitialiserIa = async () => {
+    setResetBusy(true);
+    try {
+      const res = await api.post("/chat/reset-quota");
+      setIaStatus(res.data.ia || null);
+      setIaAvailable(true);
+      setErreur("");
+    } catch (e) {
+      setErreur("Réactivation impossible. Réessaie dans un instant.");
+    } finally {
+      setResetBusy(false);
+    }
+  };
 
   useEffect(() => {
     api.get("/training/presets")
@@ -46,6 +94,7 @@ export default function TrainingProgram({ user }) {
     api.get("/training/program/current")
       .then((res) => setProgram(res.data.program))
       .catch(() => setProgram(null));
+    chargerStatutIa();
   }, []);
 
   // Pré-sélection automatique depuis le profil : uniquement si un split explicite
@@ -61,10 +110,27 @@ export default function TrainingProgram({ user }) {
   const splitOptions = presets.filter((p) => p.kind === "split");
   const goalOptions = presets.filter((p) => p.kind === "goal");
 
+  const messageErreur = (e, defaut) => {
+    const data = e.response?.data || {};
+    const detail = data.detail ? ` (${data.detail})` : "";
+    const raison = data.raison_fr ? ` — ${data.raison_fr}` : "";
+    return `${data.error || defaut}${raison}${detail}`;
+  };
+
+  const chargerProgramme = async () => {
+    try {
+      const res = await api.get("/training/program/current");
+      setProgram(res.data.program);
+    } catch (e) {
+      setProgram(null);
+    }
+  };
+
   const generate = async () => {
     if (!selectedSplit) return;
     setLoading(true);
     setMessage("");
+    setErreur("");
     try {
       const isSplit = selectedSplit.kind === "split";
       const res = await api.post("/training/program/generate", {
@@ -73,14 +139,151 @@ export default function TrainingProgram({ user }) {
         split_type: isSplit ? selectedSplit.split_type : undefined,
         goal: isSplit ? undefined : selectedSplit.goal,
         days_per_week: daysPerWeek,
+        source,
+        provider: provider || undefined,
+        consigne: consigne.trim() || undefined,
       });
       setMessage(res.data.message);
       setProgram(res.data.program);
+      setMeta(res.data.meta || null);
       window.scrollTo({ top: 0, behavior: "smooth" });
     } catch (e) {
-      setMessage(e.response?.data?.error || "Erreur");
+      setErreur(messageErreur(e, "Génération impossible"));
     } finally {
       setLoading(false);
+    }
+  };
+
+  const regenerate = async () => {
+    setLoading(true);
+    setMessage("");
+    setErreur("");
+    try {
+      const res = await api.post("/training/program/regenerate", {
+        source,
+        provider: provider || undefined,
+        consigne: consigne.trim() || undefined,
+      });
+      setMessage(res.data.message);
+      setProgram(res.data.program);
+      setMeta(res.data.meta || null);
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    } catch (e) {
+      setErreur(messageErreur(e, "Régénération impossible"));
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // ── Génération pilotée par l'agent (boucle agentique + validation humaine) ──
+  const lireFluxAgent = async (resp) => {
+    const reader = resp.body.getReader();
+    const decoder = new TextDecoder();
+    let buffer = "";
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      buffer += decoder.decode(value, { stream: true });
+      const parts = buffer.split("\n\n");
+      buffer = parts.pop();
+      for (const part of parts) {
+        const line = part.trim();
+        if (!line.startsWith("data:")) continue;
+        const payload = line.slice(5).trim();
+        if (!payload || payload === "[DONE]") continue;
+        let ev;
+        try {
+          ev = JSON.parse(payload);
+        } catch (err) {
+          continue;
+        }
+        traiterEventAgent(ev);
+      }
+    }
+  };
+
+  const traiterEventAgent = (ev) => {
+    if (ev.type === "tour") {
+      setAgentSteps((s) => [...s, `🧭 Tour ${ev.tour}/${ev.max_tours} — raisonnement ${ev.fournisseur || ""}`]);
+    } else if (ev.type === "tool_debut") {
+      setAgentSteps((s) => [...s, `${ev.icone || "🔧"} ${ev.libelle || ev.outil}…`]);
+    } else if (ev.type === "tool_fin") {
+      setAgentSteps((s) => [...s, `✅ ${ev.resume || ev.libelle || ev.outil} (${ev.duree_ms ?? 0} ms)`]);
+    } else if (ev.type === "confirmation") {
+      setConfirmation({ ...ev.confirmation, question: ev.reponse, demande_id: ev.demande_id });
+      setAgentSteps((s) => [...s, "⏸️ En attente de ta validation"]);
+    } else if (ev.type === "reponse") {
+      setMessage(`🤖 Agent : ${ev.reponse}`);
+      setAgentSteps((s) => [...s, `💬 ${ev.reponse}`]);
+      chargerProgramme();
+    } else if (ev.type === "erreur" || ev.type === "quota" || ev.type === "limite") {
+      setErreur(ev.reponse || "L'agent n'a pas pu aboutir.");
+    }
+  };
+
+  const genererViaAgent = async () => {
+    if (agentBusy) return;
+    setAgentBusy(true);
+    setErreur("");
+    setMessage("");
+    setAgentSteps([]);
+    setConfirmation(null);
+    const detail = consigne.trim() ? ` en tenant compte de « ${consigne.trim()} »` : "";
+    const demande = `Génère mon programme d'entraînement${detail} avec ${daysPerWeek} séances par semaine.`;
+    try {
+      const resp = await fetch("/api/agent/stream", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({ demande, provider: provider || null }),
+      });
+      if (!resp.ok) {
+        const data = await resp.json().catch(() => ({}));
+        setErreur(data.error || "Erreur du serveur");
+        return;
+      }
+      await lireFluxAgent(resp);
+    } catch (err) {
+      setErreur("Connexion coupée. Réessaie.");
+    } finally {
+      setAgentBusy(false);
+    }
+  };
+
+  const confirmerAgent = async (ok) => {
+    if (!confirmation || agentBusy) return;
+    if (!ok) {
+      setConfirmation(null);
+      setAgentSteps((s) => [...s, "✔ Action annulée, rien n'a été modifié."]);
+      return;
+    }
+    setAgentBusy(true);
+    try {
+      const resp = await fetch("/api/agent/stream", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({
+          demande: "Confirmation d'action",
+          provider: provider || null,
+          confirmation: {
+            tool: confirmation.tool,
+            arguments: confirmation.arguments,
+            demande_id: confirmation.demande_id,
+          },
+        }),
+      });
+      if (!resp.ok) {
+        const data = await resp.json().catch(() => ({}));
+        setErreur(data.error || "Échec de la confirmation.");
+        return;
+      }
+      setConfirmation(null);
+      await lireFluxAgent(resp);
+    } catch (err) {
+      setErreur("Échec de la confirmation. Réessaie.");
+    } finally {
+      setAgentBusy(false);
     }
   };
 
@@ -177,6 +380,29 @@ export default function TrainingProgram({ user }) {
           </div>
         </div>
 
+        <IaPanel
+          source={source}
+          setSource={setSource}
+          consigne={consigne}
+          setConsigne={setConsigne}
+          iaAvailable={iaAvailable}
+          provider={provider}
+          setProvider={setProvider}
+        />
+
+        {iaStatus && iaStatus.configured?.length > 0 && iaStatus.usable?.length === 0 && (
+          <div className="card" style={{ marginTop: "1rem", borderColor: "rgba(245,158,11,.5)" }}>
+            <p style={{ margin: 0, fontWeight: 700 }}>🚫 {iaStatus.message}</p>
+            <p className="muted" style={{ fontSize: "0.85rem", margin: "0.4rem 0 0.6rem 0" }}>
+              La génération IA est temporairement bloquée. Le mode algorithme reste
+              disponible, ou tu peux réactiver les fournisseurs immédiatement.
+            </p>
+            <button className="btn" disabled={resetBusy} onClick={reinitialiserIa}>
+              {resetBusy ? "⏳ Réactivation..." : "🔄 Réactiver les IA"}
+            </button>
+          </div>
+        )}
+
         <button
           className="btn btn-lg"
           style={{ marginTop: "1.5rem" }}
@@ -185,7 +411,25 @@ export default function TrainingProgram({ user }) {
         >
           {loading ? "⏳ Génération..." : "⚡ Générer mon programme"}
         </button>
+
+        <div style={{ marginTop: "0.8rem" }}>
+          <button
+            className="btn btn-ghost"
+            disabled={loading || agentBusy}
+            onClick={genererViaAgent}
+          >
+            {agentBusy ? "🤖 L'agent travaille..." : "🤖 Générer via l'agent"}
+          </button>
+          <p className="muted" style={{ fontSize: "0.85rem", margin: "0.5rem 0 0 0" }}>
+            L'agent raisonne étape par étape, prépare le plan, puis te demande de le valider
+            avant de remplacer ton programme.
+          </p>
+        </div>
+
+        <AgentPanel steps={agentSteps} confirmation={confirmation} onConfirm={confirmerAgent} busy={agentBusy} />
+
         {message && <p style={{ marginTop: "0.8rem", color: "var(--success)", fontWeight: 700 }}>{message}</p>}
+        {erreur && <p style={{ marginTop: "0.8rem", color: "var(--danger)", fontWeight: 700 }}>{erreur}</p>}
       </div>
     );
   }
@@ -196,13 +440,49 @@ export default function TrainingProgram({ user }) {
         title={`🗓️ Programme : ${goalLabel(program.goal)}`}
         subtitle={`Du ${program.start_date} au ${program.end_date} · ${program.days.length} séances/semaine`}
         image={FIT_IMAGES.training}
-        tags={[`📆 ${program.days.length} séances/semaine`, `💪 ${program.days.length} jours`]}
+        tags={[
+          `📆 ${program.days.length} séances/semaine`,
+          sourceBadge(program, meta),
+        ]}
       />
 
-      <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: "1rem" }}>
-        <button className="btn btn-ghost" onClick={() => setProgram(null)}>
-          ⚡ Régénérer un programme
-        </button>
+      <div className="card" style={{ marginTop: "1rem" }}>
+        <h3 style={{ marginTop: 0 }}>🔄 Régénérer le programme</h3>
+        <p className="muted" style={{ marginTop: 0, fontSize: "0.9rem" }}>
+          L'IA propose une nouvelle sélection d'exercices en tenant compte de tes
+          dernières performances. Ton historique de séances est conservé.
+        </p>
+        <IaPanel
+          source={source}
+          setSource={setSource}
+          consigne={consigne}
+          setConsigne={setConsigne}
+          iaAvailable={iaAvailable}
+          provider={provider}
+          setProvider={setProvider}
+          compact
+        />
+        <div style={{ display: "flex", gap: "0.6rem", flexWrap: "wrap", marginTop: "0.8rem" }}>
+          <button className="btn" disabled={loading} onClick={regenerate}>
+            {loading ? "⏳ Régénération..." : "🧠 Régénérer avec l'IA"}
+          </button>
+          <button className="btn btn-ghost" disabled={loading} onClick={() => setProgram(null)}>
+            ⚙️ Changer de split
+          </button>
+        </div>
+        {message && <p style={{ color: "var(--success)", fontWeight: 700 }}>{message}</p>}
+        {erreur && <p style={{ color: "var(--danger)", fontWeight: 700 }}>{erreur}</p>}
+        {meta?.raison && (
+          <p className="muted" style={{ fontSize: "0.85rem", marginBottom: 0 }}>ℹ️ {meta.raison}</p>
+        )}
+        {meta?.avertissements?.length > 0 && (
+          <details style={{ fontSize: "0.85rem" }}>
+            <summary className="muted">{meta.avertissements.length} ajustement(s) appliqué(s) par l'IA</summary>
+            <ul className="muted">
+              {meta.avertissements.map((a, i) => <li key={i}>{a}</li>)}
+            </ul>
+          </details>
+        )}
       </div>
 
       {program.days.map((day) => (
@@ -248,6 +528,99 @@ export default function TrainingProgram({ user }) {
 
 function goalIcon(goal) {
   return (GOAL_META[goal] || {}).icon || "🏋️";
+}
+
+function sourceBadge(program, meta) {
+  if (program.generation_source === "ia") {
+    const variante = program.variation ? ` · variante ${program.variation + 1}` : "";
+    const qui = meta?.fournisseur ? ` (${meta.fournisseur})` : "";
+    return `🧠 Généré par l'IA${qui}${variante}`;
+  }
+  return "⚙️ Généré par l'algorithme";
+}
+
+function IaPanel({ source, setSource, consigne, setConsigne, iaAvailable, provider, setProvider, compact = false }) {
+  return (
+    <div className="card" style={compact ? { background: "var(--grad-soft)", marginTop: "0.8rem" } : { marginTop: "1.5rem" }}>
+      <h3 style={{ marginTop: 0 }}>🧠 Génération</h3>
+      <div className="mode-switch" style={{ marginBottom: "0.8rem" }}>
+        <button
+          type="button"
+          className={"mode-btn" + (source === "auto" ? " active" : "")}
+          onClick={() => setSource("auto")}
+        >
+          🧠 IA (repli auto)
+        </button>
+        <button
+          type="button"
+          className={"mode-btn" + (source === "algorithme" ? " active" : "")}
+          onClick={() => setSource("algorithme")}
+        >
+          ⚙️ Algorithme
+        </button>
+      </div>
+      {source !== "algorithme" && (
+        <div style={{ marginBottom: "0.8rem" }}>
+          <IaSwitch value={provider} onChange={setProvider} compact />
+        </div>
+      )}
+      {!iaAvailable && (
+        <p className="muted" style={{ fontSize: "0.85rem", marginTop: 0 }}>
+          Aucune IA configurée pour l'instant : le mode IA basculera automatiquement sur l'algorithme.
+        </p>
+      )}
+      {source !== "algorithme" && (
+        <>
+          <div className="form-group" style={{ margin: 0 }}>
+            <label>Consigne (optionnelle) : « plus de jambes », « séances plus courtes »…</label>
+            <input
+              type="text"
+              value={consigne}
+              maxLength={300}
+              placeholder="Ex. : garde mes charges mais change les exercices"
+              onChange={(e) => setConsigne(e.target.value)}
+            />
+          </div>
+          <div style={{ display: "flex", gap: "0.4rem", flexWrap: "wrap", marginTop: "0.5rem" }}>
+            {CONSIGNES.map((c) => (
+              <button key={c} type="button" className="chip" onClick={() => setConsigne(c)}>
+                {c}
+              </button>
+            ))}
+          </div>
+        </>
+      )}
+    </div>
+  );
+}
+
+function AgentPanel({ steps, confirmation, onConfirm, busy }) {
+  if (!steps.length && !confirmation) return null;
+  return (
+    <div className="card" style={{ marginTop: "1rem", background: "var(--grad-soft)" }}>
+      <h3 style={{ marginTop: 0 }}>🤖 Déroulé de l'agent</h3>
+      {steps.length > 0 && (
+        <ul className="agent-timeline" style={{ margin: 0, paddingLeft: "1.1rem", fontSize: "0.9rem" }}>
+          {steps.map((s, i) => (
+            <li key={i} className="muted" style={{ marginBottom: "0.25rem" }}>{s}</li>
+          ))}
+        </ul>
+      )}
+      {confirmation && (
+        <div className="confirm-card">
+          <p style={{ margin: "0 0 0.6rem 0", fontWeight: 700 }}>⏸️ {confirmation.question}</p>
+          <div style={{ display: "flex", gap: "0.5rem", flexWrap: "wrap" }}>
+            <button className="btn" disabled={busy} onClick={() => onConfirm(true)}>
+              ✅ Confirmer
+            </button>
+            <button className="btn btn-ghost" disabled={busy} onClick={() => onConfirm(false)}>
+              Annuler
+            </button>
+          </div>
+        </div>
+      )}
+    </div>
+  );
 }
 
 const EFFORT_SEC_PER_REP = 5;   // ~5s par répétition (tempo conc. + excentrique)
