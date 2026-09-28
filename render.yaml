@@ -33,4 +33,4 @@ services:
       - key: MISTRAL_MODEL
         value: "open-mistral-nemo"
       - key: OPENROUTER_MODEL
-        value: "qwen/qwen-2.5-72b-instruct:free"
+        value: "nvidia/nemotron-3-super-120b-a12b:free"

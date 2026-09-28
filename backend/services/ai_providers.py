@@ -4,7 +4,7 @@ Fournisseurs (tous avec un tier gratuit, clé optionnelle via l'environnement) :
   - groq       : Groq          (GROQ_API_KEY,  défaut qwen/qwen3.8-27b)
   - gemini     : Google Gemini (GEMINI_API_KEY, défaut gemini-3.8-flash)
   - mistral    : Mistral AI    (MISTRAL_API_KEY, défaut open-mistral-nemo)
-  - openrouter : OpenRouter    (OPENROUTER_API_KEY, défaut qwen/qwen-2.5-72b-instruct:free)
+  - openrouter : OpenRouter    (OPENROUTER_API_KEY, défaut nvidia/nemotron-3-super-120b-a12b:free)
 
 Ordre de préférence : `AI_PROVIDER_ORDER` (ex: "groq,gemini,mistral,openrouter").
 Un fournisseur est sauté s'il n'est pas configuré, s'il a dépassé son quota du
@@ -366,7 +366,7 @@ class OpenRouterProvider(_BaseProvider):
     id = "openrouter"
     label = "OpenRouter"
     key_env = "OPENROUTER_API_KEY"
-    default_model = "qwen/qwen-2.5-72b-instruct:free"
+    default_model = "nvidia/nemotron-3-super-120b-a12b:free"
 
     def _headers(self):
         return {"Authorization": f"Bearer {os.environ.get('OPENROUTER_API_KEY', '')}",
