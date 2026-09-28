@@ -29,7 +29,7 @@ services:
       - key: AI_PROVIDER_ORDER
         value: "groq,gemini,mistral,openrouter"
       - key: GEMINI_MODEL
-        value: "gemini-2.0-flash"
+        value: "gemini-3.8-flash"
       - key: MISTRAL_MODEL
         value: "open-mistral-nemo"
       - key: OPENROUTER_MODEL

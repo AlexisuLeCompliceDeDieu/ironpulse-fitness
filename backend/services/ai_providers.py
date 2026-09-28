@@ -2,7 +2,7 @@
 
 Fournisseurs (tous avec un tier gratuit, clé optionnelle via l'environnement) :
   - groq       : Groq          (GROQ_API_KEY,  défaut qwen/qwen3.8-27b)
-  - gemini     : Google Gemini (GEMINI_API_KEY, défaut gemini-2.0-flash)
+  - gemini     : Google Gemini (GEMINI_API_KEY, défaut gemini-3.8-flash)
   - mistral    : Mistral AI    (MISTRAL_API_KEY, défaut open-mistral-nemo)
   - openrouter : OpenRouter    (OPENROUTER_API_KEY, défaut qwen/qwen-2.5-72b-instruct:free)
 
@@ -224,7 +224,7 @@ class GeminiProvider(_BaseProvider):
     id = "gemini"
     label = "Google Gemini"
     key_env = "GEMINI_API_KEY"
-    default_model = "gemini-2.0-flash"
+    default_model = "gemini-3.8-flash"
 
     @staticmethod
     def _to_gemini(messages):
