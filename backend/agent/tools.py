@@ -34,7 +34,9 @@ def consulter_profil(utilisateur_id: int) -> dict:
 
     from services.nutrition import current_calories
 
+    kcal = current_calories(user)
     return {
+        "resume": f"{user.username} · objectif {user.goal or 'non renseigné'} · {kcal} kcal/j · {user.weight or '?'} kg",
         "pseudo": user.username,
         "objectif": user.goal,
         "niveau": user.level,
@@ -42,7 +44,7 @@ def consulter_profil(utilisateur_id: int) -> dict:
         "poids_cible_kg": user.target_weight,
         "taille_cm": user.height,
         "age": user.age,
-        "calories_cibles": current_calories(user),
+        "calories_cibles": kcal,
         "restrictions": user.preferences_list(),
         "materiel": user.equipment_list(),
         "split": user.split_type or "automatique selon objectif",
@@ -59,6 +61,7 @@ def consulter_progression(utilisateur_id: int) -> dict:
     )
     if not sessions:
         return {
+            "resume": "Aucune séance enregistrée pour le moment.",
             "message": "Aucune séance enregistrée pour le moment.",
             "total_sessions": 0,
             "volume_total_kg": 0,
@@ -114,6 +117,10 @@ def consulter_progression(utilisateur_id: int) -> dict:
         })
 
     return {
+        "resume": (
+            f"{len(sessions)} séances · volume {round(total_volume, 1)} kg · "
+            f"ressenti moyen {round(ressenti_total / len(sessions), 1)}/5"
+        ),
         "total_sessions": len(sessions),
         "volume_total_kg": round(total_volume, 1),
         "ressenti_moyen": round(ressenti_total / len(sessions), 1),
@@ -142,6 +149,10 @@ def calculer_macros(calories: float, objectif: str = "prise_masse") -> dict:
     fat_kcal = calories * split["fat"]
 
     return {
+        "resume": (
+            f"{int(round(calories))} kcal → {round(protein_kcal / 4)} g protéines / "
+            f"{round(carbs_kcal / 4)} g glucides / {round(fat_kcal / 9)} g lipides"
+        ),
         "calories": int(round(calories)),
         "objectif": objectif,
         "proteines_g": round(protein_kcal / 4),
@@ -164,8 +175,10 @@ def proposer_seance(utilisateur_id: int) -> dict:
         from services.advice import generate_advice
         user = db.session.get(User, utilisateur_id)
         conseils = generate_advice(user, {"total_sessions": 0})
+        recommandation = "Aucune séance enregistrée : lance le programme pour suivre ta progression."
         return {
-            "recommandation": "Aucune séance enregistrée : lance le programme pour suivre ta progression.",
+            "resume": recommandation,
+            "recommandation": recommandation,
             "intensite": "démarrage",
             "motif": "première séance",
             "conseils": [c["text"] for c in conseils][:3],
@@ -173,8 +186,10 @@ def proposer_seance(utilisateur_id: int) -> dict:
 
     from services.advice import generate_adaptation
     recommandations = generate_adaptation(sessions)
+    recommandation = recommandations[0]["text"] if recommandations else "Ton intensité est bien calibrée."
     return {
-        "recommandation": recommandations[0]["text"] if recommandations else "Ton intensité est bien calibrée.",
+        "resume": recommandation[:160],
+        "recommandation": recommandation,
         "type": recommandations[0]["type"] if recommandations else "info",
         "nb_seances_analysees": len(sessions),
         "conseils": [r["text"] for r in recommandations],
@@ -209,6 +224,7 @@ def enregistrer_seance(utilisateur_id: int, date: str = None, ressenti: int = 3,
     db.session.add(session_obj)
     db.session.commit()
     return {
+        "resume": f"Séance du {session_obj.date.isoformat()} enregistrée (ressenti {session_obj.feeling}/5)",
         "message": "Séance enregistrée.",
         "session": {
             "id": session_obj.id,
@@ -318,4 +334,34 @@ TOOL_SCHEMAS = [
             },
         },
     },
+]
+
+
+# ─────────────────────────────────────────────────────────────────────
+#  Métadonnées d'affichage (UI) : icône, libellé court, catégorie
+#  et catalogue exposé au frontend via GET /api/agent/outils
+# ─────────────────────────────────────────────────────────────────────
+
+TOOL_META = {
+    "consulter_profil":       {"libelle": "Profil",              "icone": "👤", "categorie": "Lecture"},
+    "consulter_progression":  {"libelle": "Progression",         "icone": "📈", "categorie": "Lecture"},
+    "calculer_macros":        {"libelle": "Calcul des macros",   "icone": "🧮", "categorie": "Calcul"},
+    "proposer_seance":        {"libelle": "Séance conseillée",   "icone": "🏋️", "categorie": "Lecture"},
+    "enregistrer_seance":     {"libelle": "Enregistrer une séance", "icone": "✅", "categorie": "Écriture"},
+}
+
+
+def meta_tool(nom: str) -> dict:
+    """Métadonnées d'affichage d'un tool (icône, libellé, catégorie, sensible)."""
+    base = TOOL_META.get(nom, {"libelle": nom, "icone": "🔧", "categorie": "Autre"})
+    return {**base, "sensible": nom in SENSITIVE_TOOLS}
+
+
+TOOL_CATALOG = [
+    {
+        "nom": schema["function"]["name"],
+        "description": schema["function"]["description"],
+        **meta_tool(schema["function"]["name"]),
+    }
+    for schema in TOOL_SCHEMAS
 ]
