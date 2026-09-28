@@ -418,3 +418,69 @@ def test_gemini_translates_tool_calls_and_responses():
     part = contents[2]["parts"][0]["functionResponse"]
     assert part["name"] == "calculer_macros"
     assert part["response"]["result"] == {"proteines_g": 225}
+
+
+# ── Robustesse : jamais un bug interne ne doit casser le failover ──
+
+class _FakeResp:
+    status = 200
+
+    def __init__(self, body):
+        self._body = body if isinstance(body, bytes) else body.encode("utf-8")
+
+    def read(self):
+        return self._body
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, *a):
+        return False
+
+
+def test_http_json_force_le_content_type_json(monkeypatch):
+    """Gemini passait headers={} → urllib choisissait form-urlencoded (rejet 400)."""
+    captures = {}
+
+    def fake_urlopen(req, timeout=None):
+        captures["headers"] = dict(req.headers)
+        return _FakeResp('{"ok": true}')
+
+    monkeypatch.setattr(ai_providers.urllib.request, "urlopen", fake_urlopen)
+    _, data = ai_providers._http_json("http://x/", {}, {"a": 1})
+    assert data == {"ok": True}
+    assert captures["headers"].get("Content-type") == "application/json"
+
+
+def test_openai_chat_remonte_provider_error_sans_choices(monkeypatch):
+    """Un fournisseur qui renvoie du 200 sans "choices" → ProviderError, pas KeyError."""
+    monkeypatch.setattr(
+        ai_providers.urllib.request, "urlopen",
+        lambda req, timeout=None: _FakeResp('{"error": {"message": "boom"}}'),
+    )
+    with pytest.raises(ai_providers.ProviderError):
+        ai_providers._openai_chat("http://x/", "k", "m", [{"role": "user", "content": "hi"}], 10, 0.4)
+
+
+def test_generate_text_survit_a_une_exception_interne(monkeypatch):
+    """KeyError d'un fournisseur ne doit pas casser le failover (sinon 'ai_error' global)."""
+    monkeypatch.setattr(ai_providers, "PROVIDERS", _providers(
+        FakeProvider("groq", "Groq", fail=KeyError("choices")),
+        FakeProvider("gemini", "Gemini"),
+    ))
+    texte, info = ai_providers.generate_text([{"role": "user", "content": "x"}])
+    assert texte == "ok"
+    assert info["provider"] == "gemini"
+
+
+def test_generate_with_tools_survit_a_une_exception_interne(monkeypatch):
+    """Même garde-fou pour le function calling de l'agent."""
+    monkeypatch.setattr(ai_providers, "PROVIDERS", _providers(
+        FakeProvider("groq", "Groq", fail=ValueError("oops")),
+        FakeProvider("gemini", "Gemini", tools_result={
+            "content": "réponse", "tool_calls": [{"id": "c1", "name": "calculer_macros", "arguments": {"calories": 3000}}],
+        }),
+    ))
+    resultat, info = ai_providers.generate_with_tools([{"role": "user", "content": "x"}], TOOLS)
+    assert info["provider"] == "gemini"
+    assert resultat["tool_calls"][0]["name"] == "calculer_macros"

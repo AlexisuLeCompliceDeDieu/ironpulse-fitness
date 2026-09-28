@@ -42,6 +42,8 @@ class ProviderError(Exception):
 
 def _http_json(url, headers, payload):
     """POST JSON, retourne (status, dict). Lève ProviderError en cas d'échec."""
+    headers = dict(headers or {})
+    headers.setdefault("Content-Type", "application/json")
     data = json.dumps(payload).encode("utf-8")
     req = urllib.request.Request(url, data=data, headers=headers, method="POST")
     try:
@@ -68,7 +70,10 @@ def _openai_chat(url, key, model, messages, max_tokens, temperature, extra=None)
     if extra:
         payload.update(extra)
     _, data = _http_json(url, headers, payload)
-    return data["choices"][0]["message"]["content"]
+    choix = data.get("choices") if isinstance(data, dict) else None
+    if not choix or not choix[0].get("message"):
+        raise ProviderError(200, f"Réponse sans 'choices' : {str(data)[:300]}")
+    return choix[0]["message"]["content"]
 
 
 def _openai_chat_tools(url, key, model, messages, tools, max_tokens, temperature,
@@ -87,7 +92,10 @@ def _openai_chat_tools(url, key, model, messages, tools, max_tokens, temperature
     if extra:
         payload.update(extra)
     _, data = _http_json(url, headers, payload)
-    return data["choices"][0]["message"]
+    choix = data.get("choices") if isinstance(data, dict) else None
+    if not choix or not choix[0].get("message"):
+        raise ProviderError(200, f"Réponse sans 'choices' : {str(data)[:300]}")
+    return choix[0]["message"]
 
 
 def _normalize_openai_message(message):
@@ -571,6 +579,10 @@ def generate_text(messages, max_tokens=2048, temperature=0.7, provider_pref=None
             reason = _handle_failure(pid, e)
             attempts.append({"provider": pid, "ok": False, "reason": reason})
             continue
+        except Exception as e:  # noqa: BLE001 — un bug interne ne doit pas casser le failover
+            logger.warning(f"Fournisseur {pid} : exception inattendue {type(e).__name__}: {e}")
+            attempts.append({"provider": pid, "ok": False, "reason": "server_error"})
+            continue
     return None, _echec_global(attempts)
 
 
@@ -605,6 +617,10 @@ def generate_with_tools(messages, tools, max_tokens=2048, temperature=0.7,
         except ProviderError as e:
             reason = _handle_failure(pid, e)
             attempts.append({"provider": pid, "ok": False, "reason": reason})
+            continue
+        except Exception as e:  # noqa: BLE001
+            logger.warning(f"Fournisseur {pid} : exception inattendue {type(e).__name__}: {e}")
+            attempts.append({"provider": pid, "ok": False, "reason": "server_error"})
             continue
     return None, _echec_global(attempts)
 
